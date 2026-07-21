@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest an idea or improvement for Pippin
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping shape Pippin! Please describe the problem you're trying to solve, not just the solution — it helps us find the best fit.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that Pippin makes hard or impossible today?
+      placeholder: I'm always frustrated when…
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would you like Pippin to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Other apps that do this well, workarounds you use today, etc.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform(s)
+      description: Which platforms is this relevant to?
+      multiple: true
+      options:
+        - iOS (iPhone)
+        - iPadOS (iPad)
+        - macOS (Mac)
+        - tvOS (Apple TV)
+        - All platforms
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this hasn't been requested already
+          required: true
