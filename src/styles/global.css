@@ -110,6 +110,15 @@ html {
   scroll-padding-top: calc(var(--nav-height) + var(--space-4));
 }
 
+/* Global horizontal-overflow guard: the page must never scroll sideways at any
+   width (360→1440). `overflow-x: clip` (unlike hidden/auto) does NOT create a
+   scroll container, so it leaves the sticky nav working. */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
