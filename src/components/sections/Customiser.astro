@@ -1,15 +1,1010 @@
 ---
 /**
- * Customiser — id="customise". STUB. Owned by the Customiser section agent.
- * Will demo the accent → surface re-tinting (use applyPalette from src/lib/palette.js).
+ * Customiser — id="customise".
+ *
+ * THE interactive playground: a glass control panel drives a live Pippin phone/
+ * tablet preview. Accent · Theme · Poster size · Shelf style · Layout all
+ * re-tint / re-flow the preview instantly via applyPalette() (from palette.js).
+ *
+ * All colour comes from CSS custom properties set by applyPalette on the
+ * `.pv-stage` container — children re-tint live. The only literal colours are
+ * the procedural film gradients (from sampleData) and unavoidable overlay
+ * scrims (black gradients), which are structural, not brand colour.
  */
+import { PRESET_ACCENTS, DEFAULT_ACCENT } from '../../lib/palette.js';
+import { sampleFilms } from '../../lib/sampleData.js';
+
+// Serialise the film data the client script needs (keep it lean).
+const films = sampleFilms.map((f) => ({
+  id: f.id,
+  title: f.title,
+  year: f.year,
+  rating: f.rating,
+  genres: f.genres,
+  gradTop: f.gradTop,
+  gradBottom: f.gradBottom,
+  logo: f.logo,
+  poster: f.poster,
+  backdrop: f.backdrop,
+}));
 ---
 <section class="section" id="customise">
   <div class="container">
-    <p class="eyebrow">Customise</p>
-    <h2 class="section-title">Customiser — coming soon</h2>
-    <p class="section-subtitle">
-      This section will be built by the Customiser section agent.
-    </p>
+    <header class="cz-head reveal">
+      <p class="eyebrow">Make it yours</p>
+      <h2 class="section-title">Your library. Your rules.</h2>
+      <p class="section-subtitle">
+        Pippin bends to your taste. Pick an accent and every surface re-tints in
+        real time; choose a theme, resize posters, morph your shelves, swap tabs
+        for a sidebar. Try it right here — this is a live, running slice of the app.
+      </p>
+    </header>
+
+    <div class="cz-grid reveal" style="--reveal-delay:120ms">
+      <!-- ============================== CONTROL PANEL ==================== -->
+      <div class="cz-panel glass" role="group" aria-label="Customisation controls">
+        <!-- Accent -->
+        <div class="cz-ctl">
+          <div class="cz-ctl-head">
+            <span class="cz-label" id="cz-accent-label">Accent</span>
+            <span class="cz-hint">Recolours everything</span>
+          </div>
+          <div class="cz-accents" role="radiogroup" aria-labelledby="cz-accent-label" id="cz-accents">
+            {PRESET_ACCENTS.map((a, i) => (
+              <button
+                type="button"
+                class="cz-swatch"
+                role="radio"
+                aria-checked={i === 0 ? 'true' : 'false'}
+                aria-label={a.name}
+                title={a.name}
+                data-hex={a.hex}
+                style={`--sw:${a.hex}`}
+              ><span class="cz-swatch-dot"></span></button>
+            ))}
+            <label class="cz-swatch cz-swatch-custom" title="Custom colour">
+              <span class="cz-swatch-dot cz-custom-dot" aria-hidden="true"></span>
+              <input type="color" id="cz-color" value={DEFAULT_ACCENT} aria-label="Custom accent colour" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Theme -->
+        <div class="cz-ctl">
+          <div class="cz-ctl-head">
+            <span class="cz-label" id="cz-theme-label">Theme</span>
+          </div>
+          <div class="cz-seg" role="radiogroup" aria-labelledby="cz-theme-label" data-group="theme">
+            <button type="button" role="radio" aria-checked="false" data-val="system">System</button>
+            <button type="button" role="radio" aria-checked="false" data-val="light">Light</button>
+            <button type="button" role="radio" aria-checked="true" data-val="dark">Dark</button>
+            <button type="button" role="radio" aria-checked="false" data-val="black">True Black</button>
+            <span class="cz-seg-thumb" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <!-- Poster size -->
+        <div class="cz-ctl">
+          <div class="cz-ctl-head">
+            <span class="cz-label" id="cz-poster-label">Poster size</span>
+            <span class="cz-hint">Row shelf</span>
+          </div>
+          <div class="cz-seg" role="radiogroup" aria-labelledby="cz-poster-label" data-group="poster">
+            <button type="button" role="radio" aria-checked="false" data-val="xs">XS</button>
+            <button type="button" role="radio" aria-checked="false" data-val="s">S</button>
+            <button type="button" role="radio" aria-checked="false" data-val="m">M</button>
+            <button type="button" role="radio" aria-checked="true" data-val="l">L</button>
+            <button type="button" role="radio" aria-checked="false" data-val="xl">XL</button>
+            <span class="cz-seg-thumb" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <!-- Shelf style -->
+        <div class="cz-ctl">
+          <div class="cz-ctl-head">
+            <span class="cz-label" id="cz-shelf-label">Top shelf</span>
+          </div>
+          <div class="cz-seg" role="radiogroup" aria-labelledby="cz-shelf-label" data-group="shelf">
+            <button type="button" role="radio" aria-checked="false" data-val="row">Row</button>
+            <button type="button" role="radio" aria-checked="false" data-val="spotlight">Spotlight</button>
+            <button type="button" role="radio" aria-checked="true" data-val="hero">Hero</button>
+            <span class="cz-seg-thumb" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <!-- Layout -->
+        <div class="cz-ctl">
+          <div class="cz-ctl-head">
+            <span class="cz-label" id="cz-layout-label">Navigation</span>
+          </div>
+          <div class="cz-seg" role="radiogroup" aria-labelledby="cz-layout-label" data-group="layout">
+            <button type="button" role="radio" aria-checked="true" data-val="tabs">Tabs</button>
+            <button type="button" role="radio" aria-checked="false" data-val="sidebar">Sidebar</button>
+            <span class="cz-seg-thumb" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="cz-panel-foot">
+          <button type="button" class="btn btn-ghost cz-random" id="cz-random">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true">
+              <path d="M16 3h5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 20 21 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 16v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 15l6 6M4 4l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Surprise me
+          </button>
+          <p class="cz-panel-note">Nothing here is saved — it's a playground.</p>
+        </div>
+      </div>
+
+      <!-- ============================== DEVICE PREVIEW =================== -->
+      <div class="cz-preview" data-layout="tabs">
+        <div class="cz-device">
+          <div class="cz-stage" id="cz-stage" data-shelf="hero" data-poster="l">
+            <!-- Sidebar (tablet layout) -->
+            <nav class="cz-sidebar" aria-hidden="true">
+              <div class="cz-sb-brand">
+                <span class="cz-sb-dot"></span>
+                <span class="cz-sb-brandtxt">Pippin</span>
+              </div>
+              <ul class="cz-sb-list" id="cz-sidebar-list"></ul>
+            </nav>
+
+            <!-- Content column -->
+            <div class="cz-content">
+              <!-- Status bar -->
+              <div class="cz-statusbar" aria-hidden="true">
+                <span class="cz-clock">9:41</span>
+                <span class="cz-island"></span>
+                <span class="cz-status-glyphs">
+                  <svg viewBox="0 0 18 12" width="17" height="11" aria-hidden="true">
+                    <path d="M9 11.2 1 4.2A11.2 11.2 0 0 1 17 4.2Z" fill="currentColor" opacity="0.9"/>
+                  </svg>
+                  <svg viewBox="0 0 26 13" width="22" height="11" aria-hidden="true">
+                    <rect x="0.5" y="1.5" width="21" height="10" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+                    <rect x="2.2" y="3.2" width="15" height="6.6" rx="1.6" fill="currentColor"/>
+                    <rect x="23" y="4.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                  </svg>
+                </span>
+              </div>
+
+              <!-- Nav header (row/spotlight only) -->
+              <div class="cz-navhead" id="cz-navhead">
+                <span class="cz-navtitle">Home</span>
+                <span class="cz-navavatar"></span>
+              </div>
+
+              <!-- Scroll body -->
+              <div class="cz-scroll" id="cz-scroll">
+                <!-- top shelf host (swaps between row/spotlight/hero) -->
+                <div class="cz-topshelf" id="cz-topshelf"></div>
+
+                <!-- Always-on second shelf below -->
+                <div class="cz-shelf">
+                  <div class="cz-shelf-head">
+                    <span class="cz-shelf-title">Recently Added</span>
+                    <span class="cz-shelf-more">See All</span>
+                  </div>
+                  <div class="cz-rail cz-rail--fixed" id="cz-rail2"></div>
+                </div>
+              </div>
+
+              <!-- Tab bar (portrait layout) -->
+              <nav class="cz-tabbar" id="cz-tabbar" aria-hidden="true"></nav>
+            </div>
+          </div>
+          <div class="cz-device-glow" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script
+    is:inline
+    define:vars={{ films, presets: PRESET_ACCENTS, defaultAccent: DEFAULT_ACCENT }}
+  >
+    (function () {
+      // Wait for DOM within this section to be available.
+      const stage = document.getElementById('cz-stage');
+      if (!stage) return;
+
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ---- palette (inlined so no import needed in inline script) ---------
+      function hexToRgb(hex) {
+        let h = String(hex).trim().replace(/^#/, '');
+        if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+        const int = parseInt(h, 16);
+        return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
+      }
+      function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+      function hexToHsb(hex) {
+        const { r, g, b } = hexToRgb(hex);
+        const rf = r / 255, gf = g / 255, bf = b / 255;
+        const max = Math.max(rf, gf, bf), min = Math.min(rf, gf, bf), d = max - min;
+        let h = 0;
+        if (d !== 0) {
+          if (max === rf) h = ((gf - bf) / d) % 6;
+          else if (max === gf) h = (bf - rf) / d + 2;
+          else h = (rf - gf) / d + 4;
+          h /= 6; if (h < 0) h += 1;
+        }
+        return { h, s: max === 0 ? 0 : d / max, b: max };
+      }
+      function hsbToCss(h, s, b) {
+        h = ((h % 1) + 1) % 1; s = clamp01(s); b = clamp01(b);
+        const i = Math.floor(h * 6), f = h * 6 - i;
+        const p = b * (1 - s), q = b * (1 - f * s), t = b * (1 - (1 - f) * s);
+        let r, g, bl;
+        switch (i % 6) {
+          case 0: r = b; g = t; bl = p; break;
+          case 1: r = q; g = b; bl = p; break;
+          case 2: r = p; g = b; bl = t; break;
+          case 3: r = p; g = q; bl = b; break;
+          case 4: r = t; g = p; bl = b; break;
+          default: r = b; g = p; bl = q; break;
+        }
+        return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(bl * 255)})`;
+      }
+      function applyPalette(el, accentHex, theme = 'dark', tint = 1) {
+        const { h, s } = hexToHsb(accentHex);
+        const t = clamp01(tint);
+        const c = hexToRgb(accentHex);
+        const emerald = hsbToCss(h, Math.min(s + 0.1, 0.7) * t, 0.1);
+        let bg, grouped, secondary, card, sep;
+        if (theme === 'light') {
+          bg = hsbToCss(h, 0.04 * t, 0.985);
+          grouped = hsbToCss(h, 0.055 * t, 0.96);
+          secondary = hsbToCss(h, 0.07 * t, 0.935);
+          card = hsbToCss(h, 0.022 * t, 1.0);
+          sep = hsbToCss(h, 0.1 * t, 0.83);
+        } else {
+          bg = hsbToCss(h, Math.min(s + 0.05, 0.44) * t, 0.11);
+          grouped = hsbToCss(h, Math.min(s + 0.05, 0.44) * t, 0.15);
+          secondary = hsbToCss(h, Math.min(s + 0.04, 0.42) * t, 0.22);
+          card = hsbToCss(h, Math.min(s + 0.14, 0.66) * t, 0.165);
+          sep = hsbToCss(h, 0.2 * t, 0.34);
+          if (theme === 'black') {
+            bg = '#000000';
+            card = hsbToCss(h, Math.min(s + 0.14, 0.66) * t, 0.165 * 0.6);
+          }
+        }
+        const isLight = theme === 'light';
+        const map = {
+          '--accent': `rgb(${c.r}, ${c.g}, ${c.b})`,
+          '--accent-subtle': `rgba(${c.r}, ${c.g}, ${c.b}, 0.15)`,
+          '--accent-muted': `rgba(${c.r}, ${c.g}, ${c.b}, 0.28)`,
+          '--bg': bg,
+          '--bg-grouped': grouped,
+          '--bg-secondary': secondary,
+          '--card': card,
+          '--separator': sep,
+          '--label': isLight ? 'rgb(20, 22, 24)' : 'rgb(244, 245, 247)',
+          '--label-secondary': isLight ? 'rgba(20, 22, 24, 0.55)' : 'rgba(255, 255, 255, 0.60)',
+          '--emerald-depths': emerald,
+        };
+        for (const k in map) el.style.setProperty(k, map[k]);
+      }
+
+      // ---- state ----------------------------------------------------------
+      const state = {
+        accent: defaultAccent,
+        theme: 'dark',   // system→dark, light, dark, black
+        poster: 'l',
+        shelf: 'hero',
+        layout: 'tabs',
+      };
+      // px widths mirroring app tiers, scaled for the mock
+      const POSTER_W = { xs: 46, s: 56, m: 66, l: 84, xl: 104 };
+
+      const preview = document.querySelector('.cz-preview');
+      const topshelf = document.getElementById('cz-topshelf');
+      const rail2 = document.getElementById('cz-rail2');
+      const tabbar = document.getElementById('cz-tabbar');
+      const sidebarList = document.getElementById('cz-sidebar-list');
+      const navhead = document.getElementById('cz-navhead');
+
+      // ---- icons ----------------------------------------------------------
+      const ICON = {
+        home: '<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+        movies: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5M8 20v-5M16 20v-5" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+        tv: '<rect x="2.5" y="5" width="19" height="12" rx="2"/><path d="M8 21h8M12 17v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+        downloads: '<path d="M12 3v11m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+        search: '<circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      };
+      function svg(name) {
+        const solid = name === 'home' || name === 'movies' || name === 'tv';
+        return `<svg viewBox="0 0 24 24" width="22" height="22" fill="${solid ? 'currentColor' : 'none'}" aria-hidden="true">${ICON[name]}</svg>`;
+      }
+
+      const TABS = [
+        { icon: 'home', label: 'Home' },
+        { icon: 'movies', label: 'Movies' },
+        { icon: 'tv', label: 'TV' },
+        { icon: 'downloads', label: 'Downloads' },
+      ];
+      const SIDEBAR = [
+        { icon: 'home', label: 'Home' },
+        { icon: 'movies', label: 'Movies' },
+        { icon: 'tv', label: 'TV Shows' },
+        { icon: 'downloads', label: 'Downloads' },
+        { icon: 'search', label: 'Search' },
+      ];
+
+      function starMeta(f) {
+        return `${f.year} · ${f.genres[0]} · <span class="cz-star">★</span> ${f.rating.toFixed(1)}`;
+      }
+      function gradStyle(f) {
+        return `background:linear-gradient(135deg, ${f.gradTop}, ${f.gradBottom});`;
+      }
+      function logoOrTitle(f, cls) {
+        if (f.logo) return `<img class="${cls} cz-logo-img" src="/media/${f.logo}" alt="${f.title}" loading="lazy" />`;
+        return `<span class="${cls} cz-logo-txt">${f.title}</span>`;
+      }
+
+      // ---- procedural poster card ----------------------------------------
+      function posterCard(f, progress) {
+        const bar = progress != null
+          ? `<span class="cz-poster-prog"><span class="cz-poster-prog-fill" style="width:${Math.round(progress * 100)}%"></span></span>`
+          : '';
+        const inner = f.poster
+          ? `<img src="/media/${f.poster}" alt="${f.title}" class="cz-poster-img" loading="lazy" />`
+          : `<div class="cz-poster-art" style="${gradStyle(f)}">${
+              f.logo
+                ? `<img class="cz-poster-logo" src="/media/${f.logo}" alt="${f.title}" loading="lazy" />`
+                : `<span class="cz-poster-t">${f.title}</span>`
+            }</div>`;
+        return `<div class="cz-poster">${inner}${bar}</div>`;
+      }
+
+      // ---- shelf renderers ------------------------------------------------
+      function renderRow(host) {
+        const items = films.slice(0, 6);
+        host.innerHTML = `
+          <div class="cz-shelf cz-shelf--top">
+            <div class="cz-shelf-head">
+              <span class="cz-shelf-title">Continue Watching</span>
+              <span class="cz-shelf-more">See All</span>
+            </div>
+            <div class="cz-rail cz-rail--poster">
+              ${items.map((f, i) => posterCard(f, [0.62, 0.3, 0.85, 0.14, 0.47, 0.72][i % 6])).join('')}
+            </div>
+          </div>`;
+      }
+
+      let carousel = { idx: 0, timer: null };
+      function renderSpotlight(host) {
+        const items = films.slice(0, 4);
+        host.innerHTML = `
+          <div class="cz-spot">
+            <div class="cz-spot-frame">
+              ${items.map((f, i) => `
+                <div class="cz-spot-slide${i === 0 ? ' is-on' : ''}" data-i="${i}" style="${gradStyle(f)}">
+                  ${f.backdrop ? `<img class="cz-spot-bg" src="/media/${f.backdrop}" alt="" loading="lazy" />` : ''}
+                  <div class="cz-spot-scrim"></div>
+                  <div class="cz-spot-body">
+                    ${logoOrTitle(f, 'cz-spot-logo')}
+                    <div class="cz-spot-meta">${starMeta(f)}</div>
+                  </div>
+                </div>`).join('')}
+              <div class="cz-dots">${items.map((_, i) => `<span class="cz-dot${i === 0 ? ' is-on' : ''}"></span>`).join('')}</div>
+            </div>
+          </div>
+          <div class="cz-shelf cz-shelf--top">
+            <div class="cz-shelf-head">
+              <span class="cz-shelf-title">Trending</span>
+              <span class="cz-shelf-more">See All</span>
+            </div>
+            <div class="cz-rail cz-rail--poster">
+              ${films.slice(2, 8).map((f, i) => posterCard(f, [0.4, 0.7, 0.22, 0.9, 0.55, 0.33][i % 6])).join('')}
+            </div>
+          </div>`;
+        startCarousel(host, items.length);
+      }
+
+      function renderHero(host) {
+        const items = films.slice(0, 4);
+        host.innerHTML = `
+          <div class="cz-hero">
+            ${items.map((f, i) => `
+              <div class="cz-hero-slide${i === 0 ? ' is-on' : ''}" data-i="${i}" style="${gradStyle(f)}">
+                ${f.backdrop ? `<img class="cz-hero-bg" src="/media/${f.backdrop}" alt="" loading="lazy" />` : ''}
+              </div>`).join('')}
+            <div class="cz-hero-fade"></div>
+            <div class="cz-hero-body">
+              <div class="cz-hero-slides-cap">
+                ${items.map((f, i) => `
+                  <div class="cz-hero-cap${i === 0 ? ' is-on' : ''}" data-i="${i}">
+                    ${logoOrTitle(f, 'cz-hero-logo')}
+                    <div class="cz-hero-meta">${starMeta(f)}</div>
+                  </div>`).join('')}
+              </div>
+              <div class="cz-hero-actions">
+                <span class="cz-resume">
+                  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+                  Resume
+                </span>
+                <div class="cz-dots">${items.map((_, i) => `<span class="cz-dot${i === 0 ? ' is-on' : ''}"></span>`).join('')}</div>
+              </div>
+            </div>
+          </div>
+          <div class="cz-shelf cz-shelf--top cz-shelf--hero-peek">
+            <div class="cz-shelf-head">
+              <span class="cz-shelf-title">Keep Watching</span>
+              <span class="cz-shelf-more">See All</span>
+            </div>
+            <div class="cz-rail cz-rail--poster">
+              ${films.slice(1, 7).map((f, i) => posterCard(f, [0.5, 0.8, 0.2, 0.66, 0.35, 0.9][i % 6])).join('')}
+            </div>
+          </div>`;
+        startCarousel(host, items.length);
+      }
+
+      function startCarousel(host, count) {
+        stopCarousel();
+        carousel.idx = 0;
+        if (reduced || count <= 1) return;
+        carousel.timer = setInterval(() => {
+          carousel.idx = (carousel.idx + 1) % count;
+          setCarousel(host, carousel.idx);
+        }, 4200);
+      }
+      function stopCarousel() {
+        if (carousel.timer) { clearInterval(carousel.timer); carousel.timer = null; }
+      }
+      function setCarousel(host, idx) {
+        host.querySelectorAll('[data-i]').forEach((el) => {
+          el.classList.toggle('is-on', Number(el.dataset.i) === idx);
+        });
+        host.querySelectorAll('.cz-dot').forEach((d, i) => d.classList.toggle('is-on', i === idx));
+      }
+
+      function renderTopShelf() {
+        if (state.shelf === 'row') renderRow(topshelf);
+        else if (state.shelf === 'spotlight') renderSpotlight(topshelf);
+        else renderHero(topshelf);
+        stage.dataset.shelf = state.shelf;
+        // nav header hidden in hero
+        navhead.style.display = state.shelf === 'hero' ? 'none' : '';
+      }
+
+      // ---- static rail (second shelf) + chrome ----------------------------
+      function renderRail2() {
+        rail2.innerHTML = films.slice(2, 8).map((f) => posterCard(f, null)).join('');
+      }
+      function renderChrome() {
+        tabbar.innerHTML = TABS.map((t, i) => `
+          <span class="cz-tab${i === 0 ? ' is-on' : ''}">
+            ${svg(t.icon)}<span class="cz-tab-lbl">${t.label}</span>
+          </span>`).join('');
+        sidebarList.innerHTML = SIDEBAR.map((t, i) => `
+          <li class="cz-sb-item${i === 0 ? ' is-on' : ''}">
+            ${svg(t.icon)}<span class="cz-sb-lbl">${t.label}</span>
+          </li>`).join('');
+      }
+
+      // ---- apply state ----------------------------------------------------
+      function applyPoster() {
+        stage.dataset.poster = state.poster;
+        stage.style.setProperty('--poster-w', POSTER_W[state.poster] + 'px');
+      }
+      function applyLayout() {
+        preview.dataset.layout = state.layout;
+      }
+      function retint() {
+        applyPalette(stage, state.accent, state.theme, 1);
+      }
+
+      // ---- control wiring -------------------------------------------------
+      // Segmented controls (theme / poster / shelf / layout)
+      function moveThumb(seg) {
+        const btns = [...seg.querySelectorAll('[role="radio"]')];
+        const active = seg.querySelector('[aria-checked="true"]');
+        const thumb = seg.querySelector('.cz-seg-thumb');
+        if (!active || !thumb) return;
+        const idx = btns.indexOf(active);
+        thumb.style.width = (100 / btns.length) + '%';
+        thumb.style.transform = `translateX(${idx * 100}%)`;
+      }
+
+      document.querySelectorAll('.cz-seg[data-group]').forEach((seg) => {
+        const group = seg.dataset.group;
+        const btns = [...seg.querySelectorAll('[role="radio"]')];
+        function select(btn, focus) {
+          btns.forEach((b) => b.setAttribute('aria-checked', b === btn ? 'true' : 'false'));
+          moveThumb(seg);
+          const val = btn.dataset.val;
+          if (group === 'theme') { state.theme = val === 'system' ? 'dark' : val; retint(); }
+          else if (group === 'poster') { state.poster = val; applyPoster(); }
+          else if (group === 'shelf') { state.shelf = val; renderTopShelf(); retint(); }
+          else if (group === 'layout') { state.layout = val; applyLayout(); }
+          if (focus) btn.focus();
+        }
+        btns.forEach((btn, i) => {
+          btn.addEventListener('click', () => select(btn));
+          btn.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+              e.preventDefault(); select(btns[(i + 1) % btns.length], true);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+              e.preventDefault(); select(btns[(i - 1 + btns.length) % btns.length], true);
+            }
+          });
+        });
+        // set initial thumb
+        requestAnimationFrame(() => moveThumb(seg));
+      });
+
+      // Accent swatches
+      const accentGroup = document.getElementById('cz-accents');
+      const swatches = [...accentGroup.querySelectorAll('.cz-swatch[data-hex]')];
+      const colorInput = document.getElementById('cz-color');
+      function selectAccent(hex, fromSwatch) {
+        state.accent = hex;
+        retint();
+        swatches.forEach((s) => s.setAttribute('aria-checked', s.dataset.hex === hex ? 'true' : 'false'));
+        if (fromSwatch) colorInput.value = hex;
+      }
+      swatches.forEach((s, i) => {
+        s.addEventListener('click', () => selectAccent(s.dataset.hex, true));
+        s.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault(); const n = swatches[(i + 1) % swatches.length]; n.focus(); selectAccent(n.dataset.hex, true);
+          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault(); const n = swatches[(i - 1 + swatches.length) % swatches.length]; n.focus(); selectAccent(n.dataset.hex, true);
+          }
+        });
+      });
+      colorInput.addEventListener('input', () => {
+        swatches.forEach((s) => s.setAttribute('aria-checked', 'false'));
+        state.accent = colorInput.value;
+        retint();
+        document.querySelector('.cz-swatch-custom').setAttribute('data-active', 'true');
+      });
+
+      // Randomise
+      const RThemes = ['light', 'dark', 'black'];
+      const RPoster = ['xs', 's', 'm', 'l', 'xl'];
+      const RShelf = ['row', 'spotlight', 'hero'];
+      const RLayout = ['tabs', 'sidebar'];
+      function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+      document.getElementById('cz-random').addEventListener('click', () => {
+        const accent = presets[Math.floor(Math.random() * presets.length)].hex;
+        const theme = pick(RThemes), poster = pick(RPoster), shelf = pick(RShelf), layout = pick(RLayout);
+        // sync theme seg
+        syncSeg('theme', theme);
+        syncSeg('poster', poster);
+        syncSeg('shelf', shelf);
+        syncSeg('layout', layout);
+        selectAccent(accent, true);
+        state.theme = theme; state.poster = poster; state.shelf = shelf; state.layout = layout;
+        applyPoster(); renderTopShelf(); applyLayout(); retint();
+      });
+      function syncSeg(group, val) {
+        const seg = document.querySelector(`.cz-seg[data-group="${group}"]`);
+        seg.querySelectorAll('[role="radio"]').forEach((b) =>
+          b.setAttribute('aria-checked', b.dataset.val === val ? 'true' : 'false'));
+        moveThumb(seg);
+      }
+
+      // Pause carousel when preview off-screen (perf) & on hover-scrub
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              if (!reduced && (state.shelf === 'hero' || state.shelf === 'spotlight') && !carousel.timer) {
+                const count = 4;
+                carousel.timer = setInterval(() => {
+                  carousel.idx = (carousel.idx + 1) % count;
+                  setCarousel(topshelf, carousel.idx);
+                }, 4200);
+              }
+            } else {
+              stopCarousel();
+            }
+          });
+        }, { threshold: 0.15 }).observe(preview);
+      }
+
+      // ---- initial render -------------------------------------------------
+      renderChrome();
+      renderRail2();
+      applyPoster();
+      applyLayout();
+      renderTopShelf();
+      retint();
+    })();
+  </script>
+
+  <style>
+    /* ================================================================== */
+    /*  Layout: heading + two-column control/preview                       */
+    /* ================================================================== */
+    .cz-head { max-width: 62ch; margin-bottom: var(--space-7); }
+
+    .cz-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: clamp(var(--space-5), 4vw, var(--space-8));
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .cz-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ================================================================== */
+    /*  Control panel                                                      */
+    /* ================================================================== */
+    .cz-panel {
+      padding: clamp(var(--space-4), 3vw, var(--space-6));
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      position: sticky;
+      top: calc(var(--nav-height) + var(--space-4));
+    }
+    @media (max-width: 900px) { .cz-panel { position: static; } }
+
+    .cz-ctl { display: flex; flex-direction: column; gap: var(--space-3); }
+    .cz-ctl-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+    .cz-label { font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; color: var(--label); }
+    .cz-hint { font-size: 0.75rem; color: var(--label-tertiary); }
+
+    /* Accent swatches */
+    .cz-accents { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+    .cz-swatch {
+      position: relative;
+      width: 34px; height: 34px;
+      border-radius: var(--radius-pill);
+      border: 0; padding: 0; cursor: pointer;
+      display: grid; place-items: center;
+      background: transparent;
+      transition: transform var(--dur-fast) var(--ease-spring);
+    }
+    .cz-swatch:hover { transform: scale(1.12); }
+    .cz-swatch:active { transform: scale(0.96); }
+    .cz-swatch-dot {
+      width: 26px; height: 26px; border-radius: var(--radius-pill);
+      background: var(--sw);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.14);
+      transition: box-shadow var(--dur-fast) var(--ease-out);
+    }
+    .cz-swatch::before {
+      content: ''; position: absolute; inset: -3px;
+      border-radius: var(--radius-pill);
+      border: 2px solid var(--sw, var(--accent));
+      opacity: 0; transform: scale(0.8);
+      transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring);
+    }
+    .cz-swatch[aria-checked="true"]::before { opacity: 1; transform: scale(1); }
+    .cz-swatch[aria-checked="true"] .cz-swatch-dot { box-shadow: 0 2px 12px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.22); }
+
+    .cz-swatch-custom { overflow: hidden; }
+    .cz-custom-dot {
+      background:
+        conic-gradient(from 0deg,
+          #ff5f6d, #ffc371, #7ee8fa, #5fbf8a, #af52de, #ff5f6d);
+    }
+    .cz-swatch-custom input[type="color"] {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; border: 0; padding: 0;
+    }
+    .cz-swatch-custom[data-active="true"] .cz-custom-dot { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 1px rgba(255,255,255,0.22); }
+
+    /* Segmented controls */
+    .cz-seg {
+      position: relative;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: 0;
+      padding: 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      isolation: isolate;
+    }
+    .cz-seg > [role="radio"] {
+      position: relative; z-index: 1;
+      appearance: none; border: 0; background: transparent; cursor: pointer;
+      padding: 0.5em 0.35em;
+      font-family: var(--font-body); font-weight: 600; font-size: 0.8125rem;
+      color: var(--label-secondary);
+      border-radius: var(--radius-pill);
+      transition: color var(--dur) var(--ease-out);
+      white-space: nowrap;
+    }
+    .cz-seg > [role="radio"][aria-checked="true"] { color: rgb(6, 20, 13); }
+    .cz-seg-thumb {
+      position: absolute; z-index: 0;
+      top: 4px; bottom: 4px; left: 4px;
+      width: 25%;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.28);
+      transition: transform var(--dur) var(--ease-spring),
+        width var(--dur) var(--ease-out),
+        background-color var(--dur) var(--ease-out);
+    }
+
+    .cz-panel-foot { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-1); }
+    .cz-random { align-self: flex-start; }
+    .cz-random svg { transition: transform var(--dur) var(--ease-spring); }
+    .cz-random:hover svg { transform: rotate(180deg); }
+    .cz-panel-note { font-size: 0.75rem; color: var(--label-tertiary); margin: 0; }
+
+    /* ================================================================== */
+    /*  Device preview                                                     */
+    /* ================================================================== */
+    .cz-preview {
+      display: flex; justify-content: center; align-items: flex-start;
+      perspective: 1400px;
+      --frame-w: 300px;
+      --frame-h: 640px;
+    }
+    .cz-preview[data-layout="sidebar"] { --frame-w: 560px; --frame-h: 430px; }
+    @media (max-width: 480px) {
+      .cz-preview { --frame-w: 260px; --frame-h: 560px; }
+      .cz-preview[data-layout="sidebar"] { --frame-w: min(100%, 420px); --frame-h: 320px; }
+    }
+
+    .cz-device {
+      position: relative;
+      width: var(--frame-w); height: var(--frame-h);
+      max-width: 100%;
+      border-radius: 44px;
+      padding: 10px;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 40%),
+        rgb(8, 10, 12);
+      box-shadow:
+        0 0 0 1.5px rgba(255,255,255,0.08),
+        var(--shadow-lg),
+        0 40px 90px rgba(0,0,0,0.5);
+      transition: width var(--dur-slow) var(--ease-spring), height var(--dur-slow) var(--ease-spring), border-radius var(--dur) var(--ease-out);
+    }
+    .cz-preview[data-layout="sidebar"] .cz-device { border-radius: 30px; }
+
+    .cz-device-glow {
+      position: absolute; inset: -20% -10% -30%;
+      z-index: -1; pointer-events: none;
+      background: radial-gradient(60% 50% at 50% 30%, var(--accent-muted), transparent 70%);
+      filter: blur(40px); opacity: 0.55;
+      transition: background var(--dur) var(--ease-out);
+    }
+
+    .cz-stage {
+      position: relative;
+      width: 100%; height: 100%;
+      border-radius: 36px;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--label);
+      display: flex;
+      font-size: 13px;
+      transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+    }
+    .cz-preview[data-layout="sidebar"] .cz-stage { border-radius: 22px; }
+
+    /* Content column */
+    .cz-content { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+    /* Status bar */
+    .cz-statusbar {
+      position: relative; z-index: 6;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 22px 4px; height: 34px;
+      color: var(--label);
+      flex-shrink: 0;
+    }
+    .cz-clock { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+    .cz-island {
+      position: absolute; left: 50%; top: 9px; transform: translateX(-50%);
+      width: 78px; height: 21px; border-radius: 999px; background: #000;
+    }
+    .cz-preview[data-layout="sidebar"] .cz-island { display: none; }
+    .cz-status-glyphs { display: inline-flex; align-items: center; gap: 5px; }
+
+    /* Nav header */
+    .cz-navhead {
+      position: relative; z-index: 5;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 18px 10px; flex-shrink: 0;
+    }
+    .cz-navtitle { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--label); }
+    .cz-navavatar {
+      width: 26px; height: 26px; border-radius: 999px;
+      background: var(--accent-muted);
+      box-shadow: inset 0 0 0 1.5px var(--accent);
+    }
+
+    .cz-scroll { flex: 1; overflow: hidden; position: relative; }
+
+    /* ---- Shelves ---- */
+    .cz-shelf { padding: 12px 0 4px; }
+    .cz-shelf-head { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 8px; }
+    .cz-shelf-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--label); }
+    .cz-shelf-more { font-size: 11px; font-weight: 600; color: var(--accent); }
+    .cz-rail {
+      display: flex; gap: 10px; padding: 0 16px 4px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .cz-rail::-webkit-scrollbar { display: none; }
+
+    /* Poster cards */
+    .cz-poster {
+      position: relative; flex-shrink: 0;
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: var(--card);
+    }
+    .cz-rail--poster .cz-poster {
+      width: var(--poster-w, 84px);
+      aspect-ratio: 2 / 3;
+      transition: width var(--dur-slow) var(--ease-spring);
+    }
+    .cz-rail--fixed .cz-poster { width: 66px; aspect-ratio: 2 / 3; }
+    .cz-poster-art, .cz-poster-img { width: 100%; height: 100%; display: block; }
+    .cz-poster-art { display: grid; place-items: center; padding: 8%; }
+    .cz-poster-img { object-fit: cover; }
+    .cz-poster-logo { max-width: 88%; max-height: 60%; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5)); }
+    .cz-poster-t {
+      font-family: var(--font-display); font-weight: 700; font-size: 11px; line-height: 1.1;
+      color: #fff; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .cz-poster-prog {
+      position: absolute; left: 6px; right: 6px; bottom: 6px; height: 3px;
+      border-radius: 999px; background: rgba(0,0,0,0.45); overflow: hidden;
+    }
+    .cz-poster-prog-fill { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+
+    /* ---- Spotlight ---- */
+    .cz-spot { padding: 8px 16px 4px; }
+    .cz-spot-frame {
+      position: relative; width: 100%; aspect-ratio: 16 / 9;
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+    }
+    .cz-spot-slide {
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 0.55s var(--ease-in-out);
+    }
+    .cz-spot-slide.is-on { opacity: 1; }
+    .cz-spot-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .cz-spot-scrim {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.8));
+    }
+    .cz-spot-body {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      gap: 5px; padding: 0 14px 20px; text-align: center;
+    }
+    .cz-spot-logo.cz-logo-img { max-width: 55%; max-height: 40px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+    .cz-spot-logo.cz-logo-txt { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    .cz-spot-meta { font-size: 10.5px; color: rgba(255,255,255,0.85); font-weight: 600; }
+
+    /* ---- Hero ---- */
+    .cz-topshelf[data-empty] { display: none; }
+    .cz-hero {
+      position: relative;
+      /* bleed to very top, behind status bar */
+      margin-top: -46px;
+      padding-top: 46px;
+      aspect-ratio: 5 / 6;
+      max-height: 340px;
+    }
+    .cz-hero-slide {
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 0.6s var(--ease-in-out);
+    }
+    .cz-hero-slide.is-on { opacity: 1; }
+    .cz-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .cz-hero-fade {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(to bottom,
+          rgba(0,0,0,0.25) 0%,
+          transparent 22%,
+          transparent 40%,
+          var(--bg) 96%);
+    }
+    /* crisp top, blur toward bottom via layered backdrop */
+    .cz-hero::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 45%;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 70%);
+      mask-image: linear-gradient(to bottom, transparent, #000 70%);
+      pointer-events: none;
+    }
+    .cz-hero-body {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 0 16px 16px; text-align: center;
+    }
+    .cz-hero-slides-cap { position: relative; width: 100%; min-height: 54px; display: grid; place-items: end center; }
+    .cz-hero-cap {
+      grid-area: 1 / 1;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      opacity: 0; transition: opacity 0.6s var(--ease-in-out);
+    }
+    .cz-hero-cap.is-on { opacity: 1; }
+    .cz-hero-logo.cz-logo-img { max-width: 62%; max-height: 46px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); }
+    .cz-hero-logo.cz-logo-txt { font-family: var(--font-display); font-weight: 800; font-size: 24px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.7); }
+    .cz-hero-meta { font-size: 11px; color: rgba(255,255,255,0.88); font-weight: 600; }
+    .cz-hero-actions { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+    .cz-resume {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 18px; border-radius: 999px;
+      background: var(--accent); color: rgb(6,20,13);
+      font-weight: 700; font-size: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    .cz-shelf--hero-peek { padding-top: 6px; }
+
+    /* Dots */
+    .cz-dots { display: flex; gap: 5px; justify-content: center; }
+    .cz-spot-frame .cz-dots { position: absolute; left: 0; right: 0; bottom: 8px; z-index: 3; }
+    .cz-dot { width: 5px; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.4); transition: all var(--dur) var(--ease-out); }
+    .cz-dot.is-on { width: 16px; background: #fff; }
+    .cz-star { color: var(--accent); }
+
+    /* ---- Tab bar ---- */
+    .cz-tabbar {
+      position: relative; z-index: 5;
+      display: flex; align-items: center; justify-content: space-around;
+      padding: 8px 8px 14px;
+      background: var(--card);
+      border-top: 1px solid var(--separator);
+      flex-shrink: 0;
+      transition: background-color var(--dur) var(--ease-out);
+    }
+    .cz-tab {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      color: var(--label-secondary);
+      transition: color var(--dur) var(--ease-out);
+    }
+    .cz-tab svg { width: 20px; height: 20px; }
+    .cz-tab-lbl { font-size: 9.5px; font-weight: 600; }
+    .cz-tab.is-on { color: var(--accent); }
+
+    /* ---- Sidebar ---- */
+    .cz-sidebar {
+      display: none;
+      flex-direction: column; gap: 4px;
+      width: 176px; flex-shrink: 0;
+      padding: 16px 12px;
+      background: var(--bg-grouped);
+      border-right: 1px solid var(--separator);
+    }
+    .cz-preview[data-layout="sidebar"] .cz-sidebar { display: flex; }
+    .cz-sb-brand { display: flex; align-items: center; gap: 8px; padding: 4px 8px 14px; }
+    .cz-sb-dot { width: 20px; height: 20px; border-radius: 6px; background: var(--accent); }
+    .cz-sb-brandtxt { font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--label); }
+    .cz-sb-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+    .cz-sb-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 11px; border-radius: 10px;
+      color: var(--label-secondary); font-weight: 600; font-size: 13px;
+      transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+    }
+    .cz-sb-item svg { width: 19px; height: 19px; }
+    .cz-sb-item.is-on { background: var(--accent-subtle); color: var(--accent); }
+
+    /* In sidebar layout: hide the tab bar and the dynamic island; show sidebar */
+    .cz-preview[data-layout="sidebar"] .cz-tabbar { display: none; }
+
+    /* Hero hides nav header via JS (display:none). Guard status bar text colour
+       on light hero backdrops by keeping it label-driven. */
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .cz-device, .cz-rail--poster .cz-poster, .cz-seg-thumb,
+      .cz-swatch, .cz-spot-slide, .cz-hero-slide, .cz-hero-cap, .cz-dot,
+      .cz-random svg {
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
 </section>

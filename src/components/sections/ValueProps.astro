@@ -1,15 +1,713 @@
 ---
 /**
- * ValueProps — id="valueprops". STUB. Owned by the ValueProps section agent.
- * Will hold SharePlay + Apple-designed + Family/pay-once messaging.
+ * ValueProps — id="valueprops".
+ * Three confident value blocks presented as alternating feature rows:
+ *   1) SharePlay — watch together, perfectly in sync
+ *   2) Designed for Apple — native to every device
+ *   3) Pay once — buy it once, enjoy it everywhere (Family Sharing)
+ *
+ * Every visual is bespoke inline CSS/SVG, themed entirely via shared CSS vars
+ * so the whole section re-tints with the site accent. sampleFilms provides the
+ * SharePlay backdrop context (Cosmos Laundromat has real backdrop art).
  */
+import { sampleFilms } from '../../lib/sampleData.js';
+import Logo from '../Logo.astro';
+
+const backdropFilm = sampleFilms.find((f) => f.backdrop) ?? sampleFilms[0];
+const backdropSrc = backdropFilm.backdrop ? `/media/${backdropFilm.backdrop}` : null;
+
+const payFeatures = [
+  'One-time purchase',
+  'All your Apple devices',
+  'Family Sharing included',
+  'No subscriptions, ever',
+];
 ---
-<section class="section" id="valueprops">
+
+<section class="section vp" id="valueprops">
   <div class="container">
-    <p class="eyebrow">Why Pippin</p>
-    <h2 class="section-title">Value props — coming soon</h2>
-    <p class="section-subtitle">
-      This section will be built by the ValueProps section agent.
-    </p>
+    <header class="vp-head reveal">
+      <p class="eyebrow">Why Pippin</p>
+      <h2 class="section-title">Made to be lived with.</h2>
+      <p class="section-subtitle">
+        Watch together, feel at home on every Apple device, and pay for it just
+        once. The details that make Pippin a joy to own.
+      </p>
+    </header>
+
+    <!-- ============================ 1 · SHAREPLAY ======================= -->
+    <div class="vp-row reveal">
+      <div class="vp-copy">
+        <p class="vp-eyebrow">SharePlay</p>
+        <h3 class="h2 vp-title">Watch together, perfectly in sync.</h3>
+        <p class="vp-body">
+          Start a FaceTime SharePlay session and watch with friends and family —
+          across the room or across the world. Playback stays perfectly in sync,
+          everyone can play, pause and scrub, and it all happens right inside
+          Pippin.
+        </p>
+      </div>
+
+      <div class="vp-visual" aria-hidden="true">
+        <div class="glass vp-stage vp-stage--share">
+          <div
+            class="vp-backdrop"
+            style={backdropSrc ? `background-image:url('${backdropSrc}')` : `background-image:linear-gradient(135deg, ${backdropFilm.gradTop}, ${backdropFilm.gradBottom})`}
+          >
+          </div>
+          <div class="vp-scrim"></div>
+
+          <!-- FaceTime-ish glyph -->
+          <div class="vp-ft">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+              <rect x="1.5" y="5" width="13" height="14" rx="3.4"
+                fill="currentColor" opacity="0.14" stroke="currentColor" stroke-width="1.4" />
+              <path d="M15 10.4 21 7v10l-6-3.4Z"
+                fill="currentColor" opacity="0.9" />
+            </svg>
+            <span>FaceTime · SharePlay</span>
+          </div>
+
+          <!-- connected participant bubbles -->
+          <div class="vp-bubbles">
+            <span class="vp-line"></span>
+            <span class="vp-bubble vp-bubble--a">L</span>
+            <span class="vp-bubble vp-bubble--b">M</span>
+            <span class="vp-bubble vp-bubble--c">J</span>
+          </div>
+
+          <!-- synced playhead -->
+          <div class="vp-scrubber">
+            <span class="vp-track"><span class="vp-fill"></span></span>
+            <span class="vp-sync">In sync</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 2 · DESIGNED FOR APPLE ===================== -->
+    <div class="vp-row vp-row--reverse reveal" style="--reveal-delay:80ms">
+      <div class="vp-copy">
+        <p class="vp-eyebrow">Designed for Apple</p>
+        <h3 class="h2 vp-title">Native to every device you own.</h3>
+        <p class="vp-body">
+          Built entirely with SwiftUI to feel completely at home on iPhone,
+          iPad, Mac and Apple&nbsp;TV. Layouts adapt to each device — tabs on
+          iPhone, a roomy sidebar on Mac and TV — with deep system integration
+          throughout.
+        </p>
+        <ul class="vp-chips">
+          <li>Picture in Picture</li>
+          <li>AirPlay</li>
+          <li>Handoff</li>
+          <li>Widgets</li>
+          <li>Focus</li>
+          <li>System players</li>
+        </ul>
+      </div>
+
+      <div class="vp-visual" aria-hidden="true">
+        <div class="glass vp-stage vp-stage--devices">
+          <div class="vp-devices">
+            <!-- Mac -->
+            <div class="vp-dev vp-dev--mac">
+              <div class="vp-screen">
+                <span class="vp-ui vp-ui--sidebar"></span>
+                <span class="vp-ui vp-ui--grid"></span>
+              </div>
+              <span class="vp-stand"></span>
+              <span class="vp-label">Mac</span>
+            </div>
+            <!-- iPad -->
+            <div class="vp-dev vp-dev--ipad">
+              <div class="vp-screen">
+                <span class="vp-ui vp-ui--sidebar vp-ui--thin"></span>
+                <span class="vp-ui vp-ui--grid"></span>
+              </div>
+              <span class="vp-label">iPad</span>
+            </div>
+            <!-- iPhone -->
+            <div class="vp-dev vp-dev--iphone">
+              <div class="vp-screen">
+                <span class="vp-ui vp-ui--stack"></span>
+                <span class="vp-ui vp-ui--tabs"></span>
+              </div>
+              <span class="vp-label">iPhone</span>
+            </div>
+            <!-- Apple TV -->
+            <div class="vp-dev vp-dev--tv">
+              <div class="vp-screen">
+                <span class="vp-ui vp-ui--hero"></span>
+                <span class="vp-ui vp-ui--rail"></span>
+              </div>
+              <span class="vp-tvbase"></span>
+              <span class="vp-label">Apple&nbsp;TV</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= 3 · PAY ONCE ========================== -->
+    <div class="vp-row reveal" style="--reveal-delay:80ms">
+      <div class="vp-copy">
+        <p class="vp-eyebrow">Pay once</p>
+        <h3 class="h2 vp-title">Buy it once. Enjoy it everywhere.</h3>
+        <p class="vp-body">
+          A single one-time purchase unlocks Pippin on all of your devices —
+          iPhone, iPad, Mac and Apple&nbsp;TV. And with Family Sharing, your
+          whole household is covered. No subscriptions. No add-ons. Just yours.
+        </p>
+        <ul class="vp-checklist">
+          {payFeatures.map((f) => (
+            <li>
+              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+                <circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.16" />
+                <path d="M6 10.2 8.8 13 14 7.4" fill="none"
+                  stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+        <a class="btn btn-primary vp-cta" href="#" aria-label="Download Pippin on the App Store">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M16.4 12.7c0-2 1.6-3 1.7-3-.9-1.4-2.4-1.5-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 6 1 8 .7 1 1.4 2 2.4 2 1 0 1.3-.6 2.5-.6 1.1 0 1.5.6 2.5.6 1 0 1.7-1 2.3-2 .7-1.1 1-2.2 1-2.3-.1 0-2-.8-2.1-3.1ZM14.5 6.7c.5-.7.9-1.6.8-2.6-.8 0-1.8.5-2.4 1.2-.5.6-1 1.6-.8 2.5.9.1 1.8-.4 2.4-1.1Z"/>
+          </svg>
+          <span>Download on the App&nbsp;Store</span>
+        </a>
+      </div>
+
+      <div class="vp-visual" aria-hidden="true">
+        <div class="glass vp-stage vp-stage--pay">
+          <!-- one glowing badge fanning out to devices + family -->
+          <div class="vp-fan">
+            <div class="vp-badge">
+              <Logo class="vp-badge-logo" size={30} color="var(--accent)" />
+              <span class="vp-badge-tick">
+                <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
+                  <path d="M5 10.4 8.4 14 15 6.6" fill="none"
+                    stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </div>
+
+            <div class="vp-rays">
+              <span class="vp-ray vp-ray--1"></span>
+              <span class="vp-ray vp-ray--2"></span>
+              <span class="vp-ray vp-ray--3"></span>
+              <span class="vp-ray vp-ray--4"></span>
+            </div>
+
+            <div class="vp-targets">
+              <span class="vp-target">iPhone</span>
+              <span class="vp-target">iPad</span>
+              <span class="vp-target">Mac</span>
+              <span class="vp-target">Apple&nbsp;TV</span>
+            </div>
+
+            <div class="vp-family">
+              <span class="vp-avatar">A</span>
+              <span class="vp-avatar">B</span>
+              <span class="vp-avatar">C</span>
+              <span class="vp-avatar vp-avatar--more">+</span>
+              <span class="vp-family-label">Family Sharing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+<style>
+  .vp {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .vp-head {
+    max-width: 44ch;
+    margin-bottom: var(--space-9);
+  }
+
+  /* ------------------------------------------------------ feature row */
+  .vp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-8) 0;
+  }
+  .vp-row + .vp-row {
+    border-top: 1px solid var(--hairline);
+  }
+  .vp-row--reverse .vp-copy {
+    order: 2;
+  }
+  .vp-row--reverse .vp-visual {
+    order: 1;
+  }
+
+  .vp-copy {
+    max-width: 46ch;
+  }
+  .vp-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 var(--space-3);
+  }
+  .vp-title {
+    margin: 0 0 var(--space-4);
+    color: var(--label);
+  }
+  .vp-body {
+    margin: 0;
+    color: var(--label-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  /* ------------------------------------------------------ chips list */
+  .vp-chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+  }
+  .vp-chips li {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--label-secondary);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+  }
+
+  /* ------------------------------------------------------ checklist */
+  .vp-checklist {
+    list-style: none;
+    margin: var(--space-5) 0 var(--space-6);
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .vp-checklist li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--label);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  .vp-checklist svg {
+    flex: none;
+    color: var(--accent);
+  }
+
+  .vp-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  /* ====================================================== visual stage */
+  .vp-visual {
+    display: flex;
+    justify-content: center;
+  }
+  .vp-stage {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* ---------------- SharePlay stage --------------- */
+  .vp-stage--share {
+    color: var(--accent);
+  }
+  .vp-backdrop {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.04);
+  }
+  .vp-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 90% at 50% 0%, transparent, var(--bg) 130%),
+      linear-gradient(to top, var(--bg) 4%, transparent 60%);
+    opacity: 0.9;
+  }
+  .vp-ft {
+    position: absolute;
+    top: var(--space-4);
+    left: var(--space-4);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    color: var(--label);
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(12px);
+  }
+  .vp-ft svg { color: var(--accent); }
+
+  .vp-bubbles {
+    position: absolute;
+    top: 46%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+  .vp-line {
+    position: absolute;
+    top: 50%;
+    left: 22%;
+    right: 22%;
+    height: 2px;
+    background: linear-gradient(to right,
+      transparent, var(--accent-muted), transparent);
+    opacity: 0.6;
+  }
+  .vp-bubble {
+    position: relative;
+    z-index: 1;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--label);
+    background: var(--glass-strong);
+    border: 1.5px solid var(--glass-border);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
+  }
+  .vp-bubble--b {
+    width: 62px;
+    height: 62px;
+    border-color: var(--accent);
+    box-shadow: var(--shadow-glow);
+    color: var(--accent);
+  }
+
+  .vp-scrubber {
+    position: absolute;
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .vp-track {
+    position: relative;
+    flex: 1;
+    height: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-border);
+    overflow: hidden;
+  }
+  .vp-fill {
+    position: absolute;
+    inset: 0;
+    width: 58%;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    box-shadow: var(--shadow-glow);
+  }
+  .vp-sync {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* ---------------- Devices stage --------------- */
+  .vp-stage--devices {
+    display: grid;
+    place-items: center;
+    padding: var(--space-6);
+    background:
+      radial-gradient(90% 70% at 50% 30%, var(--accent-subtle), transparent 70%),
+      var(--glass);
+  }
+  .vp-devices {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: var(--space-3);
+    width: 100%;
+  }
+  .vp-dev {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .vp-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--label-tertiary);
+    letter-spacing: 0.02em;
+  }
+  .vp-screen {
+    position: relative;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--glass-border);
+    overflow: hidden;
+    display: flex;
+  }
+  .vp-ui { display: block; }
+
+  /* Mac */
+  .vp-dev--mac .vp-screen {
+    width: 132px;
+    height: 84px;
+    border-radius: 8px 8px 2px 2px;
+  }
+  .vp-stand {
+    width: 34px;
+    height: 8px;
+    border-radius: 0 0 4px 4px;
+    background: var(--glass-border);
+  }
+  /* iPad */
+  .vp-dev--ipad .vp-screen {
+    width: 82px;
+    height: 104px;
+    border-radius: 8px;
+  }
+  /* iPhone */
+  .vp-dev--iphone .vp-screen {
+    width: 46px;
+    height: 96px;
+    border-radius: 10px;
+    flex-direction: column;
+  }
+  /* Apple TV */
+  .vp-dev--tv .vp-screen {
+    width: 120px;
+    height: 72px;
+    border-radius: 8px;
+    flex-direction: column;
+  }
+  .vp-tvbase {
+    width: 46px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--glass-border);
+  }
+
+  /* UI hints inside screens */
+  .vp-ui--sidebar {
+    width: 26%;
+    background: linear-gradient(var(--accent-muted), var(--accent-subtle));
+    border-right: 1px solid var(--glass-border);
+  }
+  .vp-ui--sidebar.vp-ui--thin { width: 22%; }
+  .vp-ui--grid {
+    flex: 1;
+    background:
+      repeating-linear-gradient(90deg,
+        var(--accent-subtle) 0 30%, transparent 30% 38%),
+      repeating-linear-gradient(0deg,
+        var(--card) 0 44%, transparent 44% 56%);
+    opacity: 0.85;
+  }
+  .vp-ui--stack {
+    flex: 1;
+    margin: 6px;
+    border-radius: 4px;
+    background:
+      repeating-linear-gradient(0deg,
+        var(--card) 0 30%, transparent 30% 42%);
+  }
+  .vp-ui--tabs {
+    height: 14px;
+    background: var(--accent-subtle);
+    border-top: 1px solid var(--glass-border);
+    box-shadow: inset 0 2px 0 var(--accent-muted);
+  }
+  .vp-ui--hero {
+    height: 58%;
+    background: linear-gradient(120deg, var(--accent-muted), var(--accent-subtle));
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .vp-ui--rail {
+    flex: 1;
+    background:
+      repeating-linear-gradient(90deg,
+        var(--card) 0 26%, transparent 26% 32%);
+  }
+
+  /* ---------------- Pay-once stage --------------- */
+  .vp-stage--pay {
+    display: grid;
+    place-items: center;
+    padding: var(--space-6);
+    background:
+      radial-gradient(80% 70% at 50% 40%, var(--accent-subtle), transparent 72%),
+      var(--glass);
+  }
+  .vp-fan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    width: 100%;
+  }
+  .vp-badge {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    border-radius: var(--radius-lg);
+    display: grid;
+    place-items: center;
+    background: var(--glass-strong);
+    border: 1.5px solid var(--accent);
+    box-shadow: var(--shadow-glow);
+  }
+  .vp-badge-logo { color: var(--accent); }
+  .vp-badge-tick {
+    position: absolute;
+    right: -8px;
+    bottom: -8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--accent);
+    color: var(--bg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .vp-rays {
+    position: absolute;
+    top: 76px;
+    left: 50%;
+    width: 1px;
+    height: 44px;
+    transform: translateX(-50%);
+  }
+  .vp-ray {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 44px;
+    width: 2px;
+    background: linear-gradient(var(--accent), transparent);
+    transform-origin: top center;
+    opacity: 0.55;
+  }
+  .vp-ray--1 { transform: translateX(-50%) rotate(-34deg); }
+  .vp-ray--2 { transform: translateX(-50%) rotate(-12deg); }
+  .vp-ray--3 { transform: translateX(-50%) rotate(12deg); }
+  .vp-ray--4 { transform: translateX(-50%) rotate(34deg); }
+
+  .vp-targets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+  .vp-target {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--label-secondary);
+    padding: 6px var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+  }
+
+  .vp-family {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+  }
+  .vp-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--label);
+    background: var(--accent-muted);
+    border: 1.5px solid var(--card);
+    margin-right: -10px;
+  }
+  .vp-avatar--more {
+    color: var(--accent);
+    background: var(--accent-subtle);
+  }
+  .vp-family-label {
+    margin-left: var(--space-3);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--label-secondary);
+  }
+
+  /* ====================================================== responsive */
+  @media (max-width: 860px) {
+    .vp-row,
+    .vp-row--reverse {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+    .vp-row--reverse .vp-copy { order: 1; }
+    .vp-row--reverse .vp-visual { order: 2; }
+    .vp-copy { max-width: none; }
+    .vp-stage { max-width: 460px; aspect-ratio: 16 / 11; }
+  }
+
+  @media (max-width: 480px) {
+    .vp-devices { gap: var(--space-2); }
+    .vp-dev--mac .vp-screen { width: 108px; height: 68px; }
+    .vp-dev--tv .vp-screen { width: 96px; height: 58px; }
+    .vp-dev--ipad .vp-screen { width: 66px; height: 84px; }
+    .vp-dev--iphone .vp-screen { width: 38px; height: 80px; }
+    .vp-bubble { width: 44px; height: 44px; font-size: 0.9rem; }
+    .vp-bubble--b { width: 52px; height: 52px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vp-backdrop { transform: none; }
+  }
+</style>

@@ -1,15 +1,1024 @@
 ---
 /**
- * Hero — id="top". STUB. Owned by the Hero section agent.
- * Keep the outer <section class="section" id="top"> shell.
+ * Hero — id="top". The first impression: a cinematic Emerald Depths hero with
+ * floating CSS device mockups (iPhone Home + Mac window) recreating Pippin's UI.
+ * Owned by the Hero section agent.
  */
+import Logo from '../Logo.astro';
+import { sampleFilms } from '../../lib/sampleData.js';
+
+// Pick a spread of films for the procedural cards.
+const backdropFilm = sampleFilms.find((f) => f.id === 'cosmos-laundromat');
+const phoneShelf = sampleFilms.filter((f) =>
+  ['sintel', 'tears-of-steel', 'agent-327', 'elephants-dream'].includes(f.id)
+);
+const macGrid = sampleFilms.slice(0, 6);
+
+// Small helper: a genre/year line.
+const genreLine = (f) => `${f.genres[0]} · ${f.year}`;
 ---
-<section class="section" id="top">
-  <div class="container">
-    <p class="eyebrow">Hero</p>
-    <h2 class="section-title">Hero — coming soon</h2>
-    <p class="section-subtitle">
-      This section will be built by the Hero section agent.
-    </p>
+
+<section class="section hero" id="top">
+  <!-- Animated Emerald Depths ambience -->
+  <div class="hero-ambience" aria-hidden="true">
+    <span class="aurora aurora-a"></span>
+    <span class="aurora aurora-b"></span>
+    <span class="aurora aurora-c"></span>
+    <span class="hero-grain"></span>
+    <span class="hero-vignette"></span>
+  </div>
+
+  <div class="container hero-grid">
+    <!-- Copy column -->
+    <div class="hero-copy">
+      <p class="eyebrow reveal">Plex &amp; Jellyfin · Reimagined</p>
+
+      <h1 class="hero-title reveal" style="--reveal-delay:80ms">
+        The media client you'll<br />
+        <span class="hero-accent">actually want to open.</span>
+      </h1>
+
+      <p class="hero-sub reveal" style="--reveal-delay:160ms">
+        A ruthlessly polished, endlessly customisable client for Plex and
+        Jellyfin — powered by an MPVKit player that plays <em>anything</em>.
+        Native to iPhone, iPad, Mac and Apple TV, with SharePlay, Seerr,
+        Sonarr &amp; Radarr built in. Pay once, share with your family.
+      </p>
+
+      <div class="hero-cta reveal" style="--reveal-delay:240ms">
+        <a
+          class="appstore-badge"
+          href="#"
+          aria-label="Download Pippin on the App Store"
+        >
+          <svg
+            class="appstore-apple"
+            viewBox="0 0 384 512"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              fill="currentColor"
+              d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
+            ></path>
+          </svg>
+          <span class="appstore-text">
+            <span class="appstore-line1">Download on the</span>
+            <span class="appstore-line2">App Store</span>
+          </span>
+        </a>
+
+        <a class="btn btn-ghost hero-ghost" href="#customise">See it your way</a>
+      </div>
+
+      <div class="hero-platforms reveal" style="--reveal-delay:320ms">
+        <p class="hero-devices">iPhone · iPad · Mac · Apple TV</p>
+        <p class="hero-works">
+          <span class="hero-dot" aria-hidden="true"></span>
+          Works with Plex &amp; Jellyfin
+        </p>
+      </div>
+    </div>
+
+    <!-- Device composition -->
+    <div class="hero-stage reveal" style="--reveal-delay:200ms" aria-hidden="true">
+      <div class="stage-inner" data-parallax>
+        <!-- Apple TV / depth hint behind -->
+        <div class="depth-slab" data-depth="0.3"></div>
+
+        <!-- Mac window -->
+        <div class="mac" data-depth="0.6">
+          <div class="mac-frame glass">
+            <div class="mac-bar">
+              <span class="dot dot-r"></span>
+              <span class="dot dot-y"></span>
+              <span class="dot dot-g"></span>
+              <span class="mac-title">Pippin</span>
+            </div>
+            <div class="mac-body">
+              <aside class="mac-side">
+                <div class="mac-brand">
+                  <Logo size={16} color="var(--accent)" />
+                  <span>Library</span>
+                </div>
+                <button class="side-row is-active" type="button">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="currentColor"
+                      d="M12 3 3 10.2V21h6v-6h6v6h6V10.2z"
+                    ></path></svg
+                  >Home
+                </button>
+                <button class="side-row" type="button">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="currentColor"
+                      d="M4 4h16v16H4zM4 8h16M8 4v16"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      fill="none"
+                    ></path></svg
+                  >Movies
+                </button>
+                <button class="side-row" type="button">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      d="M3 5h18v11H3zM8 20h8M12 16v4"
+                    ></path></svg
+                  >TV Shows
+                </button>
+                <button class="side-row" type="button">
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      d="M12 3v11m0 0 4-4m-4 4-4-4M4 19h16"
+                    ></path></svg
+                  >Downloads
+                </button>
+              </aside>
+              <div class="mac-content">
+                <div class="mac-grid">
+                  {
+                    macGrid.map((f) => (
+                      <div
+                        class="pcard"
+                        style={`--gt:${f.gradTop};--gb:${f.gradBottom}`}
+                      >
+                        {f.logo ? (
+                          <img
+                            class="pcard-logo"
+                            src={`/media/${f.logo}`}
+                            alt=""
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span class="pcard-title">{f.title}</span>
+                        )}
+                        <span class="pcard-meta">{genreLine(f)}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- iPhone -->
+        <div class="phone" data-depth="1">
+          <div class="phone-frame">
+            <span class="phone-island"></span>
+            <div class="phone-screen">
+              <!-- Hero backdrop -->
+              <div class="ph-hero">
+                <img
+                  class="ph-backdrop"
+                  src={`/media/${backdropFilm.backdrop}`}
+                  alt=""
+                  loading="lazy"
+                />
+                <div class="ph-scrim"></div>
+                <div class="ph-hero-text">
+                  <span class="ph-hero-title">Cosmos Laundromat</span>
+                  <span class="ph-hero-meta">Comedy · Fantasy</span>
+                  <span class="ph-resume">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"
+                      ><path fill="currentColor" d="M8 5v14l11-7z"></path></svg
+                    >Resume
+                  </span>
+                </div>
+              </div>
+
+              <!-- Continue Watching shelf -->
+              <div class="ph-shelf">
+                <span class="ph-shelf-title">Continue Watching</span>
+                <div class="ph-rail">
+                  {
+                    phoneShelf.map((f) => (
+                      <div
+                        class="pcard pcard-sm"
+                        style={`--gt:${f.gradTop};--gb:${f.gradBottom}`}
+                      >
+                        {f.logo ? (
+                          <img
+                            class="pcard-logo"
+                            src={`/media/${f.logo}`}
+                            alt=""
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span class="pcard-title">{f.title}</span>
+                        )}
+                        <span class="pcard-prog">
+                          <span style={`width:${35 + f.rating * 6}%`}></span>
+                        </span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+
+              <!-- Tab bar -->
+              <div class="ph-tabs">
+                <span class="ph-tab is-active">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="currentColor"
+                      d="M12 3 3 10.2V21h6v-6h6v6h6V10.2z"
+                    ></path></svg
+                  >Home
+                </span>
+                <span class="ph-tab">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      d="M4 5h16v14H4zM4 9h16M8 5v14"
+                    ></path></svg
+                  >Movies
+                </span>
+                <span class="ph-tab">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      d="M3 5h18v11H3zM8 20h8"
+                    ></path></svg
+                  >TV
+                </span>
+                <span class="ph-tab">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"
+                    ><path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      d="M12 3v11m0 0 4-4m-4 4-4-4M4 19h16"
+                    ></path></svg
+                  >Get
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accent glow puddle under devices -->
+        <div class="stage-glow"></div>
+      </div>
+    </div>
   </div>
 </section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding-top: calc(var(--nav-height, 64px) + var(--space-9, 5rem));
+    padding-bottom: var(--space-10, 6rem);
+    isolation: isolate;
+  }
+
+  /* ---------- Ambience ---------- */
+  .hero-ambience {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .aurora {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.5;
+    will-change: transform;
+  }
+  .aurora-a {
+    width: 60vw;
+    height: 60vw;
+    max-width: 720px;
+    max-height: 720px;
+    top: -12%;
+    left: -8%;
+    background: radial-gradient(circle, var(--accent-muted), transparent 68%);
+    animation: drift-a 26s ease-in-out infinite alternate;
+  }
+  .aurora-b {
+    width: 55vw;
+    height: 55vw;
+    max-width: 640px;
+    max-height: 640px;
+    top: 8%;
+    right: -14%;
+    background: radial-gradient(
+      circle,
+      var(--emerald-depths, var(--accent-subtle)),
+      transparent 66%
+    );
+    opacity: 0.65;
+    animation: drift-b 32s ease-in-out infinite alternate;
+  }
+  .aurora-c {
+    width: 48vw;
+    height: 48vw;
+    max-width: 560px;
+    max-height: 560px;
+    bottom: -18%;
+    left: 24%;
+    background: radial-gradient(circle, var(--accent-subtle), transparent 70%);
+    animation: drift-c 38s ease-in-out infinite alternate;
+  }
+  .hero-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+  .hero-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      120% 90% at 50% 8%,
+      transparent 40%,
+      var(--bg, #05100c) 100%
+    );
+  }
+
+  @keyframes drift-a {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(6%, 5%, 0) scale(1.12);
+    }
+  }
+  @keyframes drift-b {
+    from {
+      transform: translate3d(0, 0, 0) scale(1.05);
+    }
+    to {
+      transform: translate3d(-7%, 4%, 0) scale(1);
+    }
+  }
+  @keyframes drift-c {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(4%, -6%, 0) scale(1.1);
+    }
+  }
+
+  /* ---------- Layout ---------- */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: var(--space-8, 4rem);
+    align-items: center;
+  }
+
+  .hero-copy {
+    max-width: 34rem;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 5.4vw, 4rem);
+    line-height: 1.03;
+    letter-spacing: -0.025em;
+    color: var(--label);
+    margin: var(--space-3, 0.75rem) 0 0;
+  }
+  .hero-accent {
+    background: linear-gradient(
+      100deg,
+      var(--accent) 0%,
+      color-mix(in oklab, var(--accent) 60%, var(--label)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero-sub {
+    margin-top: var(--space-4, 1.25rem);
+    font-size: clamp(1rem, 1.35vw, 1.18rem);
+    line-height: 1.6;
+    color: var(--label-secondary);
+  }
+  .hero-sub em {
+    font-style: italic;
+    color: var(--label);
+  }
+
+  /* ---------- CTAs ---------- */
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3, 0.9rem);
+    margin-top: var(--space-6, 2rem);
+  }
+
+  .appstore-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.62rem 1.15rem 0.62rem 1rem;
+    border-radius: var(--radius-lg, 20px);
+    background: var(--label);
+    color: var(--bg);
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    transition:
+      transform var(--dur, 0.24s) var(--ease-out),
+      box-shadow var(--dur, 0.24s) var(--ease-out);
+  }
+  .appstore-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+  }
+  .appstore-badge:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .appstore-apple {
+    width: 26px;
+    height: 26px;
+  }
+  .appstore-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    text-align: left;
+  }
+  .appstore-line1 {
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
+    opacity: 0.8;
+  }
+  .appstore-line2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 2px;
+  }
+
+  .hero-ghost {
+    padding: 0.72rem 1.3rem;
+  }
+
+  /* ---------- Platforms ---------- */
+  .hero-platforms {
+    margin-top: var(--space-6, 2rem);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+  }
+  .hero-devices {
+    font-weight: 600;
+    color: var(--label);
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+  }
+  .hero-works {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--label-secondary);
+  }
+  .hero-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  /* ---------- Stage ---------- */
+  .hero-stage {
+    position: relative;
+    min-height: 480px;
+    perspective: 1400px;
+  }
+  .stage-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    transform-style: preserve-3d;
+  }
+
+  .depth-slab {
+    position: absolute;
+    top: 4%;
+    right: 2%;
+    width: 62%;
+    height: 68%;
+    border-radius: var(--radius-xl, 28px);
+    background: linear-gradient(
+      150deg,
+      var(--glass-strong, rgba(255, 255, 255, 0.06)),
+      transparent 70%
+    );
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+    transform: translateZ(-60px) rotate(4deg);
+    opacity: 0.55;
+    will-change: transform;
+  }
+
+  .stage-glow {
+    position: absolute;
+    left: 50%;
+    bottom: 2%;
+    width: 78%;
+    height: 120px;
+    transform: translateX(-50%);
+    background: radial-gradient(
+      ellipse at center,
+      var(--accent-muted),
+      transparent 70%
+    );
+    filter: blur(30px);
+    opacity: 0.6;
+    z-index: -1;
+  }
+
+  /* ---------- Mac window ---------- */
+  .mac {
+    position: absolute;
+    top: 6%;
+    right: -2%;
+    width: 74%;
+    will-change: transform;
+    animation: float-mac 9s ease-in-out infinite;
+  }
+  .mac-frame {
+    border-radius: var(--radius-lg, 20px);
+    overflow: hidden;
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+    box-shadow: var(--shadow-lg);
+    background: var(--bg-secondary);
+  }
+  .mac-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    background: var(--glass, rgba(255, 255, 255, 0.04));
+    border-bottom: 1px solid var(--hairline, rgba(255, 255, 255, 0.06));
+    position: relative;
+  }
+  .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+  .dot-r {
+    background: #ff5f57;
+  }
+  .dot-y {
+    background: #febc2e;
+  }
+  .dot-g {
+    background: #28c840;
+  }
+  .mac-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--label-secondary);
+  }
+  .mac-body {
+    display: grid;
+    grid-template-columns: 34% 1fr;
+    min-height: 220px;
+  }
+  .mac-side {
+    padding: 0.8rem 0.65rem;
+    background: var(--bg-grouped, rgba(255, 255, 255, 0.02));
+    border-right: 1px solid var(--hairline, rgba(255, 255, 255, 0.06));
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mac-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--label-secondary);
+    margin-bottom: 0.6rem;
+    padding-left: 4px;
+  }
+  .side-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm, 8px);
+    font-size: 0.78rem;
+    color: var(--label-secondary);
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: default;
+    font-family: inherit;
+  }
+  .side-row .ico {
+    width: 15px;
+    height: 15px;
+    flex: none;
+  }
+  .side-row.is-active {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .mac-content {
+    padding: 0.85rem;
+  }
+  .mac-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.55rem;
+  }
+
+  /* ---------- Procedural film cards ---------- */
+  .pcard {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    border-radius: 10px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--gt), var(--gb));
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 8px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pcard::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.6),
+      transparent 55%
+    );
+  }
+  .pcard-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 74%;
+    max-height: 46%;
+    object-fit: contain;
+    transform: translate(-50%, -60%);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+  }
+  .pcard-title {
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  }
+  .pcard-meta {
+    position: relative;
+    font-size: 0.58rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 2px;
+  }
+
+  .pcard-sm {
+    width: 78px;
+    flex: none;
+    padding: 6px;
+  }
+  .pcard-prog {
+    position: relative;
+    display: block;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+  }
+  .pcard-prog > span {
+    position: absolute;
+    inset: 0;
+    right: auto;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ---------- iPhone ---------- */
+  .phone {
+    position: absolute;
+    left: -1%;
+    bottom: 0;
+    width: 42%;
+    max-width: 250px;
+    z-index: 2;
+    will-change: transform;
+    animation: float-phone 8s ease-in-out infinite;
+  }
+  .phone-frame {
+    position: relative;
+    aspect-ratio: 9 / 19.3;
+    border-radius: 44px;
+    padding: 8px;
+    background: linear-gradient(160deg, #23262b, #0c0d10);
+    box-shadow:
+      var(--shadow-lg),
+      0 0 60px var(--accent-muted);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .phone-island {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32%;
+    height: 16px;
+    border-radius: 10px;
+    background: #000;
+    z-index: 3;
+  }
+  .phone-screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 37px;
+    overflow: hidden;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ph-hero {
+    position: relative;
+    height: 40%;
+    flex: none;
+  }
+  .ph-backdrop {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ph-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      var(--bg) 2%,
+      rgba(0, 0, 0, 0.15) 55%,
+      transparent
+    );
+  }
+  .ph-hero-text {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .ph-hero-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  }
+  .ph-hero-meta {
+    font-size: 0.58rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .ph-resume {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+    margin-top: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill, 999px);
+    background: var(--accent);
+    color: #06130d;
+    font-size: 0.62rem;
+    font-weight: 700;
+  }
+  .ph-resume svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .ph-shelf {
+    flex: 1;
+    padding: 10px 0 8px 12px;
+    min-height: 0;
+  }
+  .ph-shelf-title {
+    font-size: 0.64rem;
+    font-weight: 700;
+    color: var(--label);
+    letter-spacing: 0.01em;
+  }
+  .ph-rail {
+    display: flex;
+    gap: 7px;
+    margin-top: 7px;
+    overflow: hidden;
+  }
+
+  .ph-tabs {
+    flex: none;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 4px));
+    background: var(--glass-strong, rgba(20, 20, 20, 0.6));
+    border-top: 1px solid var(--hairline, rgba(255, 255, 255, 0.06));
+    backdrop-filter: blur(8px);
+  }
+  .ph-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.5rem;
+    color: var(--label-tertiary, rgba(255, 255, 255, 0.4));
+  }
+  .ph-tab svg {
+    width: 17px;
+    height: 17px;
+  }
+  .ph-tab.is-active {
+    color: var(--accent);
+  }
+
+  /* ---------- Float animations ---------- */
+  @keyframes float-mac {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes float-phone {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(10px);
+    }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 980px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-6, 2.5rem);
+      text-align: center;
+    }
+    .hero-copy {
+      max-width: 40rem;
+      margin: 0 auto;
+    }
+    .hero-cta,
+    .hero-platforms {
+      justify-content: center;
+    }
+    .hero-stage {
+      min-height: 420px;
+      margin-top: var(--space-2, 0.5rem);
+    }
+    .stage-inner {
+      min-height: 420px;
+    }
+    .mac {
+      width: 72%;
+      right: 0;
+    }
+    .phone {
+      width: 40%;
+      max-width: 230px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hero {
+      padding-top: calc(var(--nav-height, 64px) + var(--space-7, 3rem));
+    }
+    .hero-title br {
+      display: none;
+    }
+    .hero-stage {
+      min-height: 380px;
+    }
+    .stage-inner {
+      min-height: 380px;
+      transform: scale(0.95);
+    }
+    .mac {
+      width: 82%;
+      top: 2%;
+    }
+    .phone {
+      width: 46%;
+      left: -2%;
+    }
+    .appstore-badge,
+    .hero-ghost {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .stage-inner {
+      transform: scale(0.88);
+    }
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .aurora,
+    .mac,
+    .phone {
+      animation: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Pointer parallax for the device stage (desktop / fine pointer only).
+  (() => {
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    const finePointer = window.matchMedia('(pointer: fine)').matches;
+    if (reduce || !finePointer) return;
+
+    const stage = document.querySelector('.hero-stage');
+    const inner = stage?.querySelector('[data-parallax]');
+    if (!stage || !inner) return;
+
+    const layers = Array.from(
+      inner.querySelectorAll('[data-depth]')
+    ) as HTMLElement[];
+
+    let raf = 0;
+    let tx = 0;
+    let ty = 0;
+    let cx = 0;
+    let cy = 0;
+
+    const apply = () => {
+      cx += (tx - cx) * 0.08;
+      cy += (ty - cy) * 0.08;
+      for (const el of layers) {
+        const d = parseFloat(el.dataset.depth || '0.5');
+        // `translate` is independent of the CSS float `transform`, so the two
+        // compose without fighting each other.
+        el.style.translate = `${cx * d * 18}px ${cy * d * 14}px`;
+      }
+      if (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001) {
+        raf = requestAnimationFrame(apply);
+      } else {
+        raf = 0;
+      }
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const r = stage.getBoundingClientRect();
+      tx = (e.clientX - (r.left + r.width / 2)) / r.width;
+      ty = (e.clientY - (r.top + r.height / 2)) / r.height;
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+
+    const onLeave = () => {
+      tx = 0;
+      ty = 0;
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+
+    stage.addEventListener('pointermove', onMove);
+    stage.addEventListener('pointerleave', onLeave);
+  })();
+</script>

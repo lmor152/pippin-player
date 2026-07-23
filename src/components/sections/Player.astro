@@ -1,14 +1,741 @@
 ---
 /**
- * Player — id="player". STUB. Owned by the Player section agent.
+ * Player — id="player". Owned by the Player section agent.
+ *
+ * Sells Pippin's standout MPVKit-based player: a realistic player UI mock
+ * centrepiece (interactive thumbnail-scrubbing), supporting capability cards,
+ * and an auto-scrolling "format wall" of codec/format chips.
  */
+
+// Supporting capability cards — each with an inline-SVG icon key.
+const capabilities = [
+  {
+    icon: 'film',
+    title: 'Plays anything',
+    body: 'HEVC / H.265, H.264, AV1, VP9 and MPEG-2 — inside MKV, MP4, MOV, TS or full ISO / BDMV. If it exists in your library, it plays.',
+  },
+  {
+    icon: 'hdr',
+    title: 'HDR done right',
+    body: 'HDR10, HDR10+, Dolby Vision and HLG, with proper tone-mapping so highlights and shadows land exactly as the colourist intended.',
+  },
+  {
+    icon: 'audio',
+    title: 'Lossless audio & passthrough',
+    body: 'Dolby Atmos, Dolby Digital+, DTS-HD and TrueHD. Multi-channel bitstreaming straight to your receiver, untouched.',
+  },
+  {
+    icon: 'subtitles',
+    title: 'Subtitles that look right',
+    body: 'PGS and VOBSUB image subs, SRT, and full ASS / SSA styling. Load external subs or pull them from OpenSubtitles.',
+  },
+  {
+    icon: 'precision',
+    title: 'Precision playback',
+    body: 'Frame-accurate seeking, thumbnail scrubbing, adjustable playback speed and per-title audio / subtitle selection.',
+  },
+  {
+    icon: 'resume',
+    title: 'Never lose your place',
+    body: 'Continue Watching, Up Next, and skip-intro / skip-credits driven straight from chapter markers.',
+  },
+  {
+    icon: 'offline',
+    title: 'Watch offline',
+    body: 'Download any title to your device and play it back on the very same engine — no compromise on the plane or the train.',
+  },
+];
+
+// Format wall chips — hammered home twice for a seamless CSS marquee loop.
+const formatChips = [
+  'HEVC', 'H.264', 'AV1', 'VP9', 'MPEG-2', 'Dolby Vision', 'HDR10+', 'HDR10',
+  'HLG', 'Dolby Atmos', 'DD+', 'DTS-HD', 'TrueHD', 'MKV', 'MP4', 'MOV', 'TS',
+  'ISO', 'BDMV', 'PGS', 'VOBSUB', 'SRT', 'ASS / SSA', 'OpenSubtitles',
+];
 ---
-<section class="section" id="player">
+
+<section class="section player" id="player">
   <div class="container">
-    <p class="eyebrow">Player</p>
-    <h2 class="section-title">Player — coming soon</h2>
-    <p class="section-subtitle">
-      This section will be built by the Player section agent.
+    <!-- ── Headline ─────────────────────────────────────────────── -->
+    <header class="player-head reveal">
+      <p class="eyebrow">The player</p>
+      <h2 class="section-title">A player that plays it all.</h2>
+      <p class="section-subtitle">
+        Pippin's player is built on the MPVKit engine with hardware-accelerated
+        decode — for flawless playback of anything in your library, wrapped in
+        pro-grade controls. It plays everything Infuse can, and then some.
+      </p>
+    </header>
+
+    <!-- ── Centrepiece: player UI mock ──────────────────────────── -->
+    <figure
+      class="player-stage reveal"
+      style="--reveal-delay:100ms"
+      aria-label="Pippin video player interface, playing a film with an on-screen scrubber, thumbnail preview and control bar."
+    >
+      <div class="stage-media">
+        <img
+          class="stage-backdrop"
+          src="/media/cosmos_backdrop.jpg"
+          alt="Still frame from the film Cosmos Laundromat playing in Pippin."
+          width="1280"
+          height="720"
+          loading="lazy"
+          decoding="async"
+        />
+        <div class="stage-scrim" aria-hidden="true"></div>
+
+        <!-- Title / episode label (top-left) -->
+        <div class="stage-title" aria-hidden="true">
+          <span class="stage-title-eyebrow">Now playing</span>
+          <span class="stage-title-main">Cosmos Laundromat</span>
+          <span class="stage-title-sub">2015 · Comedy, Fantasy · 4K Dolby Vision</span>
+        </div>
+
+        <!-- Centre play affordance -->
+        <button
+          type="button"
+          class="stage-bigplay"
+          data-role="bigplay"
+          aria-label="Play or pause the demo"
+        >
+          <svg data-icon="play" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+            <path d="M8 5v14l11-7z" fill="currentColor" />
+          </svg>
+          <svg data-icon="pause" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" hidden>
+            <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor" />
+          </svg>
+        </button>
+
+        <!-- Control overlay -->
+        <div class="stage-controls" aria-hidden="true">
+          <!-- Thumbnail preview bubble -->
+          <div class="scrub-thumb" data-role="thumb">
+            <img class="scrub-thumb-img" src="/media/cosmos_backdrop.jpg" alt="" />
+            <span class="scrub-thumb-time" data-role="thumb-time">00:00</span>
+          </div>
+
+          <!-- Scrubber -->
+          <div class="scrubber" data-role="scrubber">
+            <div class="scrubber-track">
+              <div class="scrubber-fill" data-role="fill"></div>
+              <!-- Chapter / marker ticks -->
+              <span class="scrubber-tick" style="left:8%"  data-label="Intro"></span>
+              <span class="scrubber-tick" style="left:88%" data-label="Credits"></span>
+              <span class="scrubber-tick" style="left:34%"></span>
+              <span class="scrubber-tick" style="left:61%"></span>
+            </div>
+            <span class="scrubber-knob" data-role="knob"></span>
+          </div>
+
+          <!-- Control row -->
+          <div class="control-row">
+            <div class="control-cluster control-cluster--left">
+              <button type="button" class="ctl ctl--play" data-role="playbtn" aria-label="Play or pause">
+                <svg data-icon="play" viewBox="0 0 24 24" width="22" height="22"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+                <svg data-icon="pause" viewBox="0 0 24 24" width="22" height="22" hidden><path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"/></svg>
+              </button>
+              <span class="control-time">
+                <span data-role="cur">00:00</span>
+                <span class="control-time-sep">/</span>
+                <span class="control-total">42:19</span>
+              </span>
+            </div>
+
+            <div class="control-cluster control-cluster--right">
+              <button type="button" class="ctl" aria-label="Audio track">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 3a1 1 0 0 0-.7.29L7.6 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3.6l3.7 3.71A1 1 0 0 0 13 20V4a1 1 0 0 0-1-1Zm4.5 3.5a1 1 0 0 0-1.32 1.5 5 5 0 0 1 0 7 1 1 0 1 0 1.32 1.5 7 7 0 0 0 0-10Zm2.83-2.83a1 1 0 0 0-1.33 1.5 9 9 0 0 1 0 12.66 1 1 0 0 0 1.33 1.5 11 11 0 0 0 0-15.66Z" fill="currentColor"/></svg>
+              </button>
+              <button type="button" class="ctl" aria-label="Subtitles">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 8h5v2H6v-2Zm0-4h8v2H6V8Zm7 4h5v2h-5v-2Zm3-4h2v2h-2V8Z" fill="currentColor"/></svg>
+              </button>
+              <button type="button" class="ctl ctl--label" aria-label="Playback speed">
+                <span>1×</span>
+              </button>
+              <button type="button" class="ctl" aria-label="Picture in Picture">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path d="M21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H3V5h18v14Zm-2-8h-8v5h8v-5Z" fill="currentColor"/></svg>
+              </button>
+              <button type="button" class="ctl" aria-label="AirPlay">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 15 6 22h12l-6-7Z" fill="currentColor"/><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3v-2h3V6H4v9h3v2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="currentColor"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <!-- ── Supporting capability grid ───────────────────────────── -->
+    <ul class="cap-grid" role="list">
+      {capabilities.map((cap, i) => (
+        <li class="cap-card glass reveal" style={`--reveal-delay:${i * 60}ms`}>
+          <span class="cap-icon" aria-hidden="true">
+            {cap.icon === 'film' && (
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v3h3V5H4Zm5 0v3h6V5H9Zm8 0v3h3V5h-3ZM4 10v4h3v-4H4Zm5 0v9h6v-9H9Zm8 0v4h3v-4h-3ZM4 16v3h3v-3H4Zm13 0v3h3v-3h-3Z" fill="currentColor"/></svg>
+            )}
+            {cap.icon === 'hdr' && (
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z" fill="currentColor"/></svg>
+            )}
+            {cap.icon === 'audio' && (
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 9h3l4-4v14l-4-4H4V9Zm11-1a1 1 0 0 1 1.7-.71 5 5 0 0 1 0 7.42A1 1 0 1 1 15 13.3a3 3 0 0 0 0-2.6A1 1 0 0 1 15 8Zm2.8-2.8a1 1 0 0 1 1.42 0 9 9 0 0 1 0 13.6 1 1 0 0 1-1.42-1.42 7 7 0 0 0 0-10.76 1 1 0 0 1 0-1.42Z" fill="currentColor"/></svg>
+            )}
+            {cap.icon === 'subtitles' && (
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 8h6v2H6v-2Zm8 0h4v2h-4v-2ZM6 8h4v2H6V8Zm6 0h6v2h-6V8Z" fill="currentColor"/></svg>
+            )}
+            {cap.icon === 'precision' && (
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4v6l4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            )}
+            {cap.icon === 'resume' && (
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4a8 8 0 1 1-7.6 5.5 1 1 0 0 1 1.9.66A6 6 0 1 0 12 6v2l-3.5-3L12 1v3Z" fill="currentColor"/></svg>
+            )}
+            {cap.icon === 'offline' && (
+              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 3a1 1 0 0 1 1 1v9.6l2.3-2.3a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L11 13.6V4a1 1 0 0 1 1-1ZM5 19h14a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" fill="currentColor"/></svg>
+            )}
+          </span>
+          <h3 class="cap-title">{cap.title}</h3>
+          <p class="cap-body">{cap.body}</p>
+        </li>
+      ))}
+    </ul>
+
+    <!-- ── Format wall (auto-scroll marquee) ────────────────────── -->
+    <div class="format-wall reveal" style="--reveal-delay:120ms" aria-hidden="true">
+      <div class="format-track">
+        {formatChips.map((c) => <span class="format-chip">{c}</span>)}
+        {formatChips.map((c) => <span class="format-chip">{c}</span>)}
+      </div>
+    </div>
+    <p class="format-caption reveal">
+      HEVC, AV1, VP9, Dolby Vision, HDR10+, Atmos, DTS-HD, TrueHD, MKV, ISO,
+      PGS, ASS and more — Pippin plays it all.
     </p>
   </div>
 </section>
+
+<style>
+  .player {
+    overflow: clip;
+  }
+
+  .player-head {
+    max-width: 42rem;
+  }
+
+  /* ── Centrepiece stage ─────────────────────────────────────── */
+  .player-stage {
+    margin: var(--space-8) 0 var(--space-9);
+  }
+
+  .stage-media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    background-color: var(--emerald-depths);
+  }
+
+  .stage-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .stage-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.15) 42%, rgba(0, 0, 0, 0) 62%),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 35%);
+  }
+
+  /* Title / episode label */
+  .stage-title {
+    position: absolute;
+    top: clamp(1rem, 3vw, 2rem);
+    left: clamp(1rem, 3vw, 2rem);
+    right: clamp(1rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--label);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+  }
+  .stage-title-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .stage-title-main {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.1rem, 2.6vw, 1.6rem);
+    letter-spacing: -0.01em;
+  }
+  .stage-title-sub {
+    font-size: clamp(0.72rem, 1.6vw, 0.9rem);
+    color: var(--label-secondary);
+  }
+
+  /* Centre play affordance */
+  .stage-bigplay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: clamp(56px, 9vw, 84px);
+    height: clamp(56px, 9vw, 84px);
+    padding: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-strong);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    color: var(--label);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+  .stage-bigplay:hover {
+    transform: translate(-50%, -50%) scale(1.06);
+    background: var(--accent);
+    color: rgb(6, 20, 13);
+  }
+  .stage-bigplay svg[data-icon="play"] {
+    margin-left: 4px;
+  }
+
+  /* ── Control overlay ───────────────────────────────────────── */
+  .stage-controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: clamp(0.75rem, 2.5vw, 1.5rem) clamp(1rem, 3vw, 2rem)
+      clamp(0.9rem, 2.5vw, 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.5rem, 1.5vw, 0.9rem);
+  }
+
+  /* Thumbnail preview bubble */
+  .scrub-thumb {
+    position: absolute;
+    bottom: calc(100% - clamp(1rem, 3vw, 2rem));
+    left: 0;
+    width: clamp(112px, 18vw, 168px);
+    aspect-ratio: 16 / 9;
+    transform: translateX(-50%);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+    pointer-events: none;
+    background-color: var(--emerald-depths);
+  }
+  .scrub-thumb.is-visible {
+    opacity: 1;
+  }
+  .scrub-thumb-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .scrub-thumb-time {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--label);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  /* Scrubber */
+  .scrubber {
+    position: relative;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .scrubber-track {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--separator);
+    overflow: visible;
+  }
+  .scrubber-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0%;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent-muted);
+  }
+  .scrubber-tick {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px;
+    height: 11px;
+    border-radius: 2px;
+    background: var(--label);
+    opacity: 0.85;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+  .scrubber-tick[data-label]::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1px 6px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    color: var(--label-secondary);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .scrubber-knob {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-pill);
+    background: var(--label);
+    box-shadow: 0 0 0 4px var(--accent-muted), var(--shadow-sm);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .scrubber:hover .scrubber-knob {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+
+  /* Control row */
+  .control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .control-cluster {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.25rem, 1vw, 0.6rem);
+  }
+  .ctl {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--label);
+    transition: background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .ctl:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--accent);
+  }
+  .ctl--label {
+    width: auto;
+    padding-inline: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .ctl--play {
+    background: var(--glass);
+  }
+  .control-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--label);
+    white-space: nowrap;
+  }
+  .control-time-sep,
+  .control-total {
+    color: var(--label-tertiary);
+  }
+
+  /* ── Capability grid ───────────────────────────────────────── */
+  .cap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-9);
+  }
+  .cap-card {
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .cap-icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-card);
+    background: var(--accent-subtle);
+    color: var(--accent);
+    margin-bottom: var(--space-2);
+  }
+  .cap-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--label);
+  }
+  .cap-body {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--label-secondary);
+  }
+
+  /* ── Format wall ───────────────────────────────────────────── */
+  .format-wall {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--space-2);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+  }
+  .format-track {
+    display: flex;
+    width: max-content;
+    gap: var(--space-3);
+    animation: format-marquee 42s linear infinite;
+  }
+  .format-wall:hover .format-track {
+    animation-play-state: paused;
+  }
+  .format-chip {
+    flex: none;
+    padding: 0.45em 1em;
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    color: var(--label);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .format-chip:nth-child(3n) {
+    background: var(--accent-subtle);
+    border-color: var(--accent-muted);
+    color: var(--accent);
+  }
+  @keyframes format-marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  .format-caption {
+    margin-top: var(--space-4);
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--label-tertiary);
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
+  /* ── Reduced motion ────────────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .format-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .scrub-thumb {
+      width: 118px;
+    }
+    .control-cluster--right {
+      gap: 0;
+    }
+    .ctl {
+      width: 32px;
+      height: 32px;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const stage = document.querySelector('#player .player-stage');
+    if (!stage) return;
+
+    const scrubber = stage.querySelector('[data-role="scrubber"]');
+    const fill = stage.querySelector('[data-role="fill"]');
+    const knob = stage.querySelector('[data-role="knob"]');
+    const thumb = stage.querySelector('[data-role="thumb"]');
+    const thumbTime = stage.querySelector('[data-role="thumb-time"]');
+    const curEl = stage.querySelector('[data-role="cur"]');
+    const bigplay = stage.querySelector('[data-role="bigplay"]');
+    const playbtn = stage.querySelector('[data-role="playbtn"]');
+    if (!scrubber || !fill || !knob) return;
+
+    const TOTAL = 42 * 60 + 19; // 42:19 in seconds
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let progress = 0.28;   // 0..1
+    let playing = !reduce.matches;
+    let dragging = false;
+    let lastTs = 0;
+
+    const fmt = (secs) => {
+      secs = Math.max(0, Math.round(secs));
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${m}:${String(s).padStart(2, '0')}`;
+    };
+
+    const paintPlay = () => {
+      [bigplay, playbtn].forEach((btn) => {
+        if (!btn) return;
+        const p = btn.querySelector('[data-icon="play"]');
+        const q = btn.querySelector('[data-icon="pause"]');
+        if (p) p.hidden = playing;
+        if (q) q.hidden = !playing;
+      });
+    };
+
+    const render = () => {
+      const pct = (progress * 100).toFixed(3) + '%';
+      fill.style.width = pct;
+      knob.style.left = pct;
+      if (curEl) curEl.textContent = fmt(progress * TOTAL);
+    };
+
+    const setProgress = (p) => {
+      progress = Math.min(1, Math.max(0, p));
+      render();
+    };
+
+    // ── Thumbnail scrubbing interaction ──
+    const showThumbAt = (clientX) => {
+      const rect = scrubber.getBoundingClientRect();
+      let ratio = (clientX - rect.left) / rect.width;
+      ratio = Math.min(1, Math.max(0, ratio));
+      thumb.style.left = (ratio * 100).toFixed(2) + '%';
+      if (thumbTime) thumbTime.textContent = fmt(ratio * TOTAL);
+      thumb.classList.add('is-visible');
+      return ratio;
+    };
+    const hideThumb = () => thumb && thumb.classList.remove('is-visible');
+
+    scrubber.addEventListener('pointermove', (e) => {
+      const ratio = showThumbAt(e.clientX);
+      if (dragging) setProgress(ratio);
+    });
+    scrubber.addEventListener('pointerleave', () => {
+      if (!dragging) hideThumb();
+    });
+    scrubber.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      scrubber.setPointerCapture?.(e.pointerId);
+      setProgress(showThumbAt(e.clientX));
+    });
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      scrubber.releasePointerCapture?.(e.pointerId);
+      hideThumb();
+    };
+    scrubber.addEventListener('pointerup', endDrag);
+    scrubber.addEventListener('pointercancel', endDrag);
+
+    // Keyboard access on the scrubber
+    scrubber.setAttribute('tabindex', '0');
+    scrubber.setAttribute('role', 'slider');
+    scrubber.setAttribute('aria-label', 'Seek');
+    scrubber.setAttribute('aria-valuemin', '0');
+    scrubber.setAttribute('aria-valuemax', '100');
+    const syncAria = () =>
+      scrubber.setAttribute('aria-valuenow', Math.round(progress * 100));
+    scrubber.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { setProgress(progress + 0.02); syncAria(); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft') { setProgress(progress - 0.02); syncAria(); e.preventDefault(); }
+    });
+
+    // ── Play / pause ──
+    const toggle = () => { playing = !playing; paintPlay(); };
+    bigplay?.addEventListener('click', toggle);
+    playbtn?.addEventListener('click', toggle);
+
+    // ── Idle demo loop ──
+    const tick = (ts) => {
+      if (playing && !dragging && !reduce.matches) {
+        if (lastTs) {
+          const dt = (ts - lastTs) / 1000;
+          progress += dt / TOTAL;
+          if (progress >= 1) progress = 0;
+          render();
+          syncAria();
+        }
+        lastTs = ts;
+      } else {
+        lastTs = ts;
+      }
+      requestAnimationFrame(tick);
+    };
+
+    render();
+    syncAria();
+    paintPlay();
+    if (!reduce.matches) requestAnimationFrame(tick);
+
+    // Respect a live change to the reduced-motion setting.
+    reduce.addEventListener?.('change', (e) => {
+      if (e.matches) { playing = false; paintPlay(); }
+    });
+  })();
+</script>

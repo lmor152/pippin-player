@@ -1,14 +1,761 @@
 ---
 /**
- * Integrations — id="integrations". STUB. Owned by the Integrations section agent.
+ * Integrations — id="integrations".
+ * Seerr (Overseerr/Jellyseerr) · Sonarr · Radarr, all inside Pippin.
+ * Centrepiece: an animated request → fulfilment flow that loops (or advances
+ * on click), with amber → blue → green status pills. Reduced-motion shows the
+ * settled/steady state without looping.
  */
+import { sampleFilms } from '../../lib/sampleData.js';
+
+// A procedural film for the request demo.
+const film = sampleFilms.find((f) => f.id === 'sprite-fright') ?? sampleFilms[0];
+
+const services = [
+  {
+    key: 'seerr',
+    name: 'Seerr',
+    sub: 'Overseerr / Jellyseerr',
+    role: 'Discover & request',
+    blurb:
+      'Browse what’s out there and request anything with a tap. Connect several Seerr instances and pick which one handles each request.',
+    hue: 'var(--svc-seerr)',
+  },
+  {
+    key: 'sonarr',
+    name: 'Sonarr',
+    sub: 'TV automation',
+    role: 'Automate your shows',
+    blurb:
+      'Sonarr grabs new episodes and whole seasons the moment they’re available, then files them neatly into your library.',
+    hue: 'var(--svc-sonarr)',
+  },
+  {
+    key: 'radarr',
+    name: 'Radarr',
+    sub: 'Movie automation',
+    role: 'Automate your movies',
+    blurb:
+      'Radarr watches for the movies you want in the quality you want, and adds them to your collection automatically.',
+    hue: 'var(--svc-radarr)',
+  },
+];
+
+// Pipeline stages, in order. `state` is the *initial* (settled) class.
+const stages = [
+  { key: 'requested', label: 'Requested', by: 'You', tone: 'blue' },
+  { key: 'approved', label: 'Approved', by: 'Seerr', tone: 'blue' },
+  { key: 'grabbed', label: 'Grabbed', by: 'Sonarr · Radarr', tone: 'blue' },
+  { key: 'downloading', label: 'Downloading', by: 'Your server', tone: 'blue' },
+  { key: 'available', label: 'Available', by: 'In your library', tone: 'green' },
+];
 ---
+
 <section class="section" id="integrations">
   <div class="container">
-    <p class="eyebrow">Integrations</p>
-    <h2 class="section-title">Integrations — coming soon</h2>
-    <p class="section-subtitle">
-      This section will be built by the Integrations section agent.
-    </p>
+    <header class="int-head reveal">
+      <p class="eyebrow">Integrations</p>
+      <h2 class="section-title">Request it. Pippin handles the rest.</h2>
+      <p class="section-subtitle">
+        Pippin plugs straight into Overseerr &amp; Jellyseerr for requests, and Sonarr
+        &amp; Radarr for automated TV and movie management — so you can discover, request,
+        and grow your library without ever leaving the app.
+      </p>
+    </header>
+
+    <!-- Three service cards -->
+    <div class="int-cards">
+      {
+        services.map((s, i) => (
+          <article
+            class={`svc-card glass reveal svc-${s.key}`}
+            style={`--svc: ${s.hue}; --reveal-delay:${i * 90}ms`}
+          >
+            <div class="svc-top">
+              <span class="svc-emblem" aria-hidden="true">
+                {s.key === 'seerr' && (
+                  <svg viewBox="0 0 40 40" width="40" height="40">
+                    <rect x="2" y="2" width="36" height="36" rx="10" class="svc-emblem-bg" />
+                    <circle cx="18" cy="18" r="8" fill="none" stroke="currentColor" stroke-width="2.6" />
+                    <line x1="24" y1="24" x2="31" y2="31" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
+                    <path d="M14 18h8M18 14v8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+                  </svg>
+                )}
+                {s.key === 'sonarr' && (
+                  <svg viewBox="0 0 40 40" width="40" height="40">
+                    <rect x="2" y="2" width="36" height="36" rx="10" class="svc-emblem-bg" />
+                    <rect x="10" y="13" width="20" height="13" rx="2.4" fill="none" stroke="currentColor" stroke-width="2.4" />
+                    <path d="M15 9l5 4 5-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="15" y1="30" x2="25" y2="30" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                  </svg>
+                )}
+                {s.key === 'radarr' && (
+                  <svg viewBox="0 0 40 40" width="40" height="40">
+                    <rect x="2" y="2" width="36" height="36" rx="10" class="svc-emblem-bg" />
+                    <rect x="9" y="11" width="22" height="18" rx="2.4" fill="none" stroke="currentColor" stroke-width="2.4" />
+                    <line x1="14" y1="11" x2="14" y2="29" stroke="currentColor" stroke-width="2.2" />
+                    <line x1="26" y1="11" x2="26" y2="29" stroke="currentColor" stroke-width="2.2" />
+                    <path d="M18 16.5v7l6-3.5z" fill="currentColor" />
+                  </svg>
+                )}
+              </span>
+              <div class="svc-titles">
+                <h3 class="svc-name">{s.name}</h3>
+                <p class="svc-sub">{s.sub}</p>
+              </div>
+            </div>
+            <p class="svc-role">{s.role}</p>
+            <p class="svc-blurb">{s.blurb}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <!-- Centrepiece: request → fulfilment flow -->
+    <div class="flow glass reveal" style="--reveal-delay:120ms">
+      <div class="flow-head">
+        <div class="flow-headings">
+          <p class="flow-eyebrow">One tap, start to finish</p>
+          <p class="flow-caption">Watch a request travel your whole media stack — automatically.</p>
+        </div>
+        <button type="button" class="flow-replay btn btn-ghost" data-flow-replay>
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <path d="M4 10a6 6 0 1 1 1.8 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M4 6v3.4H7.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>Replay</span>
+        </button>
+      </div>
+
+      <div class="flow-body" data-flow>
+        <!-- The film + request button -->
+        <div class="flow-media">
+          {
+            film.poster ? (
+              <div class="flow-poster">
+                <img src={`/media/${film.poster}`} alt={`${film.title} poster`} loading="lazy" />
+              </div>
+            ) : (
+              <div
+                class="flow-poster flow-poster--proc"
+                style={`--g-top:${film.gradTop};--g-bot:${film.gradBottom}`}
+              >
+                {film.logo ? (
+                  <img src={`/media/${film.logo}`} alt={`${film.title} logo`} class="flow-poster-logo" loading="lazy" />
+                ) : (
+                  <span class="flow-poster-title">{film.title}</span>
+                )}
+              </div>
+            )
+          }
+          <div class="flow-media-meta">
+            <p class="flow-media-title">{film.title}</p>
+            <p class="flow-media-year">{film.year} · {film.genres.join(' · ')}</p>
+            <button type="button" class="flow-request btn btn-primary" data-flow-request>
+              <span class="frq-idle">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                Request
+              </span>
+              <span class="frq-done">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M3.5 8.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Available
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- The pipeline -->
+        <div class="flow-pipe">
+          <ol class="pipe" role="list">
+            {
+              stages.map((st, i) => (
+                <li
+                  class="pipe-step"
+                  data-step={i}
+                  data-tone={st.tone}
+                  style={`--step-i:${i}`}
+                >
+                  <span class="pipe-dot" aria-hidden="true">
+                    <svg class="pipe-dot-check" viewBox="0 0 16 16" width="12" height="12">
+                      <path d="M3.5 8.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span class="pipe-dot-spin" aria-hidden="true" />
+                  </span>
+                  <div class="pipe-info">
+                    <span class="pipe-pill">
+                      <span class="pipe-pill-dot" aria-hidden="true" />
+                      <span class="pipe-label">{st.label}</span>
+                    </span>
+                    <span class="pipe-by">{st.by}</span>
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+          <div class="pipe-track" aria-hidden="true">
+            <span class="pipe-track-fill" data-flow-fill></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Availability strip -->
+    <div class="avail reveal" style="--reveal-delay:160ms">
+      <div class="avail-chip avail-chip--have glass">
+        <span class="avail-badge avail-badge--green" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="12" height="12">
+            <path d="M3.5 8.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <div class="avail-text">
+          <span class="avail-title">In your library</span>
+          <span class="avail-sub">Availability merges with Seerr — already-owned titles show a green check.</span>
+        </div>
+      </div>
+      <div class="avail-chip avail-chip--want glass">
+        <span class="avail-badge avail-badge--amber" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="12" height="12">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </span>
+        <div class="avail-text">
+          <span class="avail-title">Not yet added</span>
+          <span class="avail-sub">Missing titles surface a one-tap request, routed to your chosen Seerr.</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+<style>
+  #integrations {
+    /* Semantic status colours — local, not themeable. */
+    --status-amber: rgb(230, 168, 60);
+    --status-amber-bg: rgba(230, 168, 60, 0.16);
+    --status-blue: rgb(76, 148, 224);
+    --status-blue-bg: rgba(76, 148, 224, 0.16);
+    --status-green: rgb(70, 190, 120);
+    --status-green-bg: rgba(70, 190, 120, 0.16);
+    --status-idle: var(--label-tertiary);
+    --status-idle-bg: rgba(255, 255, 255, 0.06);
+
+    /* Per-service hues (tasteful, distinct). */
+    --svc-seerr: rgb(120, 170, 235);
+    --svc-sonarr: rgb(96, 190, 168);
+    --svc-radarr: rgb(224, 158, 84);
+  }
+
+  .int-head {
+    max-width: 720px;
+    margin: 0 auto var(--space-8);
+    text-align: center;
+  }
+
+  /* ---- Service cards ---- */
+  .int-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+    margin-bottom: var(--space-8);
+  }
+
+  .svc-card {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+  .svc-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--svc) 14%, transparent), transparent 60%);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+  .svc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: color-mix(in srgb, var(--svc) 45%, var(--glass-border));
+  }
+
+  .svc-top {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    position: relative;
+  }
+  .svc-emblem {
+    color: var(--svc);
+    flex: none;
+    display: grid;
+    place-items: center;
+    filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--svc) 35%, transparent));
+  }
+  .svc-emblem-bg {
+    fill: color-mix(in srgb, var(--svc) 16%, transparent);
+    stroke: color-mix(in srgb, var(--svc) 40%, transparent);
+    stroke-width: 1.2;
+  }
+  .svc-titles { min-width: 0; }
+  .svc-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.1;
+    color: var(--label);
+    margin: 0;
+  }
+  .svc-sub {
+    font-size: 0.8rem;
+    color: var(--label-tertiary);
+    margin: 2px 0 0;
+  }
+  .svc-role {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--svc);
+    background: color-mix(in srgb, var(--svc) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--svc) 30%, transparent);
+    padding: 5px 11px;
+    border-radius: var(--radius-pill);
+    margin: 0;
+    position: relative;
+  }
+  .svc-blurb {
+    font-size: 0.925rem;
+    line-height: 1.5;
+    color: var(--label-secondary);
+    margin: 0;
+    position: relative;
+  }
+
+  /* ---- Flow centrepiece ---- */
+  .flow {
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+  .flow-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+  .flow-eyebrow {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--label);
+    margin: 0;
+  }
+  .flow-caption {
+    font-size: 0.9rem;
+    color: var(--label-secondary);
+    margin: 4px 0 0;
+  }
+  .flow-replay {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    padding: 8px 14px;
+  }
+
+  .flow-body {
+    display: grid;
+    grid-template-columns: minmax(180px, 220px) 1fr;
+    gap: var(--space-6);
+    align-items: center;
+  }
+
+  /* Film + request */
+  .flow-media {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .flow-poster {
+    aspect-ratio: 2 / 3;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--glass-border);
+    position: relative;
+  }
+  .flow-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .flow-poster--proc {
+    background: linear-gradient(135deg, var(--g-top), var(--g-bot));
+    display: grid;
+    place-items: center;
+    padding: var(--space-4);
+  }
+  .flow-poster-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.15;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+  }
+  .flow-poster-logo { width: 82%; height: auto; }
+
+  .flow-media-meta { display: flex; flex-direction: column; gap: 4px; }
+  .flow-media-title {
+    font-weight: 600;
+    color: var(--label);
+    margin: 0;
+    font-size: 0.98rem;
+  }
+  .flow-media-year {
+    font-size: 0.78rem;
+    color: var(--label-tertiary);
+    margin: 0 0 6px;
+  }
+  .flow-request {
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    position: relative;
+  }
+  .flow-request span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .flow-request .frq-done { display: none; }
+  .flow[data-done] .flow-request .frq-idle,
+  .flow-body[data-done] .flow-request .frq-idle { display: none; }
+  .flow-body[data-done] .flow-request .frq-done { display: inline-flex; }
+  .flow-body[data-done] .flow-request {
+    background: var(--status-green);
+    border-color: var(--status-green);
+    color: #04140a;
+  }
+
+  /* Pipeline */
+  .flow-pipe { position: relative; }
+  .pipe {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-3);
+  }
+  .pipe-step {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    --tone-color: var(--status-idle);
+    --tone-bg: var(--status-idle-bg);
+  }
+  .pipe-step[data-tone='blue'].is-active { --tone-color: var(--status-blue); --tone-bg: var(--status-blue-bg); }
+  .pipe-step[data-tone='green'].is-active { --tone-color: var(--status-green); --tone-bg: var(--status-green-bg); }
+  .pipe-step.is-active[data-step='0'] { --tone-color: var(--status-amber); --tone-bg: var(--status-amber-bg); }
+  .pipe-step.is-done { --tone-color: var(--status-green); --tone-bg: var(--status-green-bg); }
+
+  .pipe-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--tone-bg);
+    border: 1.5px solid color-mix(in srgb, var(--tone-color) 55%, transparent);
+    color: var(--tone-color);
+    position: relative;
+    transition: background var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+  }
+  .pipe-dot-check { opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); }
+  .pipe-step.is-done .pipe-dot-check { opacity: 1; }
+  .pipe-dot-spin {
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 50%;
+    border: 1.5px solid transparent;
+    border-top-color: var(--tone-color);
+    opacity: 0;
+  }
+  .pipe-step.is-active:not(.is-done) .pipe-dot-spin {
+    opacity: 1;
+    animation: pipe-spin 0.85s linear infinite;
+  }
+
+  .pipe-info { display: flex; flex-direction: column; gap: 4px; }
+  .pipe-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    background: var(--tone-bg);
+    color: var(--tone-color);
+    border: 1px solid color-mix(in srgb, var(--tone-color) 32%, transparent);
+    padding: 4px 9px;
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+  }
+  .pipe-pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+  }
+  .pipe-step.is-active:not(.is-done) .pipe-pill-dot {
+    animation: pipe-pulse 1.2s var(--ease-in-out) infinite;
+  }
+  .pipe-by {
+    font-size: 0.7rem;
+    color: var(--label-tertiary);
+    padding-left: 2px;
+  }
+
+  .pipe-track {
+    margin-top: var(--space-4);
+    height: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--status-idle-bg);
+    overflow: hidden;
+  }
+  .pipe-track-fill {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--status-blue), var(--status-green));
+    transition: width var(--dur-slow) var(--ease-out);
+  }
+
+  @keyframes pipe-spin { to { transform: rotate(360deg); } }
+  @keyframes pipe-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.6); opacity: 0.5; }
+  }
+
+  /* ---- Availability strip ---- */
+  .avail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  .avail-chip {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+  }
+  .avail-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .avail-badge--green { background: var(--status-green-bg); color: var(--status-green); border: 1px solid color-mix(in srgb, var(--status-green) 45%, transparent); }
+  .avail-badge--amber { background: var(--status-amber-bg); color: var(--status-amber); border: 1px solid color-mix(in srgb, var(--status-amber) 45%, transparent); }
+  .avail-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .avail-title { font-weight: 600; color: var(--label); font-size: 0.92rem; }
+  .avail-sub { font-size: 0.82rem; color: var(--label-secondary); line-height: 1.4; }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    .int-cards { grid-template-columns: 1fr; }
+    .flow-body { grid-template-columns: 1fr; }
+    .flow-media {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .flow-poster { width: 120px; flex: none; }
+    .flow-media-meta { flex: 1; }
+    .pipe {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+    .pipe-step {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .pipe-info { flex-direction: row; align-items: baseline; gap: var(--space-3); }
+  }
+  @media (max-width: 560px) {
+    .avail { grid-template-columns: 1fr; }
+    .flow-head { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ---- Reduced motion: settle everything, no loops ---- */
+  @media (prefers-reduced-motion: reduce) {
+    .svc-card, .svc-card:hover { transition: none; transform: none; }
+    .pipe-dot-spin { display: none; }
+    .pipe-step.is-active .pipe-pill-dot { animation: none; }
+    .pipe-track-fill { transition: none; }
+  }
+</style>
+
+<script>
+  (() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    document.querySelectorAll('#integrations .flow').forEach((flow) => {
+      const body = flow.querySelector('[data-flow]');
+      const steps = Array.from(flow.querySelectorAll('.pipe-step'));
+      const fill = flow.querySelector('[data-flow-fill]');
+      const requestBtn = flow.querySelector('[data-flow-request]');
+      const replayBtn = flow.querySelector('[data-flow-replay]');
+      if (!body || !steps.length) return;
+
+      let timers = [];
+      let looping = false;
+
+      const clearTimers = () => {
+        timers.forEach((t) => clearTimeout(t));
+        timers = [];
+      };
+
+      const settle = () => {
+        // Final steady state: everything done, bar full.
+        clearTimers();
+        steps.forEach((s) => {
+          s.classList.remove('is-active');
+          s.classList.add('is-done');
+        });
+        if (fill) fill.style.width = '100%';
+        body.setAttribute('data-done', '');
+      };
+
+      const reset = () => {
+        clearTimers();
+        steps.forEach((s) => s.classList.remove('is-active', 'is-done'));
+        if (fill) fill.style.width = '0%';
+        body.removeAttribute('data-done');
+      };
+
+      const play = () => {
+        reset();
+        const per = 1100;
+        steps.forEach((step, i) => {
+          // Advance to active
+          timers.push(
+            setTimeout(() => {
+              step.classList.add('is-active');
+              if (fill) {
+                const pct = ((i + 0.5) / steps.length) * 100;
+                fill.style.width = pct + '%';
+              }
+            }, i * per + 250)
+          );
+          // Mark previous step done as the next one activates
+          if (i > 0) {
+            timers.push(
+              setTimeout(() => {
+                steps[i - 1].classList.add('is-done');
+              }, i * per + 250)
+            );
+          }
+        });
+        // Finish the last step + fill
+        timers.push(
+          setTimeout(() => {
+            steps[steps.length - 1].classList.add('is-done');
+            if (fill) fill.style.width = '100%';
+            body.setAttribute('data-done', '');
+          }, steps.length * per + 250)
+        );
+        // Loop
+        if (looping) {
+          timers.push(
+            setTimeout(() => {
+              if (looping) play();
+            }, steps.length * per + 2200)
+          );
+        }
+      };
+
+      // Reduced motion: show settled state, no looping.
+      if (reduce.matches) {
+        settle();
+      } else {
+        // Autoplay looping once scrolled into view.
+        looping = true;
+        let started = false;
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting && !started) {
+                started = true;
+                play();
+              }
+              // Pause the loop when out of view to save cycles.
+              if (!e.isIntersecting && started) {
+                looping = false;
+                clearTimers();
+              } else if (e.isIntersecting && started && !looping) {
+                looping = true;
+                play();
+              }
+            });
+          },
+          { threshold: 0.35 }
+        );
+        io.observe(flow);
+      }
+
+      // Manual "Request" — restart the flow deterministically.
+      requestBtn?.addEventListener('click', () => {
+        if (reduce.matches) {
+          settle();
+          return;
+        }
+        looping = false;
+        play();
+      });
+
+      // Replay button — one clean run (then resume looping if motion allowed).
+      replayBtn?.addEventListener('click', () => {
+        if (reduce.matches) {
+          settle();
+          return;
+        }
+        looping = true;
+        play();
+      });
+
+      // React to a motion-preference change mid-session.
+      reduce.addEventListener?.('change', (e) => {
+        if (e.matches) {
+          looping = false;
+          settle();
+        }
+      });
+    });
+  })();
+</script>

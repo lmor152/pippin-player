@@ -1,14 +1,693 @@
 ---
 /**
- * Community — id="community". STUB. Owned by the Community section agent.
+ * Community — id="community". The closing section before the footer.
+ * Three parts: "Built in the open" link cards, an accessible FAQ accordion,
+ * and a bold final CTA band. Owned by the Community section agent.
  */
+
+const GH = 'https://github.com/lmor152/pippin-player';
+
+const links = [
+  {
+    href: `${GH}/issues/new?template=bug_report.yml`,
+    title: 'Report a bug',
+    desc: 'Something not right? File it and it gets looked at.',
+    icon: 'bug',
+  },
+  {
+    href: `${GH}/issues/new?template=feature_request.yml`,
+    title: 'Request a feature',
+    desc: 'Got an idea? Pippin is shaped by requests like yours.',
+    icon: 'spark',
+  },
+  {
+    href: `${GH}/discussions`,
+    title: 'Join the discussion',
+    desc: 'Share setups, ask questions, and follow along.',
+    icon: 'chat',
+  },
+];
+
+const faqs = [
+  {
+    q: 'Which media servers does Pippin support?',
+    a: 'Plex and Jellyfin — including multiple servers at once, side by side.',
+  },
+  {
+    q: 'Which devices does it run on?',
+    a: 'iPhone, iPad, Mac and Apple TV, with a native, adaptive interface tuned to each one.',
+  },
+  {
+    q: 'Do I need my own server?',
+    a: 'Yes. Pippin is a client for your own Plex or Jellyfin server — it is not a streaming service, so it brings nothing to watch on its own.',
+  },
+  {
+    q: 'What can the player handle?',
+    a: 'It is built on MPVKit with hardware acceleration: HEVC, AV1 and VP9; HDR10, HDR10+ and Dolby Vision; Dolby Atmos, DTS-HD and TrueHD; PGS and ASS subtitles — and plenty more.',
+  },
+  {
+    q: 'Do you support Overseerr, Sonarr and Radarr?',
+    a: 'Yes. Discover and request through Overseerr or Jellyseerr, and manage your library with Sonarr and Radarr — right inside Pippin.',
+  },
+  {
+    q: 'How does pricing work?',
+    a: 'Pippin is a one-time purchase that unlocks all of your Apple devices, and it works with Family Sharing.',
+  },
+  {
+    q: 'Can I watch together with friends?',
+    a: 'Yes — Pippin supports SharePlay, so you can watch in sync with the people you care about.',
+  },
+  {
+    q: 'Can I watch offline?',
+    a: 'Yes. Download titles to your device and play them anywhere, with no connection required.',
+  },
+];
 ---
-<section class="section" id="community">
+
+<section class="section community" id="community">
+  <div class="community-ambience" aria-hidden="true">
+    <span class="c-glow c-glow-a"></span>
+    <span class="c-glow c-glow-b"></span>
+  </div>
+
   <div class="container">
-    <p class="eyebrow">Community</p>
-    <h2 class="section-title">Community — coming soon</h2>
-    <p class="section-subtitle">
-      This section will be built by the Community section agent.
+    <!-- ============================ BUILT IN THE OPEN =================== -->
+    <div class="community-intro">
+      <p class="eyebrow reveal">Community</p>
+      <h2 class="section-title reveal" style="--reveal-delay:80ms">
+        Built in the open,<br />shaped by you.
+      </h2>
+      <p class="section-subtitle reveal" style="--reveal-delay:140ms">
+        Pippin is crafted by a solo developer and made better with its
+        community. Report a bug, request a feature, or just follow along as
+        it grows.
+      </p>
+    </div>
+
+    <div class="link-cards">
+      {
+        links.map((l, i) => (
+          <a
+            class="link-card glass reveal"
+            style={`--reveal-delay:${180 + i * 90}ms`}
+            href={l.href}
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="link-icon" aria-hidden="true">
+              {l.icon === 'bug' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 6a4 4 0 0 1 8 0" />
+                  <rect x="7" y="6" width="10" height="12" rx="5" />
+                  <path d="M4 11h3M17 11h3M4.5 16h3M16.5 16h3M5 6.5l2.5 1.5M19 6.5 16.5 8M12 10v8" />
+                </svg>
+              )}
+              {l.icon === 'spark' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" />
+                  <circle cx="12" cy="12" r="2.4" />
+                </svg>
+              )}
+              {l.icon === 'chat' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 5h16v11H9l-4 3v-3H4z" />
+                  <path d="M8 9h8M8 12h5" />
+                </svg>
+              )}
+            </span>
+            <span class="link-body">
+              <span class="link-title">
+                {l.title}
+                <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17 17 7M9 7h8v8" />
+                </svg>
+              </span>
+              <span class="link-desc">{l.desc}</span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+
+    <p class="view-project reveal" style="--reveal-delay:460ms">
+      <a href={GH} target="_blank" rel="noopener">
+        View the project on GitHub
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </a>
     </p>
+
+    <!-- ================================= FAQ =========================== -->
+    <div class="faq reveal">
+      <div class="faq-head">
+        <p class="eyebrow">Questions</p>
+        <h3 class="h3 faq-title">Everything you might ask.</h3>
+      </div>
+
+      <ul class="faq-list" role="list">
+        {
+          faqs.map((item, i) => (
+            <li class="faq-item">
+              <h4 class="faq-q-wrap">
+                <button
+                  class="faq-q"
+                  type="button"
+                  id={`faq-q-${i}`}
+                  aria-expanded="false"
+                  aria-controls={`faq-a-${i}`}
+                >
+                  <span class="faq-q-text">{item.q}</span>
+                  <span class="faq-chevron" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </span>
+                </button>
+              </h4>
+              <div
+                class="faq-a"
+                id={`faq-a-${i}`}
+                role="region"
+                aria-labelledby={`faq-q-${i}`}
+                hidden
+              >
+                <div class="faq-a-inner">
+                  <p>{item.a}</p>
+                </div>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <!-- ============================== FINAL CTA ======================== -->
+    <div class="final-cta reveal">
+      <div class="cta-glow" aria-hidden="true"></div>
+      <div class="cta-content">
+        <p class="cta-eyebrow">iPhone · iPad · Mac · Apple TV</p>
+        <h2 class="cta-title">Your library deserves better.</h2>
+        <p class="cta-sub">
+          One purchase. Every Apple device. A player that plays anything —
+          and a client you will actually want to open.
+        </p>
+
+        <div class="cta-actions">
+          <a
+            class="appstore-badge"
+            href="#"
+            aria-label="Download Pippin on the App Store"
+          >
+            <svg
+              class="appstore-apple"
+              viewBox="0 0 384 512"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                fill="currentColor"
+                d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
+              ></path>
+            </svg>
+            <span class="appstore-text">
+              <span class="appstore-line1">Download on the</span>
+              <span class="appstore-line2">App Store</span>
+            </span>
+          </a>
+
+          <a class="btn btn-ghost cta-ghost" href="#customise">
+            See it your way
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+<style>
+  .community {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* ---------- Ambience ---------- */
+  .community-ambience {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .c-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.5;
+  }
+  .c-glow-a {
+    width: 46vw;
+    height: 46vw;
+    max-width: 560px;
+    max-height: 560px;
+    top: -10%;
+    left: -12%;
+    background: radial-gradient(circle, var(--accent-muted), transparent 68%);
+  }
+  .c-glow-b {
+    width: 42vw;
+    height: 42vw;
+    max-width: 520px;
+    max-height: 520px;
+    bottom: -14%;
+    right: -10%;
+    background: radial-gradient(
+      circle,
+      var(--emerald-depths, var(--accent-subtle)),
+      transparent 66%
+    );
+    opacity: 0.7;
+  }
+
+  /* ---------- Intro ---------- */
+  .community-intro {
+    max-width: 44rem;
+  }
+  .community-intro .section-title {
+    max-width: 22ch;
+  }
+
+  /* ---------- Link cards ---------- */
+  .link-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4, 1rem);
+    margin-top: var(--space-7, 3rem);
+  }
+  .link-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4, 1rem);
+    padding: var(--space-5, 1.5rem);
+    border-radius: var(--radius-lg, 20px);
+    color: var(--label);
+    text-decoration: none;
+    transition:
+      transform var(--dur, 0.28s) var(--ease-out),
+      border-color var(--dur, 0.28s) var(--ease-out),
+      box-shadow var(--dur, 0.28s) var(--ease-out);
+  }
+  .link-card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--accent) 45%, var(--glass-border));
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+  }
+  .link-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .link-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: var(--radius-card, 12px);
+    background: var(--accent-subtle);
+    color: var(--accent);
+    transition: background-color var(--dur, 0.28s) var(--ease-out);
+  }
+  .link-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .link-card:hover .link-icon {
+    background: var(--accent-muted);
+  }
+  .link-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+  .link-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--label);
+  }
+  .link-arrow {
+    width: 15px;
+    height: 15px;
+    color: var(--label-tertiary);
+    transition:
+      transform var(--dur, 0.28s) var(--ease-out),
+      color var(--dur, 0.28s) var(--ease-out);
+  }
+  .link-card:hover .link-arrow {
+    color: var(--accent);
+    transform: translate(2px, -2px);
+  }
+  .link-desc {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--label-secondary);
+  }
+
+  .view-project {
+    margin-top: var(--space-5, 1.5rem);
+    font-size: 0.95rem;
+  }
+  .view-project a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--label-secondary);
+    transition: color var(--dur-fast, 0.16s) var(--ease-out);
+  }
+  .view-project a:hover {
+    color: var(--accent);
+  }
+  .view-project svg {
+    width: 15px;
+    height: 15px;
+    transition: transform var(--dur-fast, 0.16s) var(--ease-out);
+  }
+  .view-project a:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq {
+    margin-top: var(--space-9, 6rem);
+  }
+  .faq-head {
+    margin-bottom: var(--space-5, 1.5rem);
+  }
+  .faq-title {
+    color: var(--label);
+  }
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--hairline);
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--hairline);
+  }
+  .faq-q-wrap {
+    margin: 0;
+    font: inherit;
+    font-weight: inherit;
+    letter-spacing: normal;
+  }
+  .faq-q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4, 1rem);
+    width: 100%;
+    padding: var(--space-5, 1.4rem) var(--space-2, 0.5rem);
+    background: none;
+    border: none;
+    text-align: left;
+    color: var(--label);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1rem, 2vw, 1.18rem);
+    line-height: 1.35;
+    border-radius: var(--radius-sm, 8px);
+    transition: color var(--dur-fast, 0.16s) var(--ease-out);
+  }
+  .faq-q:hover {
+    color: var(--accent);
+  }
+  .faq-q:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .faq-chevron {
+    display: inline-flex;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    color: var(--label-secondary);
+    transition:
+      transform var(--dur, 0.28s) var(--ease-out),
+      color var(--dur, 0.28s) var(--ease-out),
+      background-color var(--dur, 0.28s) var(--ease-out);
+  }
+  .faq-chevron svg {
+    width: 16px;
+    height: 16px;
+  }
+  .faq-q[aria-expanded='true'] {
+    color: var(--accent);
+  }
+  .faq-q[aria-expanded='true'] .faq-chevron {
+    transform: rotate(180deg);
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border-color: color-mix(in oklab, var(--accent) 40%, var(--glass-border));
+  }
+
+  /* Height/opacity transition via grid-template-rows trick. */
+  .faq-a {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows var(--dur, 0.28s) var(--ease-in-out),
+      opacity var(--dur, 0.28s) var(--ease-in-out);
+  }
+  .faq-a[hidden] {
+    display: none;
+  }
+  .faq-a.is-open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  .faq-a-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .faq-a-inner p {
+    padding: 0 var(--space-2, 0.5rem) var(--space-5, 1.4rem);
+    max-width: 68ch;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--label-secondary);
+  }
+
+  /* ---------- Final CTA ---------- */
+  .final-cta {
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--space-9, 6rem);
+    padding: clamp(2.5rem, 6vw, 4.5rem) var(--content-pad);
+    border-radius: var(--radius-xl, 28px);
+    text-align: center;
+    background:
+      radial-gradient(
+        120% 140% at 50% -10%,
+        var(--accent-subtle),
+        transparent 60%
+      ),
+      var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-lg);
+    isolation: isolate;
+  }
+  .cta-glow {
+    position: absolute;
+    left: 50%;
+    top: -30%;
+    width: 60%;
+    height: 120%;
+    transform: translateX(-50%);
+    background: radial-gradient(
+      ellipse at center,
+      var(--accent-muted),
+      transparent 65%
+    );
+    filter: blur(60px);
+    opacity: 0.6;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .cta-content {
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+  .cta-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    margin-bottom: var(--space-3, 0.75rem);
+  }
+  .cta-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    color: var(--label);
+  }
+  .cta-sub {
+    margin: var(--space-4, 1.25rem) auto 0;
+    max-width: 34rem;
+    font-size: clamp(1rem, 1.6vw, 1.15rem);
+    line-height: 1.55;
+    color: var(--label-secondary);
+  }
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3, 0.9rem);
+    margin-top: var(--space-6, 2rem);
+  }
+
+  /* Apple-style App Store badge (mirrors the Hero badge). */
+  .appstore-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.62rem 1.15rem 0.62rem 1rem;
+    border-radius: var(--radius-lg, 20px);
+    background: var(--label);
+    color: var(--bg);
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    transition:
+      transform var(--dur, 0.24s) var(--ease-out),
+      box-shadow var(--dur, 0.24s) var(--ease-out);
+  }
+  .appstore-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+  }
+  .appstore-badge:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .appstore-apple {
+    width: 26px;
+    height: 26px;
+  }
+  .appstore-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    text-align: left;
+  }
+  .appstore-line1 {
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
+    opacity: 0.8;
+  }
+  .appstore-line2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 2px;
+  }
+  .cta-ghost {
+    padding: 0.72rem 1.3rem;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px) {
+    .link-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .community-intro .section-title br {
+      display: none;
+    }
+    .appstore-badge,
+    .cta-ghost {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+    .faq-q {
+      font-size: 1rem;
+    }
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .link-card,
+    .link-arrow,
+    .faq-chevron,
+    .faq-a,
+    .view-project svg,
+    .appstore-badge {
+      transition: none !important;
+    }
+    .faq-a {
+      /* Instant open/close, still fully readable. */
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Accessible FAQ accordion. Keyboard-operable via the native <button>;
+  // Enter/Space toggle for free. We drive aria-expanded, the [hidden] panel,
+  // and an .is-open class for the smooth grid-rows/opacity transition.
+  (() => {
+    const items = document.querySelectorAll<HTMLButtonElement>('.faq-q');
+    if (!items.length) return;
+
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    for (const btn of items) {
+      const panelId = btn.getAttribute('aria-controls');
+      const panel = panelId ? document.getElementById(panelId) : null;
+      if (!panel) continue;
+
+      btn.addEventListener('click', () => {
+        const isOpen = btn.getAttribute('aria-expanded') === 'true';
+        if (isOpen) {
+          btn.setAttribute('aria-expanded', 'false');
+          panel.classList.remove('is-open');
+          if (reduce) {
+            panel.hidden = true;
+          } else {
+            // Wait for the collapse transition before hiding from a11y tree.
+            const done = (e: TransitionEvent) => {
+              if (e.propertyName !== 'grid-template-rows') return;
+              if (btn.getAttribute('aria-expanded') === 'false') {
+                panel.hidden = true;
+              }
+              panel.removeEventListener('transitionend', done);
+            };
+            panel.addEventListener('transitionend', done);
+          }
+        } else {
+          btn.setAttribute('aria-expanded', 'true');
+          panel.hidden = false;
+          // Force a reflow so the transition runs from the collapsed state.
+          void panel.offsetHeight;
+          panel.classList.add('is-open');
+        }
+      });
+    }
+  })();
+</script>
