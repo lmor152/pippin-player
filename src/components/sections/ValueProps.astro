@@ -13,8 +13,19 @@
 import { sampleFilms } from '../../lib/sampleData.js';
 import Logo from '../Logo.astro';
 
-const backdropFilm = sampleFilms.find((f) => f.backdrop) ?? sampleFilms[0];
+// SharePlay "watch together" backdrop — real Cosmos Laundromat backdrop art.
+const backdropFilm =
+  sampleFilms.find((f) => f.id === 'cosmos-laundromat' && f.backdrop) ??
+  sampleFilms.find((f) => f.backdrop) ??
+  sampleFilms[0];
 const backdropSrc = backdropFilm.backdrop ? `/media/${backdropFilm.backdrop}` : null;
+
+// Real library art for the "Designed for Apple" device screens.
+const gridFilms = sampleFilms.filter((f) => f.poster && f.backdrop).slice(0, 6);
+const heroFilm =
+  sampleFilms.find((f) => f.id === 'sintel' && f.backdrop) ??
+  sampleFilms.find((f) => f.backdrop) ??
+  sampleFilms[0];
 
 const payFeatures = [
   'One-time purchase',
@@ -113,7 +124,17 @@ const payFeatures = [
             <div class="vp-dev vp-dev--mac">
               <div class="vp-screen">
                 <span class="vp-ui vp-ui--sidebar"></span>
-                <span class="vp-ui vp-ui--grid"></span>
+                <span class="vp-ui vp-ui--grid">
+                  {gridFilms.map((f) => (
+                    <img
+                      class="vp-tile"
+                      src={`/media/${f.poster}`}
+                      alt=""
+                      loading="lazy"
+                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
+                    />
+                  ))}
+                </span>
               </div>
               <span class="vp-stand"></span>
               <span class="vp-label">Mac</span>
@@ -122,14 +143,34 @@ const payFeatures = [
             <div class="vp-dev vp-dev--ipad">
               <div class="vp-screen">
                 <span class="vp-ui vp-ui--sidebar vp-ui--thin"></span>
-                <span class="vp-ui vp-ui--grid"></span>
+                <span class="vp-ui vp-ui--grid vp-ui--grid-2">
+                  {gridFilms.slice(0, 4).map((f) => (
+                    <img
+                      class="vp-tile"
+                      src={`/media/${f.poster}`}
+                      alt=""
+                      loading="lazy"
+                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
+                    />
+                  ))}
+                </span>
               </div>
               <span class="vp-label">iPad</span>
             </div>
             <!-- iPhone -->
             <div class="vp-dev vp-dev--iphone">
               <div class="vp-screen">
-                <span class="vp-ui vp-ui--stack"></span>
+                <span class="vp-ui vp-ui--stack">
+                  {gridFilms.slice(0, 2).map((f) => (
+                    <img
+                      class="vp-tile vp-tile--wide"
+                      src={`/media/${f.backdrop}`}
+                      alt=""
+                      loading="lazy"
+                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
+                    />
+                  ))}
+                </span>
                 <span class="vp-ui vp-ui--tabs"></span>
               </div>
               <span class="vp-label">iPhone</span>
@@ -137,8 +178,21 @@ const payFeatures = [
             <!-- Apple TV -->
             <div class="vp-dev vp-dev--tv">
               <div class="vp-screen">
-                <span class="vp-ui vp-ui--hero"></span>
-                <span class="vp-ui vp-ui--rail"></span>
+                <span
+                  class="vp-ui vp-ui--hero"
+                  style={heroFilm.backdrop ? `background-image:url('/media/${heroFilm.backdrop}')` : `background:linear-gradient(120deg, ${heroFilm.gradTop}, ${heroFilm.gradBottom})`}
+                ></span>
+                <span class="vp-ui vp-ui--rail">
+                  {gridFilms.slice(0, 4).map((f) => (
+                    <img
+                      class="vp-tile"
+                      src={`/media/${f.poster}`}
+                      alt=""
+                      loading="lazy"
+                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
+                    />
+                  ))}
+                </span>
               </div>
               <span class="vp-tvbase"></span>
               <span class="vp-label">Apple&nbsp;TV</span>
@@ -535,20 +589,32 @@ const payFeatures = [
   .vp-ui--sidebar.vp-ui--thin { width: 22%; }
   .vp-ui--grid {
     flex: 1;
-    background:
-      repeating-linear-gradient(90deg,
-        var(--accent-subtle) 0 30%, transparent 30% 38%),
-      repeating-linear-gradient(0deg,
-        var(--card) 0 44%, transparent 44% 56%);
-    opacity: 0.85;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    padding: 4px;
+    align-content: start;
+    overflow: hidden;
   }
+  .vp-ui--grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+  /* Real poster tiles inside device screens. */
+  .vp-tile {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 3px;
+    display: block;
+  }
+  .vp-tile--wide { aspect-ratio: 16 / 9; }
+
   .vp-ui--stack {
     flex: 1;
-    margin: 6px;
-    border-radius: 4px;
-    background:
-      repeating-linear-gradient(0deg,
-        var(--card) 0 30%, transparent 30% 42%);
+    margin: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow: hidden;
   }
   .vp-ui--tabs {
     height: 14px;
@@ -559,14 +625,18 @@ const payFeatures = [
   .vp-ui--hero {
     height: 58%;
     background: linear-gradient(120deg, var(--accent-muted), var(--accent-subtle));
+    background-size: cover;
+    background-position: center 30%;
     border-bottom: 1px solid var(--glass-border);
   }
   .vp-ui--rail {
     flex: 1;
-    background:
-      repeating-linear-gradient(90deg,
-        var(--card) 0 26%, transparent 26% 32%);
+    display: flex;
+    gap: 4px;
+    padding: 5px;
+    overflow: hidden;
   }
+  .vp-ui--rail .vp-tile { width: auto; height: 100%; flex: none; }
 
   /* ---------------- Pay-once stage --------------- */
   .vp-stage--pay {
