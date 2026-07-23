@@ -1,0 +1,51 @@
+---
+/**
+ * Wordmark — the Core Silhouette mark beside the "Pippin" text set in the
+ * rounded display font (Baloo 2), matching the app's `.rounded` branding.
+ *
+ * Usage:
+ *   import Wordmark from '../components/Wordmark.astro';
+ *   <Wordmark size={28} />
+ *   <Wordmark size={22} href="#top" />   // wraps in a link
+ *
+ * The mark uses the accent colour; the text uses --label. Pass `markColor`
+ * to override the mark colour.
+ */
+import Logo from './Logo.astro';
+
+interface Props {
+  size?: number;      // font-size in px for the word; mark scales ~1.35x
+  href?: string;      // optional link wrapper
+  markColor?: string; // mark colour override (defaults to accent)
+  class?: string;
+}
+const { size = 24, href, markColor = 'var(--accent)', class: className } = Astro.props;
+const markSize = Math.round(size * 1.35);
+const Tag = href ? 'a' : 'span';
+---
+<Tag class:list={['wordmark', className]} href={href} aria-label="Pippin">
+  <Logo size={markSize} color={markColor} />
+  <span class="wordmark__text" style={`font-size:${size}px`}>Pippin</span>
+</Tag>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--label);
+    line-height: 1;
+  }
+  .wordmark__text {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--label);
+  }
+  a.wordmark {
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  a.wordmark:hover {
+    opacity: 0.85;
+  }
+</style>

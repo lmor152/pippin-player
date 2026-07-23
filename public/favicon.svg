@@ -1,0 +1,4 @@
+<svg viewBox="0 0 132 132" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pippin">
+  <rect width="132" height="132" rx="28" fill="#0A1A11"/>
+  <path fill-rule="evenodd" fill="#5FBF8A" d="M46,28 C30,28 30,58 50,66 C30,74 30,104 46,104 L86,104 C102,104 102,74 82,66 C102,58 102,28 86,28 Z M58,60 a4,6 0 1,0 0,12 a4,6 0 1,0 0,-12 Z M74,60 a4,6 0 1,0 0,12 a4,6 0 1,0 0,-12 Z"/>
+</svg>

@@ -1,0 +1,111 @@
+---
+/**
+ * Layout — the shared page shell. Every page renders through this.
+ *
+ * Provides:
+ *   - a complete <head> (title/description/OG/Twitter, favicon, font preload)
+ *   - the global.css import
+ *   - the GLOBAL scroll-reveal IntersectionObserver (elements with class
+ *     `.reveal` get `.is-visible` when they enter the viewport; respects
+ *     prefers-reduced-motion)
+ *   - a <slot /> for page content
+ *
+ * Usage:
+ *   import Layout from '../layouts/Layout.astro';
+ *   <Layout title="Pippin" description="...">... sections ...</Layout>
+ */
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string; // OG/Twitter image (absolute path under /)
+}
+
+const {
+  title = 'Pippin — A beautiful Plex & Jellyfin client for Apple devices',
+  description =
+    'Pippin is a premium, highly customisable Plex and Jellyfin client for iPhone, iPad, Mac and Apple TV — with a powerful MPV-based player that rivals the best.',
+  image = '/favicon.svg',
+} = Astro.props;
+
+const canonical = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).toString()
+  : Astro.url.pathname;
+const ogImage = Astro.site ? new URL(image, Astro.site).toString() : image;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0A1A11" />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Favicon (mark) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Self-hosted display font preload -->
+    <link
+      rel="preload"
+      href="/fonts/baloo2-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Pippin" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+  </head>
+  <body>
+    <slot />
+
+    <script>
+      // Global scroll-reveal: reveal elements with class="reveal" when they
+      // scroll into view. Respects prefers-reduced-motion (reveals everything
+      // immediately, no animation).
+      (() => {
+        const els = document.querySelectorAll<HTMLElement>('.reveal');
+        if (!els.length) return;
+
+        const reduced = window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+        if (reduced || !('IntersectionObserver' in window)) {
+          els.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -10% 0px', threshold: 0.1 }
+        );
+
+        els.forEach((el) => io.observe(el));
+      })();
+    </script>
+  </body>
+</html>

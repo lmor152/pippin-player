@@ -1,0 +1,40 @@
+---
+/**
+ * Logo — the Pippin "Core Silhouette" mark (apple-core cross-section with two
+ * pip-seed holes punched via fill-rule="evenodd").
+ *
+ * Renders at a configurable size. Fill defaults to `currentColor` so it inherits
+ * the accent (or any colour set on an ancestor). Set `color` to override.
+ *
+ * Usage:
+ *   import Logo from '../components/Logo.astro';
+ *   <Logo size={44} />
+ *   <Logo size={64} color="var(--label)" />
+ */
+interface Props {
+  size?: number | string;
+  color?: string;      // any CSS colour; defaults to currentColor
+  title?: string;      // accessible title; omit for decorative
+  class?: string;
+}
+const { size = 40, color = 'currentColor', title, class: className } = Astro.props;
+const dim = typeof size === 'number' ? `${size}px` : size;
+---
+<svg
+  viewBox="0 0 132 132"
+  width={dim}
+  height={dim}
+  xmlns="http://www.w3.org/2000/svg"
+  class={className}
+  role={title ? 'img' : 'presentation'}
+  aria-label={title}
+  aria-hidden={title ? undefined : 'true'}
+  style={`color:${color}`}
+>
+  {title && <title>{title}</title>}
+  <path
+    fill-rule="evenodd"
+    fill="currentColor"
+    d="M46,28 C30,28 30,58 50,66 C30,74 30,104 46,104 L86,104 C102,104 102,74 82,66 C102,58 102,28 86,28 Z M58,60 a4,6 0 1,0 0,12 a4,6 0 1,0 0,-12 Z M74,60 a4,6 0 1,0 0,12 a4,6 0 1,0 0,-12 Z"
+  />
+</svg>

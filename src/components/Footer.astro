@@ -1,0 +1,147 @@
+---
+/**
+ * Footer — dark, elegant site footer: wordmark + tagline, link columns
+ * (GitHub / report a bug / request a feature / discussions), copyright, and the
+ * required CC-BY sample-artwork attribution line.
+ */
+import Wordmark from './Wordmark.astro';
+
+const REPO = 'https://github.com/lmor152/pippin-player';
+const linkGroups = [
+  {
+    title: 'Project',
+    links: [
+      { label: 'GitHub', href: REPO },
+      { label: 'Discussions', href: `${REPO}/discussions` },
+    ],
+  },
+  {
+    title: 'Support',
+    links: [
+      { label: 'Report a bug', href: `${REPO}/issues/new?template=bug_report.yml` },
+      { label: 'Request a feature', href: `${REPO}/issues/new?template=feature_request.yml` },
+    ],
+  },
+  {
+    title: 'Explore',
+    links: [
+      { label: 'Features', href: '#features' },
+      { label: 'Customise', href: '#customise' },
+      { label: 'Player', href: '#player' },
+    ],
+  },
+];
+---
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <Wordmark size={24} href="#top" />
+      <p class="footer__tagline">
+        A beautifully customisable Plex &amp; Jellyfin client for Apple devices,
+        with a player that goes toe-to-toe with the best.
+      </p>
+    </div>
+
+    <div class="footer__cols">
+      {linkGroups.map((group) => (
+        <div class="footer__col">
+          <h4 class="footer__col-title">{group.title}</h4>
+          <ul>
+            {group.links.map((l) => (
+              <li>
+                <a
+                  href={l.href}
+                  class="footer__link"
+                  {...(l.href.startsWith('http')
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="container footer__bottom">
+    <p class="footer__copy">© 2026 Pippin</p>
+    <p class="footer__attr">
+      Sample artwork from the Blender Open Movie projects, licensed CC-BY.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--hairline);
+    background-color: var(--emerald-depths);
+    padding-block: var(--space-8) var(--space-6);
+  }
+  .footer__inner {
+    display: grid;
+    grid-template-columns: 1.3fr 2fr;
+    gap: var(--space-8);
+  }
+  .footer__tagline {
+    margin-top: var(--space-4);
+    max-width: 36ch;
+    color: var(--label-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+  .footer__cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+  .footer__col-title {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--label-tertiary);
+    margin-bottom: var(--space-4);
+  }
+  .footer__col ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .footer__link {
+    font-size: 0.9375rem;
+    color: var(--label-secondary);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .footer__link:hover {
+    color: var(--accent);
+  }
+  .footer__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--hairline);
+  }
+  .footer__copy,
+  .footer__attr {
+    font-size: 0.8125rem;
+    color: var(--label-tertiary);
+  }
+
+  @media (max-width: 820px) {
+    .footer__inner {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+    .footer__cols {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

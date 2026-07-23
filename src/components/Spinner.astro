@@ -1,0 +1,50 @@
+---
+/**
+ * Spinner — the app's branded loading spinner: the Core Silhouette mark
+ * rotating with a signature motion — two eased half-turns with a hold at the
+ * midpoint, period 3.2s.
+ *
+ *   0%   → 0deg
+ *   42%  → 180deg   (ease-in-out)
+ *   42%–58% hold at 180deg
+ *   58%  → 360deg   (ease-in-out)  ... loop
+ *
+ * Decorative flourish for section agents. Respects reduced-motion (freezes).
+ *
+ * Usage:
+ *   import Spinner from '../components/Spinner.astro';
+ *   <Spinner size={36} />
+ */
+import Logo from './Logo.astro';
+
+interface Props {
+  size?: number;
+  color?: string;   // defaults to accent
+  class?: string;
+}
+const { size = 40, color = 'var(--accent)', class: className } = Astro.props;
+---
+<span class:list={['pippin-spinner', className]} role="status" aria-label="Loading">
+  <Logo size={size} color={color} />
+</span>
+
+<style>
+  .pippin-spinner {
+    display: inline-flex;
+  }
+  .pippin-spinner :global(svg) {
+    animation: pippin-spin 3.2s infinite;
+    transform-origin: 50% 50%;
+  }
+  @keyframes pippin-spin {
+    0%   { transform: rotate(0deg);   animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+    42%  { transform: rotate(180deg); animation-timing-function: linear; }
+    58%  { transform: rotate(180deg); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+    100% { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pippin-spinner :global(svg) {
+      animation: none;
+    }
+  }
+</style>
