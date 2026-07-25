@@ -21,3 +21,6 @@ yarn-error.log*
 
 # macOS
 .DS_Store
+
+# scratch
+temp/
