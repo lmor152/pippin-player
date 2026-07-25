@@ -1,14 +1,13 @@
 ---
 /**
  * ValueProps — id="valueprops".
- * Three confident value blocks presented as alternating feature rows:
- *   1) SharePlay — watch together, perfectly in sync
- *   2) Designed for Apple — native to every device
- *   3) Pay once — buy it once, enjoy it everywhere (Family Sharing)
+ * Two confident value blocks presented as alternating feature rows:
+ *   1) SharePlay — watch together, perfectly in sync (copy left / visual right)
+ *   2) Pay once — buy it once, enjoy it everywhere (visual left / copy right)
  *
  * Every visual is bespoke inline CSS/SVG, themed entirely via shared CSS vars
- * so the whole section re-tints with the site accent. sampleFilms provides the
- * SharePlay backdrop context (Cosmos Laundromat has real backdrop art).
+ * so the whole section re-tints with the site accent. The SharePlay backdrop
+ * uses real Cosmos Laundromat backdrop art from the sample library.
  */
 import { sampleFilms } from '../../lib/sampleData.js';
 import Logo from '../Logo.astro';
@@ -20,13 +19,6 @@ const backdropFilm =
   sampleFilms[0];
 const backdropSrc = backdropFilm.backdrop ? `/media/${backdropFilm.backdrop}` : null;
 
-// Real library art for the "Designed for Apple" device screens.
-const gridFilms = sampleFilms.filter((f) => f.poster && f.backdrop).slice(0, 6);
-const heroFilm =
-  sampleFilms.find((f) => f.id === 'sintel' && f.backdrop) ??
-  sampleFilms.find((f) => f.backdrop) ??
-  sampleFilms[0];
-
 const payFeatures = [
   'One-time purchase',
   'All your Apple devices',
@@ -36,23 +28,13 @@ const payFeatures = [
 
 <section class="section vp" id="valueprops">
   <div class="container">
-    <header class="vp-head reveal">
-      <p class="eyebrow">Why Pippin</p>
-      <h2 class="section-title">Made to be lived with.</h2>
-      <p class="section-subtitle">
-        Watch together, feel at home on every Apple device, and pay for it just
-        once. The details that make Pippin a joy to own.
-      </p>
-    </header>
-
     <!-- ============================ 1 · SHAREPLAY ======================= -->
     <div class="vp-row reveal">
       <div class="vp-copy">
         <p class="vp-eyebrow">SharePlay</p>
         <h3 class="h2 vp-title">Watch together, perfectly in sync.</h3>
         <p class="vp-body">
-          Start a FaceTime SharePlay session and watch with friends and family —
-          across the room or across the world. Playback stays perfectly in sync,
+          Start a FaceTime SharePlay session and watch with friends and family. Playback stays perfectly in sync,
           everyone can play, pause and scrub, and it all happens right inside
           Pippin.
         </p>
@@ -95,58 +77,15 @@ const payFeatures = [
       </div>
     </div>
 
-    <!-- ==================== 2 · DESIGNED FOR APPLE ===================== -->
+    <!-- ========================= 2 · PAY ONCE ========================== -->
     <div class="vp-row vp-row--reverse reveal" style="--reveal-delay:80ms">
       <div class="vp-copy">
-        <p class="vp-eyebrow">Designed for Apple</p>
-        <h3 class="h2 vp-title">Native to every device you own.</h3>
-        <p class="vp-body">
-          Built entirely with SwiftUI to feel completely at home on iPhone,
-          iPad, Mac and Apple&nbsp;TV. Layouts adapt to each device — tabs on
-          iPhone, a roomy sidebar on Mac and TV — with deep system integration
-          throughout.
-        </p>
-        <ul class="vp-chips">
-          <li>Picture in Picture</li>
-          <li>AirPlay</li>
-          <li>Focus</li>
-          <li>System players</li>
-        </ul>
-      </div>
-
-      <div class="vp-visual" aria-hidden="true">
-        <div class="glass vp-stage vp-stage--devices">
-          <div class="vp-devices">
-            <div class="vp-dev vp-dev--mac">
-              <img class="vp-shot" src="/media/previews/mac-row.png" alt="" width="1214" height="758" loading="lazy" decoding="async" />
-              <span class="vp-label">Mac</span>
-            </div>
-            <div class="vp-dev vp-dev--ipad">
-              <img class="vp-shot" src="/media/previews/ipad-row.png" alt="" width="1214" height="904" loading="lazy" decoding="async" />
-              <span class="vp-label">iPad</span>
-            </div>
-            <div class="vp-dev vp-dev--iphone">
-              <img class="vp-shot" src="/media/previews/iphone-row.png" alt="" width="640" height="1340" loading="lazy" decoding="async" />
-              <span class="vp-label">iPhone</span>
-            </div>
-            <div class="vp-dev vp-dev--tv">
-              <img class="vp-shot" src="/media/previews/tv-row.png" alt="" width="1214" height="786" loading="lazy" decoding="async" />
-              <span class="vp-label">Apple&nbsp;TV</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================= 3 · PAY ONCE ========================== -->
-    <div class="vp-row reveal" style="--reveal-delay:80ms">
-      <div class="vp-copy">
         <p class="vp-eyebrow">Pay once</p>
-        <h3 class="h2 vp-title">Buy it once. Enjoy it everywhere.</h3>
+        <h3 class="h2 vp-title">Buy once. Enjoy everywhere.</h3>
         <p class="vp-body">
           A single one-time purchase unlocks Pippin on all of your devices —
           iPhone, iPad, Mac and Apple&nbsp;TV. And with Family Sharing, your
-          whole household is covered. No subscriptions. No add-ons. Just yours.
+          whole household is covered.
         </p>
         <ul class="vp-checklist">
           {payFeatures.map((f) => (
@@ -184,12 +123,13 @@ const payFeatures = [
               </span>
             </div>
 
-            <div class="vp-rays">
-              <span class="vp-ray vp-ray--1"></span>
-              <span class="vp-ray vp-ray--2"></span>
-              <span class="vp-ray vp-ray--3"></span>
-              <span class="vp-ray vp-ray--4"></span>
-            </div>
+            <!-- connector overlay: badge anchor fans down to each device pill -->
+            <svg class="vp-connect" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <line class="vp-conn vp-conn--1" x1="50" y1="0" x2="12.5" y2="100" />
+              <line class="vp-conn vp-conn--2" x1="50" y1="0" x2="37.5" y2="100" />
+              <line class="vp-conn vp-conn--3" x1="50" y1="0" x2="62.5" y2="100" />
+              <line class="vp-conn vp-conn--4" x1="50" y1="0" x2="87.5" y2="100" />
+            </svg>
 
             <div class="vp-targets">
               <span class="vp-target">iPhone</span>
@@ -216,11 +156,6 @@ const payFeatures = [
   .vp {
     position: relative;
     overflow: hidden;
-  }
-
-  .vp-head {
-    max-width: 44ch;
-    margin-bottom: var(--space-9);
   }
 
   /* ------------------------------------------------------ feature row */
@@ -261,25 +196,6 @@ const payFeatures = [
     color: var(--label-secondary);
     font-size: 1.0625rem;
     line-height: 1.6;
-  }
-
-  /* ------------------------------------------------------ chips list */
-  .vp-chips {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    margin: var(--space-5) 0 0;
-    padding: 0;
-  }
-  .vp-chips li {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--label-secondary);
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-pill);
-    background: var(--glass);
   }
 
   /* ------------------------------------------------------ checklist */
@@ -440,239 +356,6 @@ const payFeatures = [
     white-space: nowrap;
   }
 
-  /* ---------------- Devices stage --------------- */
-  .vp-stage--devices {
-    display: grid;
-    place-items: center;
-    padding: var(--space-6);
-    background:
-      radial-gradient(90% 70% at 50% 30%, var(--accent-subtle), transparent 70%),
-      var(--glass);
-  }
-  .vp-devices {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: var(--space-3);
-    width: 100%;
-  }
-  .vp-dev {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    flex: 0 0 auto;
-  }
-  /* Rendered device shots — pixel-identical to the live Customiser preview */
-  .vp-shot {
-    display: block;
-    height: auto;
-    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.4));
-  }
-  .vp-dev--mac .vp-shot { width: 130px; }
-  .vp-dev--ipad .vp-shot { width: 100px; }
-  .vp-dev--iphone .vp-shot { width: 52px; }
-  .vp-dev--tv .vp-shot { width: 126px; }
-  .vp-label {
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--label-tertiary);
-    letter-spacing: 0.02em;
-  }
-  .vp-screen {
-    position: relative;
-    background: var(--bg-secondary);
-    border: 1.5px solid var(--glass-border);
-    overflow: hidden;
-    display: flex;
-  }
-  .vp-ui { display: block; }
-
-  /* Mac */
-  .vp-dev--mac .vp-screen {
-    width: 132px;
-    height: 84px;
-    border-radius: 8px 8px 2px 2px;
-  }
-  .vp-stand {
-    width: 34px;
-    height: 8px;
-    border-radius: 0 0 4px 4px;
-    background: var(--glass-border);
-  }
-  /* iPad */
-  .vp-dev--ipad .vp-screen {
-    width: 82px;
-    height: 104px;
-    border-radius: 8px;
-  }
-  /* iPhone */
-  .vp-dev--iphone .vp-screen {
-    width: 46px;
-    height: 96px;
-    border-radius: 10px;
-    flex-direction: column;
-  }
-  /* Apple TV */
-  .vp-dev--tv .vp-screen {
-    width: 120px;
-    height: 72px;
-    border-radius: 8px;
-    flex-direction: row;
-  }
-  .vp-tvbase {
-    width: 46px;
-    height: 6px;
-    border-radius: 3px;
-    background: var(--glass-border);
-  }
-
-  /* UI hints inside screens */
-
-  /* Mac source-list sidebar (with faint nav rows) */
-  .vp-ui--sidebar {
-    width: 27%;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 6px 5px;
-    background: var(--bg);
-    border-right: 1px solid var(--glass-border);
-  }
-  .vp-navrow {
-    height: 4px;
-    width: 78%;
-    border-radius: 2px;
-    background: var(--label-tertiary);
-    opacity: 0.5;
-  }
-  .vp-navdot {
-    height: 8px;
-    width: 100%;
-    border-radius: 3px;
-    background: var(--accent-subtle);
-    box-shadow: inset 0 0 0 1px var(--accent-muted);
-  }
-  .vp-navdot--on { background: var(--accent-subtle); }
-
-  .vp-ui--grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
-    padding: 4px;
-    align-content: start;
-    overflow: hidden;
-  }
-  .vp-ui--grid-2 { grid-template-columns: repeat(2, 1fr); }
-
-  /* Real poster tiles inside device screens. */
-  .vp-tile {
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
-    border-radius: 3px;
-    display: block;
-  }
-  .vp-tile--wide { aspect-ratio: 16 / 9; }
-
-  /* iPad top segmented nav strip */
-  .vp-ui--topnav {
-    position: absolute;
-    top: 5px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    display: flex;
-    gap: 3px;
-    padding: 3px 4px;
-    border-radius: 999px;
-    background: var(--glass-strong);
-    border: 1px solid var(--glass-border);
-  }
-  .vp-seg {
-    width: 12px;
-    height: 4px;
-    border-radius: 999px;
-    background: var(--label-tertiary);
-    opacity: 0.55;
-  }
-  .vp-seg--on {
-    width: 15px;
-    background: var(--accent);
-    opacity: 1;
-  }
-  .vp-dev--ipad .vp-ui--grid { padding-top: 16px; }
-
-  /* iPhone content stack + floating bottom tab bar */
-  .vp-ui--stack {
-    flex: 1;
-    margin: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    overflow: hidden;
-  }
-  .vp-ui--tabs {
-    position: absolute;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    height: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: var(--glass-strong);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(6px);
-  }
-  .vp-tab {
-    width: 5px;
-    height: 5px;
-    border-radius: 2px;
-    background: var(--label-tertiary);
-    opacity: 0.5;
-  }
-  .vp-tab--on {
-    background: var(--accent);
-    opacity: 1;
-    box-shadow: 0 0 5px var(--accent-muted);
-  }
-
-  /* Apple TV — left rail + main (hero over poster rail) */
-  .vp-ui--tvrail {
-    width: 26%;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 6px 5px;
-    background: var(--bg);
-    border-right: 1px solid var(--glass-border);
-  }
-  .vp-ui--tvmain {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .vp-ui--hero {
-    height: 58%;
-    background: linear-gradient(120deg, var(--accent-muted), var(--accent-subtle));
-    background-size: cover;
-    background-position: center 30%;
-    border-bottom: 1px solid var(--glass-border);
-  }
-  .vp-ui--rail {
-    flex: 1;
-    display: flex;
-    gap: 4px;
-    padding: 5px;
-    overflow: hidden;
-  }
-  .vp-ui--rail .vp-tile { width: auto; height: 100%; flex: none; }
-
   /* ---------------- Pay-once stage --------------- */
   .vp-stage--pay {
     display: grid;
@@ -687,8 +370,9 @@ const payFeatures = [
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-5);
+    gap: var(--space-4);
     width: 100%;
+    max-width: 320px;
   }
   .vp-badge {
     position: relative;
@@ -716,50 +400,58 @@ const payFeatures = [
     box-shadow: var(--shadow-md);
   }
 
-  .vp-rays {
-    position: absolute;
-    top: 76px;
-    left: 50%;
-    width: 1px;
-    height: 44px;
-    transform: translateX(-50%);
+  /* connector overlay — badge anchor fans down to each device pill */
+  /* Negative margins cancel the .vp-fan flex gaps so the overlay box spans
+     exactly from the badge's bottom edge (y=0) to the pills' top edge (y=100),
+     letting each line genuinely originate at the badge and land on a pill. */
+  .vp-connect {
+    display: block;
+    width: 100%;
+    height: 48px;
+    margin-top: calc(-1 * var(--space-4));
+    margin-bottom: calc(-1 * var(--space-4));
+    overflow: visible;
   }
-  .vp-ray {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    height: 44px;
-    width: 2px;
-    background: linear-gradient(var(--accent), transparent);
-    transform-origin: top center;
-    opacity: 0.55;
+  .vp-conn {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.5;
+    animation: vp-conn-pulse 3s ease-in-out infinite;
   }
-  .vp-ray--1 { transform: translateX(-50%) rotate(-34deg); }
-  .vp-ray--2 { transform: translateX(-50%) rotate(-12deg); }
-  .vp-ray--3 { transform: translateX(-50%) rotate(12deg); }
-  .vp-ray--4 { transform: translateX(-50%) rotate(34deg); }
+  .vp-conn--1 { animation-delay: 0ms; }
+  .vp-conn--2 { animation-delay: 200ms; }
+  .vp-conn--3 { animation-delay: 400ms; }
+  .vp-conn--4 { animation-delay: 600ms; }
+  @keyframes vp-conn-pulse {
+    0%, 100% { opacity: 0.32; }
+    50% { opacity: 0.62; }
+  }
 
   .vp-targets {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    justify-items: center;
     gap: var(--space-2);
-    margin-top: var(--space-2);
+    width: 100%;
   }
   .vp-target {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: var(--label-secondary);
-    padding: 6px var(--space-3);
+    padding: 6px var(--space-2);
     border-radius: var(--radius-pill);
     background: var(--glass-strong);
     border: 1px solid var(--glass-border);
+    white-space: nowrap;
   }
 
   .vp-family {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    margin-top: var(--space-3);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-pill);
     background: var(--glass);
@@ -803,16 +495,12 @@ const payFeatures = [
   }
 
   @media (max-width: 480px) {
-    .vp-devices { gap: var(--space-2); }
-    .vp-dev--mac .vp-shot { width: 104px; }
-    .vp-dev--tv .vp-shot { width: 100px; }
-    .vp-dev--ipad .vp-shot { width: 80px; }
-    .vp-dev--iphone .vp-shot { width: 44px; }
     .vp-bubble { width: 44px; height: 44px; font-size: 0.9rem; }
     .vp-bubble--b { width: 52px; height: 52px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .vp-backdrop { transform: none; }
+    .vp-conn { animation: none; opacity: 0.5; }
   }
 </style>

@@ -66,10 +66,10 @@ const secondary = [
       <p class="eyebrow">Total control</p>
       <h2 class="section-title">Rearrange everything.<br />Build anything.</h2>
       <p class="section-subtitle">
-        Pippin isn't a fixed layout you learn to live with — it's a canvas.
-        Reshape the tab bar, compose your own pages from blocks, and save razor-
-        sharp smart filters across all your servers. Make it exactly, unmistakably
-        yours.
+        Pippin isn't a fixed layout — it's a canvas.
+      </p>
+      <p class="section-subtitle">
+        Reshape the tab bar, compose your own pages from blocks, and save your favourite filters across all your servers.
       </p>
     </header>
 
@@ -77,13 +77,11 @@ const secondary = [
       <!-- ============================ 1 · SIDEBAR / TAB EDITOR ============= -->
       <article class="by-card glass reveal" style="--reveal-delay:80ms">
         <div class="by-card-copy">
-          <p class="by-eyebrow">Your sidebar, your tabs</p>
+          <p class="by-eyebrow">Your sidebar, your pages</p>
           <h3 class="by-card-title">Reorder, rename, re-icon.</h3>
           <p class="by-card-body">
             Choose which pages appear, drag to reorder, rename any tab and pick a
-            custom SF&nbsp;Symbol for each. Set your default page, and tuck the
-            rest into a Favourites portal. iPhone shows up to four tabs; iPad, Mac
-            and TV get a roomy sidebar. Settings stays pinned.
+            custom SF&nbsp;Symbol for each. Choose your favourite pages and hide the rest.
           </p>
         </div>
 
@@ -148,8 +146,7 @@ const secondary = [
           <p class="by-card-body">
             Stack the page you want: a Hero, headings and text, shelf rows like
             Keep Watching, On Deck, Watchlist or Server Hub, plus Grids, Dividers
-            and Links. Give every block its own title, layout — Row, Spotlight or
-            Hero — and poster size.
+            and Links.
           </p>
         </div>
 
@@ -201,12 +198,11 @@ const secondary = [
     <article class="by-card by-scope glass reveal" style="--reveal-delay:120ms">
       <div class="by-card-copy">
         <p class="by-eyebrow">Scopes &amp; smart filters</p>
-        <h3 class="by-card-title">One filter. Every server. Saved.</h3>
+        <h3 class="by-card-title">Apply filters across all your servers.</h3>
         <p class="by-card-body">
-          Any page or row can be a saved smart filter spanning one server or many.
-          Stack conditions — genre, year, content rating, watch status, resolution,
-          codec, dynamic range, spatial audio, channels — then sort. The result
-          becomes a living row you can drop anywhere.
+          Any page or row can be filtered and saved.
+          Stack conditions like genre, year, content rating, watch status, resolution,
+          codec, dynamic range, spatial audio, channels.
         </p>
       </div>
 
@@ -267,7 +263,15 @@ const secondary = [
   }
   .by-head {
     max-width: 46ch;
+    margin-inline: auto;
     margin-bottom: var(--space-8);
+    text-align: center;
+  }
+  /* The shared title/subtitle helpers carry a max-width but no auto margins,
+     so center them explicitly within this centered head. */
+  .by-head .section-title,
+  .by-head .section-subtitle {
+    margin-inline: auto;
   }
 
   /* ------------------------------------------------------ card scaffold */

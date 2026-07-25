@@ -55,10 +55,10 @@ const stages = [
   <div class="container">
     <header class="int-head reveal">
       <p class="eyebrow">Integrations</p>
-      <h2 class="section-title">Request it. Pippin handles the rest.</h2>
+      <h2 class="section-title">The Full Pipeline, All Within Pippin.</h2>
       <p class="section-subtitle">
-        Pippin plugs straight into Overseerr &amp; Jellyseerr for requests, and Sonarr
-        &amp; Radarr for automated TV and movie management — so you can discover, request,
+        Pippin plugs straight into Seerr for requests, and Sonarr
+        &amp; Radarr for automated TV and movie management. Discover, request,
         and grow your library without ever leaving the app.
       </p>
     </header>
@@ -253,6 +253,12 @@ const stages = [
     max-width: 720px;
     margin: 0 auto var(--space-8);
     text-align: center;
+  }
+  /* The shared title/subtitle helpers carry a max-width but no auto margins,
+     so center them explicitly within this centered head. */
+  .int-head .section-title,
+  .int-head .section-subtitle {
+    margin-inline: auto;
   }
 
   /* ---- Service cards ---- */
