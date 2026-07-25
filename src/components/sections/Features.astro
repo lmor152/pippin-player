@@ -1,77 +1,31 @@
 ---
 /**
- * Features — id="features". (Formerly the standalone Player + Features sections,
- * merged into one.) Leads on Pippin's standout MPVKit-based player, then widens
- * into a scannable breadth grid.
- *
- *   1. A stand-out "generated thumbnails" beat — Pippin makes its own scrub
- *      previews on-device via a headless MPV engine, so instant thumbnail
- *      scrubbing works even when the server has no Trickplay / BIF.
- *   2. A playback capability grid (codecs, HDR, audio, subtitles…).
- *   3. A breadth grid of everything-else feature tiles.
- *   4. An auto-scrolling codec/format "wall".
+ * Features — id="features". One cohesive section: a single, uniform grid of
+ * feature tiles (the MPV player capabilities and every-else customisation touch
+ * merged together), closed by an auto-scrolling codec/format "wall".
  */
 
-import { sampleFilms } from '../../lib/sampleData.js';
-
-// Player still: a real backdrop from the demo library (1280×720), with the
-// matching clear-logo used as the "now playing" label.
-const feature = sampleFilms.find((f) => f.id === 'tos') ?? sampleFilms[0];
-const backdrop = `/media/${feature.backdrop}`;
-const logo = feature.logo ? `/media/${feature.logo}` : null;
-
-// Supporting capability cards — each with an inline-SVG icon key.
-const capabilities = [
-  {
-    icon: 'film',
-    title: 'MPV-based Player',
-    body: 'Play almost any media format, with hardware acceleration.',
-  },
-  {
-    icon: 'hdr',
-    title: 'HDR',
-    body: 'HDR10, HDR10+, Dolby Vision and HLG',
-  },
-  {
-    icon: 'audio',
-    title: 'Lossless audio & passthrough',
-    body: 'Dolby Atmos, Dolby Digital+, DTS-HD and TrueHD. Multi-channel bitstreaming straight to your receiver, untouched.',
-  },
-  {
-    icon: 'subtitles',
-    title: 'Subtitles that look right',
-    body: 'PGS and VOBSUB image subs, SRT, and full ASS / SSA styling, rendered crisply with the styling the author intended.',
-  },
-  {
-    icon: 'subsfetch',
-    title: 'Subtitles on demand',
-    body: 'Missing subs? Pippin can search OpenSubtitles and SubDL without ever leaving playback.',
-  },
-  {
-    icon: 'precision',
-    title: 'Precision playback',
-    body: 'Frame-accurate seeking, thumbnail scrubbing, adjustable playback speed and per-title audio / subtitle selection.',
-  },
-  {
-    icon: 'resume',
-    title: 'Never lose your place',
-    body: 'Continue Watching, Up Next, and skip-intro / skip-credits driven straight from chapter markers.',
-  },
-  {
-    icon: 'offline',
-    title: 'Watch offline',
-    body: 'Download any title to your device and bring the metadata with it — no compromise on the plane or the train.',
-  },
-];
-
-// The "generated thumbnails" story — three truthful points from the real
-// GeneratedThumbnailProvider / MPVHeadlessThumbnailEngine implementation.
-const thumbPoints = [
-  {
-    icon: 'engine',
-    title: 'A headless MPV engine',
-    body: 'A second, silent player for rendering frames on the fly.',
-  }
+// Every Pippin feature as one uniform tile. Leads with the MPV player
+// capabilities, then widens into customisation and everything else.
+const features = [
+  { icon: 'film',      title: 'MPV-based player',          desc: 'Play almost any format, hardware-accelerated, on a rock-solid MPV core.' },
+  { icon: 'hdr',       title: 'HDR done right',            desc: 'HDR10, HDR10+, Dolby Vision and HLG, tone-mapped exactly as intended.' },
+  { icon: 'audio',     title: 'Lossless audio',            desc: 'Dolby Atmos, DD+, DTS-HD and TrueHD, bitstreamed untouched to your receiver.' },
+  { icon: 'subtitles', title: 'Subtitles that look right', desc: 'PGS/VOBSUB image subs, SRT and full ASS / SSA styling, rendered crisply.' },
+  { icon: 'subsfetch', title: 'Subtitles on demand',       desc: 'Missing subs? Search OpenSubtitles and SubDL without leaving playback.' },
+  { icon: 'previews',  title: 'Generated scrub previews',  desc: 'On-device scrub thumbnails from a headless MPV engine — no Trickplay or BIF needed.' },
+  { icon: 'precision', title: 'Precision playback',        desc: 'Frame-accurate seeking, thumbnail scrubbing, variable speed and per-title tracks.' },
+  { icon: 'resume',    title: 'Never lose your place',     desc: 'Continue Watching, Up Next and skip intro / credits from chapter markers.' },
+  { icon: 'offline',   title: 'Watch offline',             desc: 'Download any title — and its metadata — for the plane or the train.' },
+  { icon: 'layout',    title: 'Custom pages & shelves',    desc: 'Build your home from scratch — add, reorder and rename shelves and whole pages.' },
+  { icon: 'shelves',   title: 'Shelf styles',              desc: 'Show any shelf as a Row, a Spotlight carousel, or a full-bleed Hero.' },
+  { icon: 'palette',   title: 'Accent & themes',           desc: 'Re-tint the whole app with any accent. Light, Dark and True Black for OLED.' },
+  { icon: 'poster',    title: 'Poster sizes',              desc: 'From compact grids to big cinematic artwork — tuned per shelf.' },
+  { icon: 'music',     title: 'Theme songs',               desc: "Hear a show's theme as you browse it, on both Plex and Jellyfin." },
+  { icon: 'servers',   title: 'Multiple servers',          desc: 'Combine Plex and Jellyfin servers with per-network profiles.' },
+  { icon: 'ratings',   title: 'Rich metadata',             desc: 'IMDb, TMDb, Trakt, Rotten Tomatoes, Metacritic and Letterboxd ratings.' },
+  { icon: 'spoilers',  title: 'Hide spoilers',             desc: 'Blur episode thumbnails, titles and summaries for anything you haven’t watched yet.' },
+  { icon: 'search',    title: 'Search everywhere',         desc: 'Find anything across every connected server, instantly.' },
 ];
 
 // Format wall chips — hammered home twice for a seamless CSS marquee loop.
@@ -79,62 +33,6 @@ const formatChips = [
   'HEVC', 'H.264', 'AV1', 'VP9', 'MPEG-2', 'Dolby Vision', 'HDR10+', 'HDR10',
   'HLG', 'Dolby Atmos', 'DD+', 'DTS-HD', 'TrueHD', 'MKV', 'MP4', 'MOV', 'TS',
   'ISO', 'BDMV', 'PGS', 'VOBSUB', 'SRT', 'ASS / SSA', 'OpenSubtitles',
-];
-
-// Breadth grid — the "everything else" tiles. Deduped against the playback
-// capability cards above (Offline downloads, Continue Watching and
-// Skip intro & credits live there as first-class capabilities).
-const features = [
-  {
-    title: 'Custom pages & shelves',
-    desc: 'Build your home from scratch — add, reorder, rename shelves and whole pages.',
-    icon: 'layout',
-  },
-  {
-    title: 'Shelf styles',
-    desc: 'Show any shelf as a Row, a Spotlight carousel, or a full-bleed Hero.',
-    icon: 'shelves',
-  },
-  {
-    title: 'Accent & themes',
-    desc: 'Pick any accent to re-tint the whole app. Light, Dark, and True Black for OLED.',
-    icon: 'palette',
-  },
-  {
-    title: 'Poster sizes',
-    desc: 'From compact grids to big cinematic artwork — tuned per shelf.',
-    icon: 'poster',
-  },
-  {
-    title: 'Theme songs',
-    desc: "Hear a show's theme as you browse it, on both Plex and Jellyfin.",
-    icon: 'music',
-  },
-  {
-    title: 'Multiple servers',
-    desc: 'Combine Plex and Jellyfin servers with per-network profiles.',
-    icon: 'servers',
-  },
-  {
-    title: 'Rich metadata',
-    desc: 'IMDb, TMDb, Trakt, Rotten Tomatoes, Metacritic and Letterboxd ratings.',
-    icon: 'ratings',
-  },
-  {
-    title: 'Hide spoilers',
-    desc: 'Blur episode thumbnails, titles and summaries for anything you haven’t watched yet.',
-    icon: 'spoilers',
-  },
-  {
-    title: 'Live TV & Music',
-    desc: 'Tune into live channels and play your whole music library.',
-    icon: 'livetv',
-  },
-  {
-    title: 'Search everywhere',
-    desc: 'Find anything across every connected server, instantly.',
-    icon: 'search',
-  },
 ];
 ---
 
@@ -150,112 +48,41 @@ const features = [
       </p>
     </header>
 
-    <!-- ── Stand-out beat: self-generated scrub thumbnails ──────── -->
-    <div class="thumb-feature reveal" style="--reveal-delay:80ms">
-      <div class="thumb-feature-copy">
-        <p class="eyebrow">No BIF, no Trickplay, no problem</p>
-        <h3 class="thumb-feature-title">Scrub previews, generated on&nbsp;device.</h3>
-        <p class="thumb-feature-lead">
-          Most players can only show scrub thumbnails if your server has already
-          built <strong>Trickplay</strong> or <strong>BIF</strong> sprites for
-          the file. Pippin can make the previews itself.
-        </p>
-
-        <ul class="thumb-points" role="list">
-          {thumbPoints.map((p) => (
-            <li class="thumb-point">
-              <span class="thumb-point-icon" aria-hidden="true">
-                {p.icon === 'engine' && (
-                  <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm9-2a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.3 1a7 7 0 0 0-2-1.2L16.2 2h-4l-.4 2.4a7 7 0 0 0-2 1.2l-2.3-1-2 3.5 2 1.5A7 7 0 0 0 3.4 12a7 7 0 0 0 .1 1.2l-2 1.5 2 3.5 2.3-1a7 7 0 0 0 2 1.2L7.8 22h4l.4-2.4a7 7 0 0 0 2-1.2l2.3 1 2-3.5-2-1.5c.1-.4.1-.8.1-1.2Z" fill="currentColor"/></svg>
-                )}
-                {p.icon === 'cache' && (
-                  <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 3c-4.4 0-8 1.6-8 3.6v10.8C4 19.4 7.6 21 12 21s8-1.6 8-3.6V6.6C20 4.6 16.4 3 12 3Zm6 14.4c0 .7-2.4 1.8-6 1.8s-6-1.1-6-1.8V15c1.5.9 3.7 1.4 6 1.4s4.5-.5 6-1.4v2.4Zm0-4.8c0 .7-2.4 1.8-6 1.8s-6-1.1-6-1.8v-2.2c1.5.9 3.7 1.4 6 1.4s4.5-.5 6-1.4v2.2ZM12 8.4c-3.6 0-6-1.1-6-1.8S8.4 5 12 5s6 1.1 6 1.6-2.4 1.8-6 1.8Z" fill="currentColor"/></svg>
-                )}
-                {p.icon === 'fallback' && (
-                  <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z" fill="currentColor"/></svg>
-                )}
-              </span>
-              <div>
-                <h4 class="thumb-point-title">{p.title}</h4>
-                <p class="thumb-point-body">{p.body}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <!-- Standalone visual: a scrub bubble over a mini timeline -->
-      <div class="thumb-visual glass" aria-hidden="true">
-        <div class="thumb-visual-preview" data-role="viz-thumb">
-          <span class="thumb-visual-frame is-active" data-role="viz-frame-a" style={`background-image:url('${backdrop}')`}></span>
-          <span class="thumb-visual-frame" data-role="viz-frame-b" style={`background-image:url('${backdrop}')`}></span>
-          <span class="thumb-visual-badge">
-            <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M12 2 3 7v6c0 5 3.8 8.4 9 9 5.2-.6 9-4 9-9V7l-9-5Zm-1.2 13.4L7 11.6l1.4-1.4 2.4 2.4 4.8-4.8L17 9.2l-6.2 6.2Z" fill="currentColor"/></svg>
-            Generated on device
-          </span>
-          <span class="thumb-visual-spinner" data-role="viz-spinner"></span>
-          <span class="thumb-visual-time" data-role="viz-time">12:04</span>
-        </div>
-        <div class="thumb-visual-bar">
-          <div class="thumb-visual-track">
-            <div class="thumb-visual-fill" data-role="viz-fill"></div>
-            <span class="thumb-visual-tick" style="left:8%"></span>
-            <span class="thumb-visual-tick" style="left:88%"></span>
-          </div>
-          <span class="thumb-visual-knob" data-role="viz-knob"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Supporting capability grid ───────────────────────────── -->
-    <ul class="cap-grid" role="list">
-      {capabilities.map((cap, i) => (
-        <li class="cap-card glass reveal" style={`--reveal-delay:${i * 60}ms`}>
-          <span class="cap-icon" aria-hidden="true">
-            {cap.icon === 'film' && (
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v3h3V5H4Zm5 0v3h6V5H9Zm8 0v3h3V5h-3ZM4 10v4h3v-4H4Zm5 0v9h6v-9H9Zm8 0v4h3v-4h-3ZM4 16v3h3v-3H4Zm13 0v3h3v-3h-3Z" fill="currentColor"/></svg>
-            )}
-            {cap.icon === 'hdr' && (
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z" fill="currentColor"/></svg>
-            )}
-            {cap.icon === 'audio' && (
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 9h3l4-4v14l-4-4H4V9Zm11-1a1 1 0 0 1 1.7-.71 5 5 0 0 1 0 7.42A1 1 0 1 1 15 13.3a3 3 0 0 0 0-2.6A1 1 0 0 1 15 8Zm2.8-2.8a1 1 0 0 1 1.42 0 9 9 0 0 1 0 13.6 1 1 0 0 1-1.42-1.42 7 7 0 0 0 0-10.76 1 1 0 0 1 0-1.42Z" fill="currentColor"/></svg>
-            )}
-            {cap.icon === 'subtitles' && (
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 8h6v2H6v-2Zm8 0h4v2h-4v-2ZM6 8h4v2H6V8Zm6 0h6v2h-6V8Z" fill="currentColor"/></svg>
-            )}
-            {cap.icon === 'subsfetch' && (
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/><path d="M7.5 15.5h4M14 15.5h2.5" stroke-linecap="round"/></svg>
-            )}
-            {cap.icon === 'precision' && (
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4v6l4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            )}
-            {cap.icon === 'resume' && (
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 4a8 8 0 1 1-7.6 5.5 1 1 0 0 1 1.9.66A6 6 0 1 0 12 6v2l-3.5-3L12 1v3Z" fill="currentColor"/></svg>
-            )}
-            {cap.icon === 'offline' && (
-              <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 3a1 1 0 0 1 1 1v9.6l2.3-2.3a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L11 13.6V4a1 1 0 0 1 1-1ZM5 19h14a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" fill="currentColor"/></svg>
-            )}
-          </span>
-          <h3 class="cap-title">{cap.title}</h3>
-          <p class="cap-body">{cap.body}</p>
-        </li>
-      ))}
-    </ul>
-
-    <!-- ── Breadth grid: everything else ────────────────────────── -->
-    <div class="breadth-head reveal">
-      <p class="eyebrow">Everything else</p>
-      <h3 class="breadth-title">Polished down to the last pixel.</h3>
-    </div>
-
+    <!-- ── One unified grid of feature tiles ────────────────────── -->
     <ul class="features-grid" role="list">
       {features.map((f, i) => (
         <li
           class="feature-card glass reveal"
-          style={`--reveal-delay:${Math.min(i * 60, 480)}ms`}
+          style={`--reveal-delay:${Math.min(i * 45, 480)}ms`}
         >
           <span class="feature-icon" aria-hidden="true">
+            {f.icon === 'film' && (
+              <svg viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v3h3V5H4Zm5 0v3h6V5H9Zm8 0v3h3V5h-3ZM4 10v4h3v-4H4Zm5 0v9h6v-9H9Zm8 0v4h3v-4h-3ZM4 16v3h3v-3H4Zm13 0v3h3v-3h-3Z" fill="currentColor"/></svg>
+            )}
+            {f.icon === 'hdr' && (
+              <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z" fill="currentColor"/></svg>
+            )}
+            {f.icon === 'audio' && (
+              <svg viewBox="0 0 24 24"><path d="M4 9h3l4-4v14l-4-4H4V9Zm11-1a1 1 0 0 1 1.7-.71 5 5 0 0 1 0 7.42A1 1 0 1 1 15 13.3a3 3 0 0 0 0-2.6A1 1 0 0 1 15 8Zm2.8-2.8a1 1 0 0 1 1.42 0 9 9 0 0 1 0 13.6 1 1 0 0 1-1.42-1.42 7 7 0 0 0 0-10.76 1 1 0 0 1 0-1.42Z" fill="currentColor"/></svg>
+            )}
+            {f.icon === 'subtitles' && (
+              <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 8h6v2H6v-2Zm8 0h4v2h-4v-2ZM6 8h4v2H6V8Zm6 0h6v2h-6V8Z" fill="currentColor"/></svg>
+            )}
+            {f.icon === 'subsfetch' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/><path d="M7.5 15.5h4M14 15.5h2.5" stroke-linecap="round"/></svg>
+            )}
+            {f.icon === 'previews' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m10 9.5 4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg>
+            )}
+            {f.icon === 'precision' && (
+              <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4v6l4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            )}
+            {f.icon === 'resume' && (
+              <svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1-7.6 5.5 1 1 0 0 1 1.9.66A6 6 0 1 0 12 6v2l-3.5-3L12 1v3Z" fill="currentColor"/></svg>
+            )}
+            {f.icon === 'offline' && (
+              <svg viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v9.6l2.3-2.3a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L11 13.6V4a1 1 0 0 1 1-1ZM5 19h14a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" fill="currentColor"/></svg>
+            )}
             {f.icon === 'layout' && (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2.5" />
@@ -303,10 +130,11 @@ const features = [
                 <path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8L6.7 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5Z" />
               </svg>
             )}
-            {f.icon === 'livetv' && (
+            {f.icon === 'spoilers' && (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="7" width="18" height="12" rx="2" />
-                <path d="m8 4 4 3 4-3" />
+                <path d="M3 3l18 18" />
+                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                <path d="M9.5 5.2A9.4 9.4 0 0 1 12 5c5 0 9 4.6 9 7 0 1-.7 2.3-1.9 3.4M6 6.1C3.8 7.5 3 9.7 3 12c0 0 4 7 9 7a9 9 0 0 0 3.4-.7" />
               </svg>
             )}
             {f.icon === 'search' && (
@@ -315,16 +143,9 @@ const features = [
                 <path d="m20 20-3.6-3.6" />
               </svg>
             )}
-            {f.icon === 'spoilers' && (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 3l18 18" />
-                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
-                <path d="M9.5 5.2A9.4 9.4 0 0 1 12 5c5 0 9 4.6 9 7 0 1-.7 2.3-1.9 3.4M6 6.1C3.8 7.5 3 9.7 3 12c0 0 4 7 9 7a9 9 0 0 0 3.4-.7" />
-              </svg>
-            )}
           </span>
           <div class="feature-body">
-            <h4 class="feature-title">{f.title}</h4>
+            <h3 class="feature-title">{f.title}</h3>
             <p class="feature-desc">{f.desc}</p>
           </div>
         </li>
@@ -360,266 +181,12 @@ const features = [
     margin: 0 auto var(--space-8);
     text-align: center;
   }
-  /* Center the shared title/subtitle helpers within the centered head
-     (they carry a max-width but no auto margins of their own). */
   .features-head .section-title,
   .features-head .section-subtitle {
     margin-inline: auto;
   }
 
-  /* ── Stand-out beat: generated thumbnails ──────────────────── */
-  .thumb-feature {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    gap: clamp(var(--space-5), 4vw, var(--space-8));
-    align-items: center;
-    margin-bottom: var(--space-9);
-    padding: clamp(var(--space-5), 3vw, var(--space-7));
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--accent-muted);
-    background:
-      radial-gradient(120% 140% at 100% 0%, var(--accent-subtle) 0%, transparent 55%),
-      var(--glass);
-  }
-  .thumb-feature-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(1.4rem, 3.4vw, 2rem);
-    letter-spacing: -0.02em;
-    color: var(--label);
-    margin: var(--space-2) 0 var(--space-3);
-    text-wrap: balance;
-  }
-  .thumb-feature-lead {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--label-secondary);
-    max-width: 40rem;
-  }
-  .thumb-feature-lead strong {
-    color: var(--label);
-    font-weight: 700;
-  }
-  .thumb-feature-lead em {
-    font-style: normal;
-    color: var(--accent);
-    font-weight: 600;
-  }
-
-  .thumb-points {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    margin-top: var(--space-5);
-  }
-  .thumb-point {
-    display: flex;
-    gap: var(--space-3);
-    align-items: flex-start;
-  }
-  .thumb-point-icon {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-card);
-    background: var(--accent-subtle);
-    color: var(--accent);
-  }
-  .thumb-point-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--label);
-    margin-bottom: 2px;
-  }
-  .thumb-point-body {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--label-secondary);
-  }
-
-  /* Standalone scrub-preview visual */
-  .thumb-visual {
-    padding: clamp(var(--space-5), 3vw, var(--space-6));
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-4);
-  }
-  .thumb-visual-preview {
-    position: relative;
-    width: min(100%, 300px);
-    aspect-ratio: 16 / 9;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-    background-color: var(--emerald-depths);
-  }
-  .thumb-visual-frame {
-    position: absolute;
-    inset: 0;
-    background-size: 180% auto;
-    background-position: 50% 50%;
-    opacity: 0;
-    transition: opacity 0.22s ease-in-out;
-  }
-  .thumb-visual-frame.is-active {
-    opacity: 1;
-  }
-  .thumb-visual-badge {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--accent) 90%, black);
-    color: rgb(6, 20, 13);
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
-  }
-  .thumb-visual-badge svg { flex: none; }
-  .thumb-visual-time {
-    position: absolute;
-    bottom: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    background: rgba(0, 0, 0, 0.7);
-    color: var(--label);
-    font-size: 0.72rem;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-  .thumb-visual-spinner {
-    position: absolute;
-    right: 8px;
-    bottom: 8px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-top-color: var(--label);
-    background: rgba(0, 0, 0, 0.35);
-    opacity: 0;
-    transition: opacity 0.15s var(--ease-out);
-    animation: spin 0.7s linear infinite;
-  }
-  .thumb-visual-preview.is-loading .thumb-visual-spinner {
-    opacity: 1;
-  }
-  .thumb-visual-bar {
-    position: relative;
-    width: min(100%, 300px);
-    height: 20px;
-    display: flex;
-    align-items: center;
-  }
-  .thumb-visual-track {
-    position: relative;
-    width: 100%;
-    height: 5px;
-    border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.22);
-  }
-  .thumb-visual-fill {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 30%;
-    border-radius: var(--radius-pill);
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent-muted);
-  }
-  .thumb-visual-tick {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 3px;
-    height: 14px;
-    border-radius: 2px;
-    background: var(--label);
-    opacity: 0.9;
-  }
-  .thumb-visual-knob {
-    position: absolute;
-    top: 50%;
-    left: 30%;
-    transform: translate(-50%, -50%);
-    width: 14px;
-    height: 14px;
-    border-radius: var(--radius-pill);
-    background: var(--label);
-    box-shadow: 0 0 0 4px var(--accent-muted), var(--shadow-sm);
-  }
-  .thumb-visual-caption {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.01em;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  /* ── Capability grid ───────────────────────────────────────── */
-  .cap-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-    gap: var(--space-4);
-    margin-bottom: var(--space-9);
-  }
-  .cap-card {
-    padding: var(--space-5);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-  .cap-icon {
-    display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: var(--radius-card);
-    background: var(--accent-subtle);
-    color: var(--accent);
-    margin-bottom: var(--space-2);
-  }
-  .cap-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--label);
-  }
-  .cap-body {
-    font-size: 0.95rem;
-    line-height: 1.55;
-    color: var(--label-secondary);
-  }
-
-  /* ── Breadth grid: everything else ─────────────────────────── */
-  .breadth-head {
-    max-width: 44rem;
-    margin: 0 auto var(--space-6);
-    text-align: center;
-  }
-  .breadth-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(1.6rem, 3.6vw, 2.4rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: var(--label);
-    text-wrap: balance;
-  }
-
+  /* ── One unified tile grid ─────────────────────────────────── */
   .features-grid {
     list-style: none;
     margin: 0 0 var(--space-8);
@@ -770,29 +337,6 @@ const features = [
     margin-inline: auto;
   }
 
-  /* ── Responsive ────────────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .thumb-feature {
-      grid-template-columns: 1fr;
-    }
-    .thumb-visual {
-      order: -1;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .scrub-thumb {
-      width: 120px;
-    }
-    .control-cluster--right {
-      gap: 0;
-    }
-    .ctl {
-      width: 32px;
-      height: 32px;
-    }
-  }
-
   /* ── Reduced motion ────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
     .format-track {
@@ -801,18 +345,6 @@ const features = [
       width: 100%;
       justify-content: center;
       gap: var(--space-2);
-    }
-    .scrub-thumb-spinner,
-    .thumb-visual-spinner {
-      animation: none;
-    }
-    /* Keep the stage preview bubble static-but-present so the story still reads. */
-    .scrub-thumb {
-      opacity: 1;
-    }
-    .scrub-thumb-frame,
-    .thumb-visual-frame {
-      transition: none;
     }
     .feature-card,
     .feature-icon {
@@ -826,76 +358,3 @@ const features = [
     }
   }
 </style>
-
-<script>
-  (() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    const fmt = (secs) => {
-      secs = Math.max(0, Math.round(secs));
-      const m = Math.floor(secs / 60);
-      const s = secs % 60;
-      return `${m}:${String(s).padStart(2, '0')}`;
-    };
-
-    /* ────────────────────────────────────────────────────────────
-       Standalone generated-thumbnail visual — gentle auto-scrub loop
-       ──────────────────────────────────────────────────────────── */
-    (() => {
-      const viz = document.querySelector('#features .thumb-visual');
-      if (!viz) return;
-      const preview = viz.querySelector('[data-role="viz-thumb"]');
-      const fA = viz.querySelector('[data-role="viz-frame-a"]');
-      const fB = viz.querySelector('[data-role="viz-frame-b"]');
-      const fill = viz.querySelector('[data-role="viz-fill"]');
-      const knob = viz.querySelector('[data-role="viz-knob"]');
-      const timeEl = viz.querySelector('[data-role="viz-time"]');
-      if (!preview || !fA || !fB || !fill || !knob) return;
-
-      const TOTAL = 42 * 60 + 19;
-      let showingA = true;
-      let lastBucket = -1;
-      let spinnerTimer = 0;
-
-      const place = (ratio) => {
-        const pct = (ratio * 100).toFixed(2) + '%';
-        fill.style.width = pct;
-        knob.style.left = pct;
-        if (timeEl) timeEl.textContent = fmt(ratio * TOTAL);
-        const bucket = Math.floor(ratio * 24);
-        if (bucket !== lastBucket) {
-          lastBucket = bucket;
-          const px = 10 + ((bucket * 37) % 80);
-          const py = 20 + ((bucket * 53) % 60);
-          const next = showingA ? fB : fA;
-          const cur = showingA ? fA : fB;
-          next.style.backgroundPosition = `${px}% ${py}%`;
-          next.classList.add('is-active');
-          cur.classList.remove('is-active');
-          showingA = !showingA;
-          if (!reduce.matches) {
-            preview.classList.add('is-loading');
-            clearTimeout(spinnerTimer);
-            spinnerTimer = window.setTimeout(() => preview.classList.remove('is-loading'), 260);
-          }
-        }
-      };
-
-      if (reduce.matches) {
-        place(0.5);
-        return;
-      }
-
-      // Ease back and forth across the bar so the preview keeps updating.
-      let t = 0;
-      const loop = () => {
-        t += 0.006;
-        const ratio = 0.5 + 0.42 * Math.sin(t);
-        place(ratio);
-        requestAnimationFrame(loop);
-      };
-      place(0.5);
-      requestAnimationFrame(loop);
-    })();
-  })();
-</script>
