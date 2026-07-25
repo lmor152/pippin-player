@@ -39,11 +39,9 @@ const films = sampleFilms.map((f) => ({
   <div class="container">
     <header class="cz-head reveal">
       <p class="eyebrow">Make it yours</p>
-      <h2 class="section-title">Your library. Your rules.</h2>
+      <h2 class="section-title">Your library. Your way.</h2>
       <p class="section-subtitle">
-        Pippin bends to your taste. Pick an accent and every surface re-tints in
-        real time; choose a theme, resize posters, morph your shelves, and see it
-        on every device — iPhone, iPad, Apple&nbsp;TV and Mac, all to scale.
+        Style Pippin to match your vibe across every platform.
       </p>
     </header>
 
@@ -144,22 +142,20 @@ const films = sampleFilms.map((f) => ({
             </svg>
             Surprise me
           </button>
-          <p class="cz-panel-note">Nothing here is saved — it's a playground.</p>
         </div>
       </div>
 
       <!-- ============================== DEVICE PREVIEW =================== -->
+      <!-- iPhone / iPad / Mac chassis are devices.css frames (built at runtime);
+           Apple TV keeps its bespoke frame + stand. The live app host
+           (.cz-screen-clip > #cz-screen) is a persistent node relocated into the
+           active chassis on every render, so JS references stay valid. -->
       <div class="cz-preview">
         <div class="cz-device" data-device="iphone">
           <div class="cz-device-glow" aria-hidden="true"></div>
-          <div class="cz-frame">
-            <div class="cz-screen-clip">
-              <div class="cz-screen" id="cz-screen"></div>
-            </div>
-          </div>
-          <div class="cz-tvstand" aria-hidden="true">
-            <span class="cz-tv-neck"></span>
-            <span class="cz-tv-foot"></span>
+          <div class="cz-stage"></div>
+          <div class="cz-screen-clip cz-screen-host" hidden>
+            <div class="cz-screen" id="cz-screen"></div>
           </div>
         </div>
       </div>
@@ -173,8 +169,10 @@ const films = sampleFilms.map((f) => ({
     (function () {
       const deviceEl = document.querySelector('#customise .cz-device');
       const previewEl = document.querySelector('#customise .cz-preview');
+      const stage = deviceEl && deviceEl.querySelector('.cz-stage');
+      const clip = deviceEl && deviceEl.querySelector('.cz-screen-host');
       const screen = document.getElementById('cz-screen');
-      if (!deviceEl || !screen) return;
+      if (!deviceEl || !stage || !clip || !screen) return;
 
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -214,6 +212,10 @@ const films = sampleFilms.map((f) => ({
         state = state || {};
         const shelf = state.shelf || 'row';
         const pw = IOSX.pw(state);
+        // Keep Watching landscape cards scale with poster size (16:9), pinned to
+        // the previous fixed 340px at the default 'L' portrait width (140).
+        const lw = Math.round(340 * pw / 140);
+        const lh = Math.round(lw * 9 / 16);
         const F = films;
         const kw = [F[0], F[1], F[2]];
         const recent = [F[3], F[4], F[5], F[6], F[7]];
@@ -231,7 +233,7 @@ const films = sampleFilms.map((f) => ({
           </div>`;
         const kwShelf = `
           <div class="ios-sec">Keep Watching</div>
-          <div class="ios-shelf kw">
+          <div class="ios-shelf kw" style="--lw:${lw}px;--lh:${lh}px">
             ${kw.map((f,i)=>`
               <div class="ios-kwcard">
                 ${IOSX.land(f, progs[i]||60)}
@@ -328,6 +330,10 @@ const films = sampleFilms.map((f) => ({
         state = state || {};
         const shelf = state.shelf || 'row';
         const pw = IOSX.pwPad(state);
+        // Keep Watching landscape cards scale with poster size (16:9), pinned to
+        // the previous fixed 360px at the default 'L' portrait width (168).
+        const lw = Math.round(360 * pw / 168);
+        const lh = Math.round(lw * 9 / 16);
         const F = films;
         const kw = [F[0], F[1], F[2], F[3]];
         const recent = [F[3], F[4], F[5], F[6], F[7], F[0], F[1]];
@@ -360,7 +366,7 @@ const films = sampleFilms.map((f) => ({
           </div>`;
         const kwShelf = `
           <div class="ipad-sec">Keep Watching</div>
-          <div class="ipad-shelf kw">
+          <div class="ipad-shelf kw" style="--lw:${lw}px;--lh:${lh}px">
             ${kw.map((f,i)=>`
               <div class="ipad-kwcard">
                 ${IOSX.land(f, progs[i]||60)}
@@ -435,6 +441,11 @@ const films = sampleFilms.map((f) => ({
             <div class="tv-hero-img" style="background-image:url('${media(f.backdrop)}')"></div>
             <div class="tv-hero-scrim"></div>
           </div>`).join('');
+        // Colour-bleed layer: a heavily-blurred, over-scaled copy of the same art,
+        // anchored top-right and masked so its colours wash down/left into the
+        // theme's dark surface — mirroring the app's TVBackdropLayer ambient wash.
+        const bleedSlides = heroList.map((f,i)=>`
+          <div class="tv-bleed-slide cz-slide${i===0?' is-on':''}" data-i="${i}" style="background-image:url('${media(f.backdrop)}')"></div>`).join('');
         const f = hero;
         const captionInner = f.logo && f.id!=='elephants'
           ? `<img class="tv-logo" src="${media(f.logo)}" alt="${f.title}">`
@@ -456,6 +467,11 @@ const films = sampleFilms.map((f) => ({
           </div>`;
         const kwSource = withBackdrop.filter(x=>x.id!==f.id).concat(withBackdrop);
         const kw = kwSource.slice(0,4);
+        // Keep Watching landscape cards scale with poster size (16:9), pinned to
+        // the previous fixed 462px at the default 'L' portrait width (246).
+        const tvPw = {s:180, m:210, l:246, xl:290}[state && state.poster] || 246;
+        const tvLandW = Math.round(462 * tvPw / 246);
+        const tvLandH = Math.round(tvLandW * 9 / 16);
         const progVals = [0.62, 0.38, 0.15, 0.8];
         const kwCards = kw.map((c,i)=>`
           <div class="tv-land">
@@ -500,13 +516,15 @@ const films = sampleFilms.map((f) => ({
           </div>`;
         return `
         <div class="tv-root">
+          <div class="tv-bleed">${bleedSlides}</div>
           <div class="tv-hero">${heroSlides}</div>
+          <div class="tv-ambient"></div>
           ${caption}
           ${topBtns}
           <div class="tv-shelves">
             <div class="tv-kw">
               <h2 class="tv-shelf-title">Keep Watching</h2>
-              <div class="tv-row">${kwCards}</div>
+              <div class="tv-row" style="--lw:${tvLandW}px;--lh:${tvLandH}px">${kwCards}</div>
             </div>
             <div class="tv-recent">
               <h2 class="tv-shelf-title">Recently Added</h2>
@@ -653,6 +671,11 @@ const films = sampleFilms.map((f) => ({
         }
         const kwSource = withBackdrop.concat(withBackdrop);
         const kw = kwSource.slice(0,6);
+        // Keep Watching landscape cards scale with poster size (16:9), pinned to
+        // the previous fixed 236px at the default 'L' portrait width (184).
+        const macPw = {xs:120, s:140, m:160, l:184, xl:210}[state.poster] || 184;
+        const macLandW = Math.round(236 * macPw / 184);
+        const macLandH = Math.round(macLandW * 9 / 16);
         const progVals = [0.62, 0.38, 0.15, 0.8, 0.5, 0.27];
         const kwCards = kw.map((c,i)=>`
           <div class="mac-land">
@@ -688,7 +711,7 @@ const films = sampleFilms.map((f) => ({
           <div class="mac-shelves">
             <div class="mac-shelf">
               <div class="mac-shelf-hd"><h2 class="mac-shelf-ttl">Keep Watching</h2><span class="mac-seeall">See All</span></div>
-              <div class="mac-rowscroll">${kwCards}</div>
+              <div class="mac-rowscroll" style="--lw:${macLandW}px;--lh:${macLandH}px">${kwCards}</div>
             </div>
             <div class="mac-shelf">
               <div class="mac-shelf-hd"><h2 class="mac-shelf-ttl">Recently Added</h2><span class="mac-seeall">See All</span></div>
@@ -717,27 +740,89 @@ const films = sampleFilms.map((f) => ({
 
       const BUILDERS = { iphone:buildIPhone, ipad:buildIPad, tv:buildTV, mac:buildMac };
 
-      /* ---- device geometry (logical px == pt) ---------------------------- */
-      const DEV = {
-        iphone: { lw:393, lh:852, want:300, bezel:10, frameRadius:52, screenRadius:44 },
-        ipad:   { lw:1194, lh:834, want:620, bezel:14, frameRadius:30, screenRadius:18 },
-        tv:     { lw:1920, lh:1080, want:640, bezel:'2.4%', frameRadius:16, screenRadius:10 },
-        mac:    { lw:1280, lh:800, want:640, bezel:0, frameRadius:12, screenRadius:11 },
+      /* ---- device geometry ---------------------------------------------- */
+      /* Apple TV keeps the bespoke chassis (devices.css has no Apple TV): its
+         screen is sized on-screen and the frame padded around it, so its stand
+         can sit below in flow. logical px == pt. */
+      const DEV_TV = { lw:1920, lh:1080, want:640, bezel:'2.4%', frameRadius:16, screenRadius:10 };
+
+      /* iPhone / iPad / Mac use devices.css frames. Model:
+           lw/lh   – Pippin's logical (pixel-faithful) app size.
+           scrW/scrH – the devices.css screen size in the PRESENTED orientation
+                       (iPad is landscape → devices.css portrait screen swapped).
+           rot     – how the whole .device is rotated (iPad → 90° landscape).
+           bboxW/H – the device's on-screen bounding box in the presented orientation.
+           ox/oy   – screen-centre offset from the device-box centre (device px,
+                     presented orientation; Mac's screen sits above the hinge).
+           wantW   – desired on-screen device width (device-fit target). */
+      const DCSS = {
+        iphone: { cls:'device-iphone-14-pro device-black',    lw:393,  lh:852,
+                  scrW:390, scrH:830, scrRad:49, rot:0,  bboxW:428, bboxH:868, ox:0, oy:0,     wantW:314 },
+        ipad:   { cls:'device-ipad-pro device-spacegray',     lw:1194, lh:834,
+                  scrW:724, scrH:506, scrRad:11, rot:90, bboxW:778, bboxH:560, ox:0, oy:0,     wantW:628 },
+        mac:    { cls:'device-macbook-pro device-spacegray',  lw:1280, lh:800,
+                  scrW:600, scrH:375, scrRad:10, rot:0,  bboxW:740, bboxH:434, ox:0, oy:-20.5, wantW:650 },
       };
+
+      /* Build the chassis markup for a device. The persistent app host
+         (.cz-screen-host) is appended into the .cz-screen-slot afterwards. */
+      function chassisHTML(dev){
+        if (dev === 'tv') {
+          return '<div class="cz-frame cz-screen-slot"></div>' +
+            '<div class="cz-tvstand" aria-hidden="true"><span class="cz-tv-neck"></span><span class="cz-tv-foot"></span></div>';
+        }
+        const m = DCSS[dev];
+        let sub = '';
+        if (dev === 'iphone') {
+          sub = '<div class="device-stripe"></div><div class="device-header"></div>' +
+                '<div class="device-sensors"></div><div class="device-btns"></div><div class="device-power"></div>';
+        } else if (dev === 'ipad') {
+          sub = '<div class="device-btns"></div><div class="device-sensors"></div>';
+        } else { /* mac */
+          sub = '<div class="device-header"></div><div class="device-power"></div>';
+        }
+        return '<div class="cz-devbox cz-screen-slot">' +
+          '<div class="device ' + m.cls + '">' +
+            '<div class="device-frame"><div class="device-screen"></div></div>' + sub +
+          '</div></div>';
+      }
 
       const state = { device:'iphone', theme:'dark', accent:defaultAccent, poster:'l', shelf:'row' };
 
+      /* Two-level scale:
+         · device-fit  – scale the whole .device (or size the TV frame) to the column.
+         · app-fill    – scale the app (.cz-screen, logical lw×lh) to fill the screen. */
       function computeScale(){
-        const d = DEV[state.device];
-        const avail = Math.max(240, Math.min((previewEl && previewEl.clientWidth) || 600, 720));
-        const want = Math.min(d.want, avail);
-        const scale = want / d.lw;
-        deviceEl.style.setProperty('--scale', scale);
-        deviceEl.style.setProperty('--lw', d.lw);
-        deviceEl.style.setProperty('--lh', d.lh);
-        deviceEl.style.setProperty('--bezel', typeof d.bezel==='number' ? d.bezel+'px' : d.bezel);
-        deviceEl.style.setProperty('--frame-radius', d.frameRadius+'px');
-        deviceEl.style.setProperty('--screen-radius', d.screenRadius+'px');
+        const dev = state.device;
+        const avail = Math.max(220, Math.min((previewEl && previewEl.clientWidth) || 600, 760));
+        if (dev === 'tv') {
+          const d = DEV_TV;
+          const want = Math.min(d.want, avail);
+          const scale = want / d.lw;
+          deviceEl.style.setProperty('--scale', scale);
+          deviceEl.style.setProperty('--lw', d.lw);
+          deviceEl.style.setProperty('--lh', d.lh);
+          deviceEl.style.setProperty('--bezel', d.bezel);
+          deviceEl.style.setProperty('--frame-radius', d.frameRadius + 'px');
+          deviceEl.style.setProperty('--screen-radius', d.screenRadius + 'px');
+          return;
+        }
+        const m = DCSS[dev];
+        const targetW = Math.min(m.wantW, avail);       // never exceed the column
+        const k = targetW / m.bboxW;                    // device-fit factor
+        const baseFill = Math.min(m.scrW / m.lw, m.scrH / m.lh); // contain (device px)
+        deviceEl.style.setProperty('--dev-k', k);
+        deviceEl.style.setProperty('--dev-rot', m.rot + 'deg');
+        deviceEl.style.setProperty('--bbox-w', m.bboxW);
+        deviceEl.style.setProperty('--bbox-h', m.bboxH);
+        deviceEl.style.setProperty('--lw', m.lw);
+        deviceEl.style.setProperty('--lh', m.lh);
+        deviceEl.style.setProperty('--fill', baseFill * k);      // app-fill (on-screen)
+        deviceEl.style.setProperty('--scr-ox', m.ox * k);
+        deviceEl.style.setProperty('--scr-oy', m.oy * k);
+        deviceEl.style.setProperty('--scr-w', m.scrW * k);
+        deviceEl.style.setProperty('--scr-h', m.scrH * k);
+        deviceEl.style.setProperty('--scr-rad', m.scrRad * k);
       }
       function retint(){ applyPalette(deviceEl, state.accent, state.theme, 1); }
 
@@ -759,9 +844,14 @@ const films = sampleFilms.map((f) => ({
       }
 
       function render(){
-        deviceEl.dataset.device = state.device;
+        const dev = state.device;
+        clip.remove();                         // detach the persistent app host…
+        deviceEl.dataset.device = dev;
+        stage.innerHTML = chassisHTML(dev);    // …so this reset can't destroy it
+        clip.hidden = false;
+        stage.querySelector('.cz-screen-slot').appendChild(clip);
         computeScale();
-        screen.innerHTML = BUILDERS[state.device](films, state);
+        screen.innerHTML = BUILDERS[dev](films, state);
         retint();
         startCarousel();
       }
@@ -777,24 +867,57 @@ const films = sampleFilms.map((f) => ({
         thumb.style.width = `calc((100% - 8px) / ${btns.length})`;
         thumb.style.transform = `translateX(${idx * 100}%)`;
       }
+
+      /* ---- Apple TV can't do Light/System — restrict the Theme control ---- */
+      const themeSeg = document.querySelector('#customise .cz-seg[data-group="theme"]');
+      function updateThemeAvailability(){
+        if (!themeSeg) return;
+        const tvOnly = state.device === 'tv';
+        const btns = [...themeSeg.querySelectorAll('[role="radio"]')];
+        btns.forEach((b)=>{
+          const restricted = b.dataset.val === 'system' || b.dataset.val === 'light';
+          const off = tvOnly && restricted;
+          b.classList.toggle('cz-seg-off', off);
+          b.setAttribute('aria-disabled', off ? 'true' : 'false');
+        });
+        // If a now-unavailable theme is active, snap to Dark.
+        const active = themeSeg.querySelector('[aria-checked="true"]');
+        if (tvOnly && active && (active.dataset.val === 'system' || active.dataset.val === 'light')) {
+          const dark = btns.find((b)=>b.dataset.val === 'dark');
+          btns.forEach((b)=>b.setAttribute('aria-checked', b===dark?'true':'false'));
+          moveThumb(themeSeg);
+          state.theme = 'dark';
+          retint();
+        }
+      }
+
       document.querySelectorAll('#customise .cz-seg[data-group]').forEach((seg)=>{
         const group = seg.dataset.group;
         const btns = [...seg.querySelectorAll('[role="radio"]')];
         function select(btn, focus){
+          if (btn.getAttribute('aria-disabled') === 'true') return;
           btns.forEach((b)=>b.setAttribute('aria-checked', b===btn?'true':'false'));
           moveThumb(seg);
           const val = btn.dataset.val;
           if (group === 'theme') { state.theme = val==='system'?'dark':val; retint(); }
           else if (group === 'poster') { state.poster = val; render(); }
           else if (group === 'shelf') { state.shelf = val; render(); }
-          else if (group === 'device') { state.device = val; render(); }
+          else if (group === 'device') { state.device = val; updateThemeAvailability(); render(); }
           if (focus) btn.focus();
+        }
+        function step(from, dir){
+          let j = from;
+          for (let k=0;k<btns.length;k++){
+            j = (j + dir + btns.length) % btns.length;
+            if (btns[j].getAttribute('aria-disabled') !== 'true') return j;
+          }
+          return from;
         }
         btns.forEach((btn,i)=>{
           btn.addEventListener('click', ()=>select(btn));
           btn.addEventListener('keydown', (e)=>{
-            if (e.key==='ArrowRight' || e.key==='ArrowDown') { e.preventDefault(); select(btns[(i+1)%btns.length], true); }
-            else if (e.key==='ArrowLeft' || e.key==='ArrowUp') { e.preventDefault(); select(btns[(i-1+btns.length)%btns.length], true); }
+            if (e.key==='ArrowRight' || e.key==='ArrowDown') { e.preventDefault(); select(btns[step(i, 1)], true); }
+            else if (e.key==='ArrowLeft' || e.key==='ArrowUp') { e.preventDefault(); select(btns[step(i, -1)], true); }
           });
         });
         requestAnimationFrame(()=>moveThumb(seg));
@@ -837,11 +960,15 @@ const films = sampleFilms.map((f) => ({
       }
       document.getElementById('cz-random').addEventListener('click', ()=>{
         const accent = presets[Math.floor(Math.random()*presets.length)].hex;
-        const theme = pick(RThemes), poster = pick(RPoster), shelf = pick(RShelf), device = pick(RDevice);
+        const device = pick(RDevice);
+        // Apple TV only supports Dark / True Black.
+        const theme = pick(device==='tv' ? ['dark','black'] : RThemes);
+        const poster = pick(RPoster), shelf = pick(RShelf);
         syncSeg('theme', theme); syncSeg('poster', poster); syncSeg('shelf', shelf); syncSeg('device', device);
         state.theme=theme; state.poster=poster; state.shelf=shelf; state.device=device; state.accent=accent;
         swatches.forEach((s)=>s.setAttribute('aria-checked', s.dataset.hex.toLowerCase()===accent.toLowerCase()?'true':'false'));
         colorInput.value = accent; markCustom(accent);
+        updateThemeAvailability();
         render();
       });
 
@@ -853,6 +980,7 @@ const films = sampleFilms.map((f) => ({
       }
 
       /* ---- initial render ------------------------------------------------ */
+      updateThemeAvailability();
       render();
     })();
   </script>
@@ -864,6 +992,23 @@ const films = sampleFilms.map((f) => ({
     /* ================================================================== */
     /*  Layout: heading + two-column control/preview                       */
     /* ================================================================== */
+    /* Belt-and-suspenders against any device-frame overhang causing page-level
+       horizontal scroll on small screens. overflow-x:clip (with overflow-y left
+       visible) does NOT create a scroll container, so the sticky .cz-panel below
+       still sticks to the viewport. */
+    /* Calm, de-saturated backdrop so the live previews are the clear focus:
+       a neutral dark overlay dials back the site's emerald tint here. Soft
+       top/bottom fades avoid any hard horizontal edge against the page. */
+    #customise {
+      overflow-x: clip;
+      background:
+        linear-gradient(180deg,
+          transparent 0%,
+          rgba(8, 10, 12, 0.55) 14%,
+          rgba(8, 10, 12, 0.6) 86%,
+          transparent 100%);
+    }
+
     .cz-head { max-width: 62ch; margin-bottom: var(--space-7); }
 
     .cz-grid {
@@ -969,20 +1114,27 @@ const films = sampleFilms.map((f) => ({
         background-color var(--dur) var(--ease-out);
     }
 
-    .cz-panel-foot { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-1); }
+    .cz-panel-foot { display: flex; margin-top: var(--space-1); }
     .cz-random { align-self: flex-start; }
     .cz-random svg { transition: transform var(--dur) var(--ease-spring); }
     .cz-random:hover svg { transform: rotate(180deg); }
-    .cz-panel-note { font-size: 0.75rem; color: var(--label-tertiary); margin: 0; }
+
+    /* Disabled segmented option (e.g. Light/System theme on Apple TV) */
+    .cz-seg > [role="radio"].cz-seg-off { opacity: 0.32; cursor: not-allowed; pointer-events: none; }
 
     /* ================================================================== */
     /*  True-to-scale device preview scaffold                              */
     /* ================================================================== */
     .cz-preview { display: flex; justify-content: center; align-items: flex-start; width: 100%; min-width: 0; }
     .cz-device { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
+    /* Holds the active chassis; a flex column so the Apple TV frame + stand stack. */
+    .cz-stage { display: flex; flex-direction: column; align-items: center; max-width: 100%; }
 
+    /* Bespoke chassis — now used ONLY by Apple TV (devices.css has no Apple TV).
+       iPhone / iPad / Mac use devices.css frames (see .cz-devbox rules below). */
     .cz-frame {
       position: relative;
+      isolation: isolate;
       padding: var(--bezel, 10px);
       border-radius: var(--frame-radius, 44px);
       background:
@@ -991,15 +1143,79 @@ const films = sampleFilms.map((f) => ({
       box-shadow: 0 0 0 1.5px rgba(255,255,255,0.08), var(--shadow-lg), 0 40px 90px rgba(0,0,0,0.5);
       transition: border-radius var(--dur) var(--ease-out), padding var(--dur) var(--ease-out);
     }
+
+    /* ---- Apple TV: slim modern premium flat panel ----------------------- */
+    /* Thin uniform graphite bezel with a metallic top gloss + side sheen, a
+       crisp 1px inner edge, a rim light along the top, and a clean (not hazy)
+       drop shadow so the panel POPS off the dulled section background. */
     .cz-device[data-device="tv"] .cz-frame {
-      background: linear-gradient(180deg, rgb(12,14,17) 0%, rgb(7,9,11) 55%, rgb(5,6,8) 100%);
-      box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 1px rgba(255,255,255,0.06), 0 40px 90px rgba(0,0,0,0.5);
+      padding: 1.35%;
+      border-radius: var(--frame-radius, 14px);
+      background:
+        /* top metallic gloss */
+        linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.03) 4%, transparent 13%),
+        /* subtle vertical side sheen */
+        linear-gradient(90deg, rgba(255,255,255,0.06) 0%, transparent 7%, transparent 93%, rgba(255,255,255,0.05) 100%),
+        /* graphite body */
+        linear-gradient(180deg, rgb(40,42,47) 0%, rgb(26,28,32) 42%, rgb(15,16,19) 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.07),   /* crisp outer inner-edge */
+        inset 0 1.5px 0 rgba(255,255,255,0.18),   /* top rim light */
+        inset 0 -1.5px 1px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(0,0,0,0.7),                /* crisp graphite edge */
+        0 1px 0 rgba(255,255,255,0.05),           /* outer top rim highlight */
+        0 26px 54px -18px rgba(0,0,0,0.72),       /* clean drop shadow */
+        0 6px 16px rgba(0,0,0,0.4);
     }
-    .cz-device[data-device="mac"] .cz-frame {
-      background: var(--bg); overflow: hidden;
-      box-shadow: 0 0 0 0.5px var(--glass-border), var(--shadow-lg), 0 40px 90px rgba(0,0,0,0.5);
+    /* Crisp screen boundary: a dark 1px ring + faint outer highlight so the
+       display edge reads sharply against the bezel (no soft halo). */
+    .cz-device[data-device="tv"] .cz-screen-clip {
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.85), 0 0 0 2px rgba(255,255,255,0.04);
     }
 
+    /* ================================================================== */
+    /*  devices.css frames (iPhone / iPad / Mac)                           */
+    /* ================================================================== */
+    /* .cz-devbox is sized to the device's ON-SCREEN bounding box so layout
+       reserves exactly the visible area; the .device inside is centred and
+       transform-scaled (and rotated 90° for the landscape iPad). The live app
+       (.cz-screen-clip) is overlaid as a SIBLING of .device — deliberately
+       outside .device so devices.css's `.device *{display:block}` reset can
+       never reach the app content. */
+    .cz-devbox {
+      position: relative;
+      width: calc(var(--bbox-w) * var(--dev-k) * 1px);
+      height: calc(var(--bbox-h) * var(--dev-k) * 1px);
+    }
+    .cz-devbox > .device {
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -50%) rotate(var(--dev-rot, 0deg)) scale(var(--dev-k, 1));
+      transform-origin: center center;
+    }
+    /* devices.css screens carry a black fill; keep it from peeking at the seams */
+    .cz-devbox .device-screen { background: var(--bg); overflow: hidden; }
+
+    /* App overlay, positioned over the (possibly rotated) screen hole. All
+       values are on-screen px, recomputed by computeScale() on resize. */
+    .cz-devbox > .cz-screen-clip {
+      position: absolute; z-index: 2;
+      left: calc(50% + var(--scr-ox, 0) * 1px);
+      top:  calc(50% + var(--scr-oy, 0) * 1px);
+      width:  calc(var(--scr-w) * 1px);
+      height: calc(var(--scr-h) * 1px);
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      border-radius: calc(var(--scr-rad, 10) * 1px);
+      background: var(--bg);
+    }
+    .cz-devbox .cz-screen {
+      position: absolute; left: 50%; top: 50%;
+      width: calc(var(--lw) * 1px); height: calc(var(--lh) * 1px);
+      transform: translate(-50%, -50%) scale(var(--fill, 1));
+      transform-origin: center center;
+    }
+
+    /* ---- Apple TV screen host (bespoke path) ---------------------------- */
     .cz-screen-clip {
       position: relative; overflow: hidden;
       width: calc(var(--lw) * var(--scale) * 1px);
@@ -1018,18 +1234,39 @@ const films = sampleFilms.map((f) => ({
       font-family: -apple-system, system-ui, sans-serif;
     }
 
+    /* Very subtle accent lift kept BEHIND the chassis footprint (positive inset)
+       so it can't bleed a halo around the device edges. */
     .cz-device-glow {
-      position: absolute; inset: -14% -8% -18%;
+      position: absolute; inset: 8% 6% 10%;
       z-index: -1; pointer-events: none;
-      background: radial-gradient(60% 50% at 50% 40%, var(--accent-muted), transparent 70%);
-      filter: blur(40px); opacity: 0.5;
+      background: radial-gradient(52% 42% at 50% 42%, var(--accent-muted), transparent 72%);
+      filter: blur(50px); opacity: 0.12;
     }
 
-    .cz-tvstand { display: none; flex-direction: column; align-items: center; }
+    /* Premium stand: a slim central pedestal into a low, wide, brushed-aluminium
+       foot with a tight (not wide-blur) contact shadow. */
+    .cz-tvstand { display: none; flex-direction: column; align-items: center; margin-top: 2px; }
     .cz-device[data-device="tv"] .cz-tvstand { display: flex; }
-    .cz-tv-neck { width: 60px; height: 14px; background: linear-gradient(180deg, rgb(9,11,13), rgb(6,7,9)); border-radius: 0 0 4px 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
-    .cz-tv-foot { position: relative; width: 170px; height: 8px; border-radius: 6px; background: linear-gradient(180deg, rgb(13,15,18), rgb(6,7,9)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 4px rgba(0,0,0,0.4); }
-    .cz-tv-foot::after { content: ''; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%); width: 150%; height: 22px; background: radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,0.5), transparent 72%); filter: blur(4px); }
+    /* Stand widths scale with the TV frame (screen width = --lw * --scale),
+       so the foot is always narrower than the frame and never overhangs/pushes
+       past the stage on narrow preview columns. */
+    .cz-tv-neck {
+      width: calc(var(--lw, 1920) * var(--scale, 0.3333) * 0.047px); height: 40px;
+      background:
+        linear-gradient(90deg, rgb(14,15,18) 0%, rgb(48,51,56) 22%, rgb(72,76,82) 50%, rgb(42,45,50) 78%, rgb(12,13,16) 100%);
+      border-radius: 0 0 3px 3px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 0 0 1px rgba(0,0,0,0.35), 0 3px 5px -1px rgba(0,0,0,0.4);
+    }
+    .cz-tv-foot {
+      position: relative;
+      width: calc(var(--lw, 1920) * var(--scale, 0.3333) * 0.42px); height: 13px;
+      border-radius: 4px 4px 7px 7px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 18%, rgba(255,255,255,0) 38%, rgba(255,255,255,0.09) 63%, rgba(255,255,255,0) 84%),
+        linear-gradient(180deg, rgb(80,84,90) 0%, rgb(52,55,61) 40%, rgb(26,28,32) 74%, rgb(14,15,18) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 1px rgba(0,0,0,0.55), 0 4px 9px -3px rgba(0,0,0,0.5);
+    }
+    .cz-tv-foot::after { content: ''; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); width: 84%; height: 9px; background: radial-gradient(58% 100% at 50% 0%, rgba(0,0,0,0.48), transparent 76%); filter: blur(3.5px); }
 
     /* Shared carousel slide/dot behaviour */
     .cz-screen .cz-slide { opacity: 0; transition: opacity .6s; }
@@ -1071,8 +1308,8 @@ const films = sampleFilms.map((f) => ({
     .ios-sec{font:800 22px/1.1 -apple-system,system-ui,sans-serif;letter-spacing:-.5px;color:var(--label);margin:26px 20px 12px}
     .ios-shelf{display:flex;gap:14px;padding:0 20px;overflow:hidden}
     .ios-shelf.kw{align-items:flex-start}
-    .ios-kwcard{width:340px}
-    .ios-kwcard .iosx-land{width:340px;height:191px}
+    .ios-kwcard{width:var(--lw,340px)}
+    .ios-kwcard .iosx-land{width:var(--lw,340px);height:var(--lh,191px)}
     .ios-pitem{width:var(--pw,124px)}
     .ios-pitem .iosx-poster{width:var(--pw,124px);height:calc(var(--pw,124px)*1.5)}
     .ios-tabbar{position:absolute;left:16px;right:16px;bottom:14px;height:64px;z-index:6;border-radius:32px;background:var(--glass-fill);border:1px solid var(--glass-hairline);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);box-shadow:0 8px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.18);display:flex;align-items:center;padding:0 8px}
@@ -1124,8 +1361,8 @@ const films = sampleFilms.map((f) => ({
     .ipad-sec{font:800 24px/1.1 -apple-system,system-ui,sans-serif;letter-spacing:-.5px;color:var(--label);margin:22px 24px 14px}
     .ipad-shelf{display:flex;gap:16px;padding:0 24px;overflow:hidden}
     .ipad-shelf.kw{align-items:flex-start}
-    .ipad-kwcard{width:360px}
-    .ipad-kwcard .iosx-land{width:360px;height:202px}
+    .ipad-kwcard{width:var(--lw,360px)}
+    .ipad-kwcard .iosx-land{width:var(--lw,360px);height:var(--lh,202px)}
     .ipad-pitem{width:var(--pw,150px)}
     .ipad-pitem .iosx-poster{width:var(--pw,150px);height:calc(var(--pw,150px)*1.5)}
     .ipad-hero{position:relative;width:100%;height:560px;flex:none;overflow:hidden;background:#111}
@@ -1151,12 +1388,35 @@ const films = sampleFilms.map((f) => ({
     /* ================================================================== */
     /*  tvOS module                                                        */
     /* ================================================================== */
-    .tv-root{position:absolute;inset:0;overflow:hidden;font-family:-apple-system,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--label);background:#000;}
-    .tv-hero{position:absolute;inset:0;z-index:0;}
+    .tv-root{position:absolute;inset:0;overflow:hidden;font-family:-apple-system,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--label);background:var(--bg);}
+    /* Match TVBackdropLayer(.topRight) in the app: browse art belongs in a
+       compact top-right field, not behind the entire shell. Its left and lower
+       edges dissolve into the theme's *derived dark surface*, leaving the
+       sidebar and shelves on the same tinted background as the real app. */
+    /* Colour-bleed wash: over-scaled, heavily-blurred art anchored top-right,
+       masked so the artwork's own colours dissolve down and left into the dark
+       surface (the accent-tinted --bg) — the hero visibly bleeds into the
+       background instead of fading to a flat edge. Slides cross-fade in sync
+       with the crisp hero via the shared .cz-slide/.is-on carousel state. */
+    .tv-bleed{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+    /* Full-screen ambient wash: the hero art, over-scaled and heavily blurred,
+       fills the whole shell so its colours bleed edge-to-edge — the app's
+       TVBackdropLayer ambient. The ::after scrim keeps the sidebar/left and the
+       shelves/bottom dark enough for text while the art's colour shows through. */
+    .tv-bleed-slide{position:absolute;inset:-12%;background-size:cover;background-position:50% 42%;opacity:0;filter:blur(60px) saturate(1.5) brightness(0.92);transition:opacity .6s ease;}
+    .tv-bleed-slide.is-on{opacity:.58;}
+    .tv-bleed::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg, color-mix(in srgb, var(--bg) 86%, transparent) 0%, color-mix(in srgb, var(--bg) 52%, transparent) 42%, transparent 80%),linear-gradient(0deg, color-mix(in srgb, var(--bg) 85%, transparent) 0%, color-mix(in srgb, var(--bg) 30%, transparent) 40%, transparent 72%);}
+    /* Soft-mask the crisp hero so its left/bottom edges dissolve into the
+       blurred full-screen bleed behind it — no hard rectangular seam. */
+    .tv-hero{position:absolute;top:0;right:0;width:66%;height:72%;z-index:1;overflow:hidden;-webkit-mask-image:radial-gradient(125% 125% at 100% 0%, #000 34%, transparent 84%);mask-image:radial-gradient(125% 125% at 100% 0%, #000 34%, transparent 84%);}
     .tv-hero-slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;}
     .tv-hero-slide.is-on{opacity:1;}
     .tv-hero-img{position:absolute;inset:0;background-size:cover;background-position:center;}
-    .tv-hero-scrim{position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 34%, rgba(0,0,0,0.10) 58%, rgba(0,0,0,0) 78%),linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 26%, rgba(0,0,0,0) 52%);}
+    .tv-hero-scrim{position:absolute;inset:0;background:linear-gradient(90deg, color-mix(in srgb, var(--bg) 70%, transparent) 0%, color-mix(in srgb, var(--bg) 20%, transparent) 45%, transparent 75%),linear-gradient(0deg, color-mix(in srgb, var(--bg) 78%, transparent) 0%, color-mix(in srgb, var(--bg) 35%, transparent) 42%, transparent 72%);}
+    /* The app's ambient layer is derived from the selected theme surface, not
+       from the vivid accent token. This deliberately stays dark for blue,
+       green, and every custom colour. */
+    .tv-ambient{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(90% 72% at 100% 0%, color-mix(in srgb, var(--bg-secondary) 24%, transparent), transparent 72%);}
     .tv-caption{position:absolute;left:520px;top:196px;right:96px;z-index:2;}
     .tv-title{font-size:76px;line-height:1.0;font-weight:700;letter-spacing:-0.5px;color:var(--label);margin:0;text-shadow:0 2px 24px rgba(0,0,0,0.55);}
     .tv-logo{max-width:640px;max-height:190px;object-fit:contain;object-position:left center;filter:drop-shadow(0 3px 20px rgba(0,0,0,0.55));display:block;}
@@ -1170,8 +1430,8 @@ const films = sampleFilms.map((f) => ({
     .tv-shelves{position:absolute;left:520px;right:0;top:504px;z-index:2;}
     .tv-shelf-title{font-size:38px;font-weight:700;color:var(--label);margin:0 0 22px 0;text-shadow:0 1px 12px rgba(0,0,0,0.5);}
     .tv-row{display:flex;gap:40px;}
-    .tv-land{width:462px;flex:0 0 auto;}
-    .tv-land-card{position:relative;width:462px;height:260px;border-radius:12px;overflow:hidden;background:#111;box-shadow:0 8px 30px rgba(0,0,0,0.45);}
+    .tv-land{width:var(--lw,462px);flex:0 0 auto;}
+    .tv-land-card{position:relative;width:var(--lw,462px);height:var(--lh,260px);border-radius:12px;overflow:hidden;background:#111;box-shadow:0 8px 30px rgba(0,0,0,0.45);}
     .tv-land-img{position:absolute;inset:0;background-size:cover;background-position:center;}
     .tv-prog{position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(255,255,255,0.22);}
     .tv-prog > i{display:block;height:100%;background:var(--accent);}
@@ -1179,10 +1439,18 @@ const films = sampleFilms.map((f) => ({
     .tv-recent{margin-top:56px;}
     .tv-poster{flex:0 0 auto;}
     .tv-poster-card{border-radius:12px;overflow:hidden;background-size:cover;background-position:center;box-shadow:0 8px 30px rgba(0,0,0,0.45);}
-    .tv-dim{position:absolute;inset:0;z-index:4;background:linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 14%, rgba(0,0,0,0.45) 24%, rgba(0,0,0,0) 40%);}
-    .tv-sidebar{position:absolute;left:0;top:0;bottom:0;width:400px;z-index:5;padding:60px 24px 60px 40px;box-sizing:border-box;display:flex;flex-direction:column;background:linear-gradient(90deg, rgba(8,10,9,0.92) 0%, rgba(10,14,11,0.72) 62%, rgba(10,14,11,0) 100%);}
+    /* Neutralised: the accent ambient wash (.tv-ambient) now provides the
+       background tone; a separate grey left-scrim would only mute the accent. */
+    .tv-dim{display:none;}
+    /* Sidebar is fully TRANSPARENT — it has no scrim/panel of its own. It simply
+       shows the accent-blended ambient background (.tv-ambient) through it, which
+       is why the sidebar reads as accent-coloured (green→green, blue→blue). Only
+       the nav content (coral avatar, white Home pill, muted items, Settings)
+       floats on top. */
+    .tv-sidebar{position:absolute;left:0;top:0;bottom:0;width:400px;z-index:5;padding:60px 24px 60px 40px;box-sizing:border-box;display:flex;flex-direction:column;background:transparent;}
     .tv-profile{display:flex;align-items:center;gap:18px;height:44px;margin-bottom:42px;}
-    .tv-avatar{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-fg);font-size:22px;font-weight:600;border:1px solid var(--glass-hairline);}
+    /* Fixed coral/salmon avatar — stays coral regardless of accent. */
+    .tv-avatar{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:rgb(232,104,104);color:#fff;font-size:22px;font-weight:600;}
     .tv-profile-name{font-size:29px;font-weight:600;color:var(--label);}
     .tv-navlist{display:flex;flex-direction:column;gap:18px;}
     .tv-nav{display:flex;align-items:center;gap:18px;height:40px;padding:0 16px;border-radius:12px;box-sizing:content-box;color:var(--label-secondary);}
@@ -1272,8 +1540,8 @@ const films = sampleFilms.map((f) => ({
     .mac-shelf-ttl{font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label);margin:0;}
     .mac-seeall{font-size:13px;font-weight:500;color:var(--accent);letter-spacing:-0.1px;}
     .mac-rowscroll{display:flex;gap:16px;padding:2px 32px 8px 32px;overflow:hidden;}
-    .mac-land{flex:0 0 auto;width:236px;}
-    .mac-land-card{position:relative;width:236px;height:133px;border-radius:10px;overflow:hidden;background:var(--card);box-shadow:0 3px 12px rgba(0,0,0,0.18);}
+    .mac-land{flex:0 0 auto;width:var(--lw,236px);}
+    .mac-land-card{position:relative;width:var(--lw,236px);height:var(--lh,133px);border-radius:10px;overflow:hidden;background:var(--card);box-shadow:0 3px 12px rgba(0,0,0,0.18);}
     .mac-land-img{position:absolute;inset:0;background-size:cover;background-position:center;}
     .mac-land-prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,0.28);}
     .mac-land-prog > i{display:block;height:100%;background:var(--accent);}
