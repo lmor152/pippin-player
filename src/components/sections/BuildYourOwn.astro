@@ -1,0 +1,772 @@
+---
+/**
+ * BuildYourOwn — id="build".
+ *
+ * Flagship "total control" section: three bespoke, fully-themeable visuals that
+ * show Pippin bending to the user's shape —
+ *   1) Sidebar / tab editor   — drag-reorder nav rows, SF-symbol icons, rename,
+ *                                Favourites portal, pinned Settings.
+ *   2) Page builder           — a stack of composable blocks (Hero / Heading /
+ *                                Row / Grid / Links) with add + reorder affordances.
+ *   3) Scope / smart-filter   — filter chips resolving into a saved smart row.
+ * Plus a closing row of secondary feature chips.
+ *
+ * Everything is inline CSS/SVG driven by the site's shared design tokens, so the
+ * whole subtree re-tints with --accent. Motion is a gentle, looping drag hint
+ * and add-block pulse, both disabled under prefers-reduced-motion.
+ *
+ * Feature source: RootView / TVAppSidebar / MacRootView tab customisation,
+ * PageBuilder blocks + layouts, and the Scope smart-filter model.
+ */
+import { sampleFilms } from '../../lib/sampleData.js';
+
+// Real library art for the page-builder "Keep Watching" row + grid block.
+const rowFilms = sampleFilms.filter((f) => f.poster).slice(0, 6);
+const gridFilms = sampleFilms.filter((f) => f.poster).slice(2, 8);
+const heroFilm =
+  sampleFilms.find((f) => f.id === 'sintel' && f.backdrop) ??
+  sampleFilms.find((f) => f.backdrop) ??
+  sampleFilms[0];
+const heroSrc = heroFilm.backdrop ? `/media/${heroFilm.backdrop}` : null;
+const heroLogo = heroFilm.logo ? `/media/${heroFilm.logo}` : null;
+
+// SF-symbol-style monoline icons for the nav editor (match the site's line set).
+const navRows = [
+  { icon: 'house', label: 'Home', note: 'Default', pinned: false },
+  { icon: 'film', label: 'Movies', pinned: false },
+  { icon: 'tv', label: 'Sci-Fi Nights', note: 'Renamed', pinned: false, drag: true },
+  { icon: 'sparkles', label: 'Discover', pinned: false },
+  { icon: 'star', label: 'Favourites', note: 'Portal', pinned: false },
+];
+
+// Scope / smart-filter chips.
+const scopeChips = [
+  { k: 'Genre', v: 'Sci-Fi' },
+  { k: 'Year', v: '2020s' },
+  { k: null, v: '4K' },
+  { k: null, v: 'Dolby Vision' },
+  { k: null, v: 'Atmos' },
+  { k: 'Status', v: 'Unwatched' },
+];
+
+// Secondary feature chips.
+const secondary = [
+  'Alternate app icons',
+  'Accent presets + custom hex',
+  'Plex + Jellyfin servers',
+  'Profiles & household switching',
+  'Per-network profiles',
+  'True Black for OLED',
+];
+---
+
+<section class="section by" id="build">
+  <div class="container">
+    <header class="by-head reveal">
+      <p class="eyebrow">Total control</p>
+      <h2 class="section-title">Rearrange everything.<br />Build anything.</h2>
+      <p class="section-subtitle">
+        Pippin isn't a fixed layout you learn to live with — it's a canvas.
+        Reshape the tab bar, compose your own pages from blocks, and save razor-
+        sharp smart filters across all your servers. Make it exactly, unmistakably
+        yours.
+      </p>
+    </header>
+
+    <div class="by-grid">
+      <!-- ============================ 1 · SIDEBAR / TAB EDITOR ============= -->
+      <article class="by-card glass reveal" style="--reveal-delay:80ms">
+        <div class="by-card-copy">
+          <p class="by-eyebrow">Your sidebar, your tabs</p>
+          <h3 class="by-card-title">Reorder, rename, re-icon.</h3>
+          <p class="by-card-body">
+            Choose which pages appear, drag to reorder, rename any tab and pick a
+            custom SF&nbsp;Symbol for each. Set your default page, and tuck the
+            rest into a Favourites portal. iPhone shows up to four tabs; iPad, Mac
+            and TV get a roomy sidebar. Settings stays pinned.
+          </p>
+        </div>
+
+        <div class="by-visual by-nav" aria-hidden="true">
+          <div class="by-nav-head">
+            <span class="by-nav-head-title">Edit sidebar</span>
+            <span class="by-nav-head-done">Done</span>
+          </div>
+          <ul class="by-navlist">
+            {navRows.map((r, i) => (
+              <li class={`by-navrow${r.drag ? ' is-dragging' : ''}`} style={`--row:${i}`}>
+                <span class="by-grip">
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <circle cx="9" cy="6" r="1.4" /><circle cx="15" cy="6" r="1.4" />
+                    <circle cx="9" cy="12" r="1.4" /><circle cx="15" cy="12" r="1.4" />
+                    <circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="18" r="1.4" />
+                  </svg>
+                </span>
+                <span class="by-navicon">
+                  {r.icon === 'house' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7" /><path d="M6 10v9h12v-9" /></svg>
+                  )}
+                  {r.icon === 'film' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.4" /><path d="M8 4v16M16 4v16M3 9h5M3 15h5M16 9h5M16 15h5" /></svg>
+                  )}
+                  {r.icon === 'tv' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="12.5" rx="2.2" /><path d="M8 21h8" /></svg>
+                  )}
+                  {r.icon === 'sparkles' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.6 10.4 11.2 6 9.6 10.4 8 12 3.5Z" /><path d="M18 15l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7L18 15Z" /></svg>
+                  )}
+                  {r.icon === 'star' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8L6.7 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5Z" /></svg>
+                  )}
+                </span>
+                <span class="by-navlabel">{r.label}</span>
+                {r.note && <span class={`by-navnote${r.note === 'Default' ? ' is-default' : ''}`}>{r.note}</span>}
+                <span class="by-navmove">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div class="by-navpin">
+            <span class="by-navicon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9.9 2.6h4.2l.5 2.4a7.4 7.4 0 0 1 1.9 1.1l2.3-.85 2.1 3.6-1.85 1.55a7.5 7.5 0 0 1 0 2.2l1.85 1.55-2.1 3.6-2.3-.85a7.4 7.4 0 0 1-1.9 1.1l-.5 2.4H9.9l-.5-2.4a7.4 7.4 0 0 1-1.9-1.1l-2.3.85-2.1-3.6 1.85-1.55a7.5 7.5 0 0 1 0-2.2L3 8.85l2.1-3.6 2.3.85a7.4 7.4 0 0 1 1.9-1.1l.5-2.4Z" /><circle cx="12" cy="12" r="3.1" /></svg>
+            </span>
+            <span class="by-navlabel">Settings</span>
+            <span class="by-navpin-tag">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M14.5 3.5 12 6l1 1-4 4-2.5-.5L5 12l7 7 1.5-1.5-.5-2.5 4-4 1 1 2.5-2.5-6.5-6Z" /></svg>
+              Pinned
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============================ 2 · PAGE BUILDER ==================== -->
+      <article class="by-card glass reveal" style="--reveal-delay:160ms">
+        <div class="by-card-copy">
+          <p class="by-eyebrow">Build your own pages</p>
+          <h3 class="by-card-title">Compose it from blocks.</h3>
+          <p class="by-card-body">
+            Stack the page you want: a Hero, headings and text, shelf rows like
+            Keep Watching, On Deck, Watchlist or Server Hub, plus Grids, Dividers
+            and Links. Give every block its own title, layout — Row, Spotlight or
+            Hero — and poster size.
+          </p>
+        </div>
+
+        <div class="by-visual by-builder" aria-hidden="true">
+          <!-- Hero block -->
+          <div class="by-block by-block--hero" style="--b:0">
+            <span class="by-block-tag">Hero</span>
+            <div class="by-hero" style={heroSrc ? `background-image:url('${heroSrc}')` : ''}>
+              <div class="by-hero-scrim"></div>
+              {heroLogo
+                ? <img class="by-hero-logo" src={heroLogo} alt="" loading="lazy" />
+                : <div class="by-hero-ttl">{heroFilm.title}</div>}
+              <span class="by-hero-play">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                Resume
+              </span>
+            </div>
+          </div>
+
+          <!-- Heading block -->
+          <div class="by-block by-block--head" style="--b:1">
+            <span class="by-block-tag">Heading</span>
+            <div class="by-head-line">Keep the night going</div>
+          </div>
+
+          <!-- Row block -->
+          <div class="by-block by-block--row" style="--b:2">
+            <span class="by-block-tag">Row · Keep Watching</span>
+            <div class="by-row-title">Keep Watching</div>
+            <div class="by-row-scroll">
+              {rowFilms.map((f) => (
+                <img class="by-poster" src={`/media/${f.poster}`} alt="" loading="lazy" style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`} />
+              ))}
+            </div>
+          </div>
+
+          <!-- Ghost add-block affordance -->
+          <div class="by-addblock" style="--b:3">
+            <span class="by-addblock-plus">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+            </span>
+            Add block — Grid · Links · Divider · Text
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ============================ 3 · SCOPE / SMART FILTER ============== -->
+    <article class="by-card by-scope glass reveal" style="--reveal-delay:120ms">
+      <div class="by-card-copy">
+        <p class="by-eyebrow">Scopes &amp; smart filters</p>
+        <h3 class="by-card-title">One filter. Every server. Saved.</h3>
+        <p class="by-card-body">
+          Any page or row can be a saved smart filter spanning one server or many.
+          Stack conditions — genre, year, content rating, watch status, resolution,
+          codec, dynamic range, spatial audio, channels — then sort. The result
+          becomes a living row you can drop anywhere.
+        </p>
+      </div>
+
+      <div class="by-scopewrap" aria-hidden="true">
+        <div class="by-scopebar">
+          <span class="by-scope-filtericon">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M7 12h10M10 17h4" /></svg>
+          </span>
+          {scopeChips.map((c) => (
+            <span class="by-scopechip">
+              {c.k && <span class="by-scopechip-k">{c.k}</span>}
+              <span class="by-scopechip-v">{c.v}</span>
+              <svg class="by-scopechip-x" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </span>
+          ))}
+          <span class="by-scope-add">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+          </span>
+        </div>
+
+        <div class="by-scope-arrow">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M6 14l6 6 6-6" /></svg>
+        </div>
+
+        <div class="by-scope-result">
+          <div class="by-scope-result-head">
+            <span class="by-scope-result-ttl">Unwatched 4K Sci-Fi with Atmos</span>
+            <span class="by-scope-result-sort">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" /></svg>
+              Recently added
+            </span>
+          </div>
+          <div class="by-scope-row">
+            {gridFilms.map((f) => (
+              <img class="by-poster" src={`/media/${f.poster}`} alt="" loading="lazy" style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================ 4 · SECONDARY CHIPS ================== -->
+    <ul class="by-secondary reveal" style="--reveal-delay:80ms" role="list">
+      {secondary.map((s) => (
+        <li class="by-chip">
+          <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="M5 10.4 8.4 14 15 6.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          {s}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .by {
+    position: relative;
+    overflow: hidden;
+  }
+  .by-head {
+    max-width: 46ch;
+    margin-bottom: var(--space-8);
+  }
+
+  /* ------------------------------------------------------ card scaffold */
+  .by-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+  .by-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+  }
+  .by-card-copy {
+    max-width: 52ch;
+  }
+  .by-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 var(--space-3);
+  }
+  .by-card-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: var(--label);
+    margin: 0 0 var(--space-3);
+  }
+  .by-card-body {
+    margin: 0;
+    color: var(--label-secondary);
+    font-size: 0.9875rem;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .by-visual {
+    margin-top: auto;
+  }
+
+  /* ============================================ 1 · NAV EDITOR ========== */
+  .by-nav {
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(120% 90% at 50% 0%, var(--accent-subtle), transparent 62%),
+      var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .by-nav-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-1) var(--space-2) var(--space-3);
+  }
+  .by-nav-head-title {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: 0.95rem;
+    color: var(--label);
+  }
+  .by-nav-head-done {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .by-navlist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .by-navrow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-card);
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    transition: transform var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+  .by-grip {
+    flex: none;
+    display: grid;
+    place-items: center;
+    color: var(--label-tertiary);
+    cursor: grab;
+  }
+  .by-grip svg { fill: currentColor; }
+  .by-navicon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    box-shadow: inset 0 0 0 1px var(--glass-border);
+  }
+  .by-navicon svg { width: 18px; height: 18px; }
+  .by-navlabel {
+    font-weight: 550;
+    font-size: 0.95rem;
+    color: var(--label);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .by-navnote {
+    margin-left: auto;
+    flex: none;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--label-secondary);
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+  }
+  .by-navnote.is-default {
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border-color: var(--accent-muted);
+  }
+  .by-navmove {
+    flex: none;
+    display: grid;
+    place-items: center;
+    color: var(--label-tertiary);
+  }
+  .by-navnote + .by-navmove { margin-left: var(--space-2); }
+  .by-navrow:not(:has(.by-navnote)) .by-navmove { margin-left: auto; }
+
+  /* the "being dragged" row — lifts + drifts on a gentle loop */
+  .by-navrow.is-dragging {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-glow), 0 0 0 1px var(--accent-muted);
+    position: relative;
+    z-index: 2;
+    animation: by-drag 4.6s var(--ease-in-out) infinite;
+  }
+  .by-navrow.is-dragging .by-grip { color: var(--accent); cursor: grabbing; }
+  @keyframes by-drag {
+    0%, 100% { transform: translateY(0) scale(1); }
+    18% { transform: translateY(-2px) scale(1.015); }
+    40% { transform: translateY(-42px) scale(1.015); }
+    60% { transform: translateY(-42px) scale(1.015); }
+    82% { transform: translateY(-2px) scale(1.015); }
+  }
+
+  .by-navpin {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-card);
+    background: var(--glass);
+    border: 1px dashed var(--separator);
+  }
+  .by-navpin .by-navicon { color: var(--label-secondary); background: var(--glass); }
+  .by-navpin-tag {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--label-tertiary);
+  }
+  .by-navpin-tag svg { color: var(--label-tertiary); }
+
+  /* ============================================ 2 · PAGE BUILDER ======== */
+  .by-builder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(120% 80% at 50% 0%, var(--accent-subtle), transparent 60%),
+      var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .by-block {
+    position: relative;
+    border-radius: var(--radius-card);
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    padding: var(--space-3);
+    padding-top: 26px;
+  }
+  .by-block-tag {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-muted);
+    border-radius: var(--radius-card) 0 var(--radius-card) 0;
+  }
+
+  /* hero block */
+  .by-hero {
+    position: relative;
+    aspect-ratio: 21 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center 30%;
+    background-color: var(--bg-grouped);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-3);
+  }
+  .by-hero-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.72) 6%, transparent 62%);
+  }
+  .by-hero-logo {
+    position: relative;
+    width: clamp(70px, 26%, 120px);
+    max-height: 40px;
+    object-fit: contain;
+    object-position: left;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  }
+  .by-hero-ttl {
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+  }
+  .by-hero-play {
+    position: relative;
+    margin-top: 6px;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgb(6, 20, 13);
+    background: var(--accent);
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  .by-head-line {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--label);
+    letter-spacing: -0.01em;
+  }
+
+  .by-row-title {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: 0.9rem;
+    color: var(--label);
+    margin-bottom: var(--space-2);
+  }
+  .by-row-scroll {
+    display: flex;
+    gap: 8px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
+    mask-image: linear-gradient(to right, #000 82%, transparent);
+  }
+  .by-poster {
+    flex: none;
+    width: 58px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .by-addblock {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    padding: var(--space-3);
+    border-radius: var(--radius-card);
+    border: 1px dashed var(--separator);
+    background: var(--glass);
+    color: var(--label-secondary);
+    font-size: 0.78rem;
+    font-weight: 550;
+  }
+  .by-addblock-plus {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-muted);
+    animation: by-pulse 3.2s var(--ease-in-out) infinite;
+  }
+  @keyframes by-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--accent-muted); }
+    50% { box-shadow: 0 0 0 6px transparent; }
+  }
+
+  /* ============================================ 3 · SCOPE / FILTER ====== */
+  .by-scope {
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+  .by-scope .by-card-copy { max-width: 60ch; }
+
+  .by-scopewrap {
+    display: grid;
+    grid-template-columns: 1.05fr auto 1fr;
+    align-items: center;
+    gap: var(--space-5);
+  }
+  .by-scopebar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .by-scope-filtericon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    box-shadow: inset 0 0 0 1px var(--glass-border);
+  }
+  .by-scopechip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--card);
+    border: 1px solid var(--glass-border);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--label);
+  }
+  .by-scopechip-k {
+    color: var(--label-tertiary);
+    font-weight: 600;
+  }
+  .by-scopechip-k::after { content: ':'; }
+  .by-scopechip-v { color: var(--label); }
+  .by-scopechip-x { color: var(--label-tertiary); flex: none; }
+
+  .by-scope-add {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-muted);
+  }
+
+  .by-scope-arrow {
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    opacity: 0.85;
+  }
+
+  .by-scope-result {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(120% 100% at 100% 0%, var(--accent-subtle), transparent 60%),
+      var(--bg-secondary);
+    border: 1px solid var(--accent-muted);
+    box-shadow: var(--shadow-glow);
+  }
+  .by-scope-result-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .by-scope-result-ttl {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--label);
+    letter-spacing: -0.01em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .by-scope-result-sort {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--label-secondary);
+    padding: 4px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+  }
+  .by-scope-result-sort svg { color: var(--accent); }
+  .by-scope-row {
+    display: flex;
+    gap: 8px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 88%, transparent);
+    mask-image: linear-gradient(to right, #000 88%, transparent);
+  }
+  .by-scope-row .by-poster { width: 62px; }
+
+  /* ============================================ 4 · SECONDARY CHIPS ===== */
+  .by-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+  .by-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.82rem;
+    font-weight: 550;
+    color: var(--label-secondary);
+    padding: 8px var(--space-4);
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+  }
+  .by-chip svg { color: var(--accent); flex: none; }
+
+  /* ====================================================== responsive */
+  @media (max-width: 900px) {
+    .by-grid { grid-template-columns: 1fr; }
+    .by-scopewrap { grid-template-columns: 1fr; gap: var(--space-4); }
+    .by-scope-arrow { transform: rotate(0deg); }
+  }
+
+  @media (max-width: 480px) {
+    .by-card { padding: var(--space-5); }
+    .by-navlabel { font-size: 0.9rem; }
+    .by-navnote { font-size: 0.62rem; padding: 3px 7px; }
+    .by-poster { width: 52px; }
+    .by-scopebar { padding: var(--space-3); }
+    .by-addblock { font-size: 0.72rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .by-navrow.is-dragging,
+    .by-addblock-plus {
+      animation: none;
+    }
+    .by-navrow.is-dragging {
+      transform: translateY(-2px) scale(1.01);
+    }
+  }
+</style>

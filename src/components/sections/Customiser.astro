@@ -2,22 +2,21 @@
 /**
  * Customiser — id="customise".
  *
- * THE interactive playground: a glass control panel drives a live Pippin phone/
- * tablet preview built to look like the REAL Pippin iOS app. Accent · Theme ·
- * Poster size · Shelf style · Navigation all re-tint / re-flow the preview
- * instantly via applyPalette() (from palette.js).
+ * THE interactive playground: a glass control panel drives a live, TRUE-TO-SCALE
+ * Pippin preview across iPhone · iPad · Apple TV · Mac. Each device renders its
+ * screen at the REAL logical point size (iPhone 393×852, iPad 1194×834,
+ * tvOS 1920×1080, macOS 1280×800) and is uniformly scaled to fit, so tab-bar
+ * heights, sidebar widths, icon/font sizes and poster sizes all match the real
+ * app and stay consistent across devices.
  *
- * The preview uses REAL artwork (Blender Open-Movie posters/backdrops/logos,
- * CC-BY) served from /media/. All colour comes from CSS custom properties set
- * by applyPalette on the `.cz-stage` container — children re-tint live. The
- * only literal colours are the procedural film gradients (fallback behind the
- * images) and unavoidable overlay scrims (black gradients), which are
- * structural, not brand colour.
+ * Accent · Theme · Poster size · Top shelf · Device re-tint / re-flow the preview
+ * live: applyPalette() (ported from the app's theme engine) sets CSS custom
+ * properties on the device root; per-device build*() functions render the screen.
  *
- * Fidelity references (read-only, in the app repo):
- *   Onboarding/Components/OnboardingStylePhoneMock.swift  (the app's own mock)
- *   Onboarding/Components/OnboardingShelfPreview.swift
- *   RootView.swift (tab bar), DesignSystem/.../MediaCard.swift
+ * Fidelity references (captured from the real app + source):
+ *   Live sim captures: iOS/iPad Home + tvOS Home (see git history / design notes)
+ *   RootView.swift (tab bar), TVAppSidebar.swift, MacRootView.swift,
+ *   HomeHeroViews.swift, DesignSystem/.../MediaCard.swift
  */
 import { PRESET_ACCENTS, DEFAULT_ACCENT } from '../../lib/palette.js';
 import { sampleFilms } from '../../lib/sampleData.js';
@@ -43,8 +42,8 @@ const films = sampleFilms.map((f) => ({
       <h2 class="section-title">Your library. Your rules.</h2>
       <p class="section-subtitle">
         Pippin bends to your taste. Pick an accent and every surface re-tints in
-        real time; choose a theme, resize posters, morph your shelves, swap tabs
-        for a sidebar. Try it right here — this is a live, running slice of the app.
+        real time; choose a theme, resize posters, morph your shelves, and see it
+        on every device — iPhone, iPad, Apple&nbsp;TV and Mac, all to scale.
       </p>
     </header>
 
@@ -113,21 +112,24 @@ const films = sampleFilms.map((f) => ({
             <span class="cz-label" id="cz-shelf-label">Top shelf</span>
           </div>
           <div class="cz-seg" role="radiogroup" aria-labelledby="cz-shelf-label" data-group="shelf">
-            <button type="button" role="radio" aria-checked="false" data-val="row">Row</button>
+            <button type="button" role="radio" aria-checked="true" data-val="row">Row</button>
             <button type="button" role="radio" aria-checked="false" data-val="spotlight">Spotlight</button>
-            <button type="button" role="radio" aria-checked="true" data-val="hero">Hero</button>
+            <button type="button" role="radio" aria-checked="false" data-val="hero">Hero</button>
             <span class="cz-seg-thumb" aria-hidden="true"></span>
           </div>
         </div>
 
-        <!-- Navigation -->
+        <!-- Device -->
         <div class="cz-ctl">
           <div class="cz-ctl-head">
-            <span class="cz-label" id="cz-layout-label">Navigation</span>
+            <span class="cz-label" id="cz-device-label">Device</span>
+            <span class="cz-hint">Same app, to scale</span>
           </div>
-          <div class="cz-seg" role="radiogroup" aria-labelledby="cz-layout-label" data-group="layout">
-            <button type="button" role="radio" aria-checked="true" data-val="tabs">Tabs</button>
-            <button type="button" role="radio" aria-checked="false" data-val="sidebar">Sidebar</button>
+          <div class="cz-seg" role="radiogroup" aria-labelledby="cz-device-label" data-group="device">
+            <button type="button" role="radio" aria-checked="true" data-val="iphone">iPhone</button>
+            <button type="button" role="radio" aria-checked="false" data-val="ipad">iPad</button>
+            <button type="button" role="radio" aria-checked="false" data-val="tv">TV</button>
+            <button type="button" role="radio" aria-checked="false" data-val="mac">Mac</button>
             <span class="cz-seg-thumb" aria-hidden="true"></span>
           </div>
         </div>
@@ -147,69 +149,18 @@ const films = sampleFilms.map((f) => ({
       </div>
 
       <!-- ============================== DEVICE PREVIEW =================== -->
-      <div class="cz-preview" data-layout="tabs">
-        <div class="cz-device">
-          <div class="cz-stage" id="cz-stage" data-shelf="hero" data-poster="l">
-            <!-- Sidebar (tablet layout) -->
-            <nav class="cz-sidebar" aria-hidden="true">
-              <div class="cz-sb-brand">
-                <span class="cz-sb-dot"></span>
-                <span class="cz-sb-brandtxt">Pippin</span>
-              </div>
-              <ul class="cz-sb-list" id="cz-sidebar-list"></ul>
-            </nav>
-
-            <!-- Content column -->
-            <div class="cz-content">
-              <!-- Status bar -->
-              <div class="cz-statusbar" aria-hidden="true">
-                <span class="cz-clock">9:41</span>
-                <span class="cz-island"></span>
-                <span class="cz-status-glyphs">
-                  <svg viewBox="0 0 18 12" width="17" height="11" aria-hidden="true">
-                    <path d="M9 11.2 1 4.2A11.2 11.2 0 0 1 17 4.2Z" fill="currentColor" opacity="0.9"/>
-                  </svg>
-                  <svg viewBox="0 0 26 13" width="22" height="11" aria-hidden="true">
-                    <rect x="0.5" y="1.5" width="21" height="10" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
-                    <rect x="2.2" y="3.2" width="15" height="6.6" rx="1.6" fill="currentColor"/>
-                    <rect x="23" y="4.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.5"/>
-                  </svg>
-                </span>
-              </div>
-
-              <!-- Nav header (row/spotlight only) -->
-              <div class="cz-navhead" id="cz-navhead">
-                <span class="cz-navtitle">Home</span>
-                <span class="cz-navavatar">
-                  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-                    <circle cx="12" cy="8" r="4" fill="currentColor"/>
-                    <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="currentColor"/>
-                  </svg>
-                </span>
-              </div>
-
-              <!-- Scroll body -->
-              <div class="cz-scroll" id="cz-scroll">
-                <!-- top shelf host (swaps between row/spotlight/hero) -->
-                <div class="cz-topshelf" id="cz-topshelf"></div>
-
-                <!-- Always-on second shelf below -->
-                <div class="cz-shelf">
-                  <div class="cz-shelf-head">
-                    <span class="cz-shelf-title">Recently Added</span>
-                    <span class="cz-shelf-more">See All</span>
-                  </div>
-                  <div class="cz-rail cz-rail--poster cz-rail--fixed" id="cz-rail2"></div>
-                </div>
-              </div>
-
-              <!-- Tab bar (portrait layout) — floating Liquid-Glass bar -->
-              <nav class="cz-tabbar-wrap" id="cz-tabbar-wrap" aria-hidden="true">
-                <div class="cz-tabbar" id="cz-tabbar"></div>
-              </nav>
+      <div class="cz-preview">
+        <div class="cz-device" data-device="iphone">
+          <div class="cz-device-glow" aria-hidden="true"></div>
+          <div class="cz-frame">
+            <div class="cz-screen-clip">
+              <div class="cz-screen" id="cz-screen"></div>
             </div>
           </div>
-          <div class="cz-device-glow" aria-hidden="true"></div>
+          <div class="cz-tvstand" aria-hidden="true">
+            <span class="cz-tv-neck"></span>
+            <span class="cz-tv-foot"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -220,440 +171,695 @@ const films = sampleFilms.map((f) => ({
     define:vars={{ films, presets: PRESET_ACCENTS, defaultAccent: DEFAULT_ACCENT }}
   >
     (function () {
-      const stage = document.getElementById('cz-stage');
-      if (!stage) return;
+      const deviceEl = document.querySelector('#customise .cz-device');
+      const previewEl = document.querySelector('#customise .cz-preview');
+      const screen = document.getElementById('cz-screen');
+      if (!deviceEl || !screen) return;
 
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // ---- palette (inlined so no import needed in inline script) ---------
-      function hexToRgb(hex) {
-        let h = String(hex).trim().replace(/^#/, '');
-        if (h.length === 3) h = h.split('').map((c) => c + c).join('');
-        const int = parseInt(h, 16);
-        return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
-      }
-      function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
-      function hexToHsb(hex) {
-        const { r, g, b } = hexToRgb(hex);
-        const rf = r / 255, gf = g / 255, bf = b / 255;
-        const max = Math.max(rf, gf, bf), min = Math.min(rf, gf, bf), d = max - min;
-        let h = 0;
-        if (d !== 0) {
-          if (max === rf) h = ((gf - bf) / d) % 6;
-          else if (max === gf) h = (bf - rf) / d + 2;
-          else h = (rf - gf) / d + 4;
-          h /= 6; if (h < 0) h += 1;
-        }
-        return { h, s: max === 0 ? 0 : d / max, b: max };
-      }
-      function hsbToCss(h, s, b) {
-        h = ((h % 1) + 1) % 1; s = clamp01(s); b = clamp01(b);
-        const i = Math.floor(h * 6), f = h * 6 - i;
-        const p = b * (1 - s), q = b * (1 - f * s), t = b * (1 - (1 - f) * s);
-        let r, g, bl;
-        switch (i % 6) {
-          case 0: r = b; g = t; bl = p; break;
-          case 1: r = q; g = b; bl = p; break;
-          case 2: r = p; g = b; bl = t; break;
-          case 3: r = p; g = q; bl = b; break;
-          case 4: r = t; g = p; bl = b; break;
-          default: r = b; g = p; bl = q; break;
-        }
-        return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(bl * 255)})`;
-      }
-      // Choose a legible foreground for the accent (used on the Resume/tint pills).
-      function accentForeground(hex) {
-        const { r, g, b } = hexToRgb(hex);
-        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        return lum > 0.62 ? 'rgb(10, 14, 12)' : 'rgb(255, 255, 255)';
-      }
-      function applyPalette(el, accentHex, theme = 'dark', tint = 1) {
-        const { h, s } = hexToHsb(accentHex);
-        const t = clamp01(tint);
-        const c = hexToRgb(accentHex);
-        const emerald = hsbToCss(h, Math.min(s + 0.1, 0.7) * t, 0.1);
-        let bg, grouped, secondary, card, sep;
-        if (theme === 'light') {
-          bg = hsbToCss(h, 0.04 * t, 0.985);
-          grouped = hsbToCss(h, 0.055 * t, 0.96);
-          secondary = hsbToCss(h, 0.07 * t, 0.935);
-          card = hsbToCss(h, 0.022 * t, 1.0);
-          sep = hsbToCss(h, 0.1 * t, 0.83);
-        } else {
-          bg = hsbToCss(h, Math.min(s + 0.05, 0.44) * t, 0.11);
-          grouped = hsbToCss(h, Math.min(s + 0.05, 0.44) * t, 0.15);
-          secondary = hsbToCss(h, Math.min(s + 0.04, 0.42) * t, 0.22);
-          card = hsbToCss(h, Math.min(s + 0.14, 0.66) * t, 0.165);
-          sep = hsbToCss(h, 0.2 * t, 0.34);
-          if (theme === 'black') {
-            bg = '#000000';
-            card = hsbToCss(h, Math.min(s + 0.14, 0.66) * t, 0.165 * 0.6);
-          }
-        }
-        const isLight = theme === 'light';
-        const map = {
-          '--accent': `rgb(${c.r}, ${c.g}, ${c.b})`,
-          '--accent-subtle': `rgba(${c.r}, ${c.g}, ${c.b}, 0.15)`,
-          '--accent-muted': `rgba(${c.r}, ${c.g}, ${c.b}, 0.28)`,
-          '--accent-fg': accentForeground(accentHex),
-          '--bg': bg,
-          '--bg-grouped': grouped,
-          '--bg-secondary': secondary,
-          '--card': card,
-          '--separator': sep,
-          '--label': isLight ? 'rgb(20, 22, 24)' : 'rgb(244, 245, 247)',
-          '--label-secondary': isLight ? 'rgba(20, 22, 24, 0.55)' : 'rgba(255, 255, 255, 0.60)',
-          '--glass-fill': isLight ? 'rgba(255, 255, 255, 0.62)' : 'rgba(28, 30, 34, 0.52)',
-          '--glass-hairline': isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.14)',
-          '--emerald-depths': emerald,
-        };
-        for (const k in map) el.style.setProperty(k, map[k]);
-      }
+      /* ---- palette (ported from palette.js) ------------------------------ */
+      function hexToRgb(hex){let h=String(hex).trim().replace(/^#/,'');if(h.length===3)h=h.split('').map((c)=>c+c).join('');const int=parseInt(h,16);return{r:(int>>16)&255,g:(int>>8)&255,b:int&255};}
+      function clamp01(x){return x<0?0:x>1?1:x;}
+      function hexToHsb(hex){const{r,g,b}=hexToRgb(hex);const rf=r/255,gf=g/255,bf=b/255;const max=Math.max(rf,gf,bf),min=Math.min(rf,gf,bf),d=max-min;let h=0;if(d!==0){if(max===rf)h=((gf-bf)/d)%6;else if(max===gf)h=(bf-rf)/d+2;else h=(rf-gf)/d+4;h/=6;if(h<0)h+=1;}return{h,s:max===0?0:d/max,b:max};}
+      function hsbToCss(h,s,b){h=((h%1)+1)%1;s=clamp01(s);b=clamp01(b);const i=Math.floor(h*6),f=h*6-i;const p=b*(1-s),q=b*(1-f*s),t=b*(1-(1-f)*s);let r,g,bl;switch(i%6){case 0:r=b;g=t;bl=p;break;case 1:r=q;g=b;bl=p;break;case 2:r=p;g=b;bl=t;break;case 3:r=p;g=q;bl=b;break;case 4:r=t;g=p;bl=b;break;default:r=b;g=p;bl=q;break;}return`rgb(${Math.round(r*255)}, ${Math.round(g*255)}, ${Math.round(bl*255)})`;}
+      function accentForeground(hex){const{r,g,b}=hexToRgb(hex);const lum=(0.299*r+0.587*g+0.114*b)/255;return lum>0.62?'rgb(10, 14, 12)':'rgb(255, 255, 255)';}
+      function applyPalette(el,accentHex,theme='dark',tint=1){const{h,s}=hexToHsb(accentHex);const t=clamp01(tint);const c=hexToRgb(accentHex);const emerald=hsbToCss(h,Math.min(s+0.1,0.7)*t,0.1);let bg,grouped,secondary,card,sep;if(theme==='light'){bg=hsbToCss(h,0.04*t,0.985);grouped=hsbToCss(h,0.055*t,0.96);secondary=hsbToCss(h,0.07*t,0.935);card=hsbToCss(h,0.022*t,1.0);sep=hsbToCss(h,0.1*t,0.83);}else{bg=hsbToCss(h,Math.min(s+0.05,0.44)*t,0.11);grouped=hsbToCss(h,Math.min(s+0.05,0.44)*t,0.15);secondary=hsbToCss(h,Math.min(s+0.04,0.42)*t,0.22);card=hsbToCss(h,Math.min(s+0.14,0.66)*t,0.165);sep=hsbToCss(h,0.2*t,0.34);if(theme==='black'){bg='#000000';card=hsbToCss(h,Math.min(s+0.14,0.66)*t,0.165*0.6);}}const isLight=theme==='light';const map={'--accent':`rgb(${c.r}, ${c.g}, ${c.b})`,'--accent-subtle':`rgba(${c.r}, ${c.g}, ${c.b}, 0.15)`,'--accent-muted':`rgba(${c.r}, ${c.g}, ${c.b}, 0.28)`,'--accent-fg':accentForeground(accentHex),'--bg':bg,'--bg-grouped':grouped,'--bg-secondary':secondary,'--card':card,'--separator':sep,'--label':isLight?'rgb(20, 22, 24)':'rgb(244, 245, 247)','--label-secondary':isLight?'rgba(20, 22, 24, 0.55)':'rgba(255, 255, 255, 0.60)','--label-tertiary':isLight?'rgba(20, 22, 24, 0.35)':'rgba(255, 255, 255, 0.40)','--glass-fill':isLight?'rgba(255, 255, 255, 0.62)':'rgba(28, 30, 34, 0.52)','--glass-hairline':isLight?'rgba(0, 0, 0, 0.08)':'rgba(255, 255, 255, 0.14)','--emerald-depths':emerald};for(const k in map)el.style.setProperty(k,map[k]);}
 
-      // ---- state ----------------------------------------------------------
-      const state = {
-        accent: defaultAccent,
-        theme: 'dark',   // system→dark, light, dark, black
-        poster: 'l',
-        shelf: 'hero',
-        layout: 'tabs',
+      /* ================= shared iOS/iPad helpers (iosx-) ================== */
+      const IOSX_SVG = {
+        hamburger: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+        filter:    '<svg viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/></svg>',
+        search:    '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg>',
+        check:     '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>',
+        play:      '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+        house:     '<svg class="fill" viewBox="0 0 24 24"><path d="M12 3.2 3 10.4V21h6v-6h6v6h6V10.4z"/></svg>',
+        film:      '<svg class="line" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M8 4.5v15M16 4.5v15M3 9.5h5M3 14.5h5M16 9.5h5M16 14.5h5"/></svg>',
+        tv:        '<svg class="line" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/></svg>',
+        gear:      '<svg class="line" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.02.02a1.9 1.9 0 1 1-2.69 2.69l-.02-.02a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a1.9 1.9 0 0 1-3.8 0v-.06a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.02.02a1.9 1.9 0 1 1-2.69-2.69l.02-.02a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a1.9 1.9 0 0 1 0-3.8h.06a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.02-.02a1.9 1.9 0 1 1 2.69-2.69l.02.02a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a1.9 1.9 0 0 1 3.8 0v.06a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.02-.02a1.9 1.9 0 1 1 2.69 2.69l-.02.02a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a1.9 1.9 0 0 1 0 3.8h-.06a1.65 1.65 0 0 0-1.51 1z"/></svg>',
       };
-      // Rail poster widths (px) — the app's intended mock tiers. At L (default)
-      // ~2 posters span the phone mock; at XS ~3–4 fit, the rest scroll off the
-      // right edge (clipped by the phone frame).
-      const POSTER_W = { xs: 64, s: 78, m: 92, l: 112, xl: 132 };
-
-      const preview = document.querySelector('.cz-preview');
-      const topshelf = document.getElementById('cz-topshelf');
-      const rail2 = document.getElementById('cz-rail2');
-      const tabbar = document.getElementById('cz-tabbar');
-      const sidebarList = document.getElementById('cz-sidebar-list');
-      const navhead = document.getElementById('cz-navhead');
-
-      // ---- icons ----------------------------------------------------------
-      const ICON = {
-        home: '<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
-        movies: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5M8 20v-5M16 20v-5" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-        tv: '<rect x="2.5" y="5" width="19" height="12" rx="2"/><path d="M8 21h8M12 17v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
-        downloads: '<path d="M12 3v11m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
-        search: '<circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      const IOSX = {
+        pw(state){ return ({xs:92,s:108,m:124,l:140,xl:160})[state && state.poster] || 124; },
+        pwPad(state){ return ({xs:120,s:136,m:150,l:168,xl:190})[state && state.poster] || 150; },
+        esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); },
+        grad(f){ return `--_gt:${f.gradTop};--_gb:${f.gradBottom}`; },
+        poster(f, opts){ opts=opts||{}; const img=f.poster?`<img src="/media/${f.poster}" alt="" loading="lazy">`:''; const badge=opts.watched?`<div class="iosx-badge">${IOSX_SVG.check}</div>`:''; return `<div class="iosx-poster" style="${IOSX.grad(f)}">${img}${badge}</div>`; },
+        land(f, prog){ const img=f.backdrop?`<img src="/media/${f.backdrop}" alt="" loading="lazy">`:''; const bar=`<div class="iosx-prog"><i style="width:${prog}%"></i></div>`; return `<div class="iosx-land" style="${IOSX.grad(f)}">${img}${bar}</div>`; },
+        metaLine(f){ const bits=[f.year,(f.genres||[]).slice(0,2).join(' · ')]; if(f.rating)bits.push('★ '+f.rating.toFixed(1)); return bits.filter(Boolean).join('  ·  '); },
+        heroInner(f){ const bg=f.backdrop?`<div class="bg"><img src="/media/${f.backdrop}" alt=""></div>`:`<div class="bg" style="${IOSX.grad(f)}"></div>`; return `${bg}<div class="scrim"></div>`; },
       };
-      function svg(name) {
-        const solid = name === 'home' || name === 'movies' || name === 'tv';
-        return `<svg viewBox="0 0 24 24" width="22" height="22" fill="${solid ? 'currentColor' : 'none'}" aria-hidden="true">${ICON[name]}</svg>`;
-      }
 
-      const TABS = [
-        { icon: 'home', label: 'Home' },
-        { icon: 'movies', label: 'Movies' },
-        { icon: 'tv', label: 'TV' },
-        { icon: 'downloads', label: 'Downloads' },
-      ];
-      const SIDEBAR = [
-        { icon: 'home', label: 'Home' },
-        { icon: 'movies', label: 'Movies' },
-        { icon: 'tv', label: 'TV Shows' },
-        { icon: 'downloads', label: 'Downloads' },
-        { icon: 'search', label: 'Search' },
-      ];
-
-      // Metadata line, matching the app: year · genre · ★rating (rating optional).
-      function metaLine(f) {
-        const parts = [];
-        if (f.year) parts.push(String(f.year));
-        parts.push(f.genres[0]);
-        if (f.rating != null) parts.push(`<span class="cz-star">★</span> ${f.rating.toFixed(1)}`);
-        return parts.join(' · ');
-      }
-      function gradStyle(f) {
-        return `background:linear-gradient(150deg, ${f.gradTop}, ${f.gradBottom});`;
-      }
-      // Clear-logo when present (and good quality), else a clean styled title.
-      // `elephants` logo is tiny/low-quality → prefer styled title.
-      function hasGoodLogo(f) { return !!f.logo && f.id !== 'elephants'; }
-      function logoOrTitle(f, cls) {
-        if (hasGoodLogo(f)) return `<img class="${cls} cz-logo-img" src="/media/${f.logo}" alt="${f.title}" loading="lazy" />`;
-        return `<span class="${cls} cz-logo-txt">${f.title}</span>`;
-      }
-
-      // ---- poster card (real 2:3 poster + optional progress bar) ----------
-      function posterCard(f, progress) {
-        const bar = progress != null
-          ? `<span class="cz-poster-prog"><span class="cz-poster-prog-fill" style="width:${Math.round(clamp01(progress) * 100)}%"></span></span>`
-          : '';
-        const inner = f.poster
-          ? `<img src="/media/${f.poster}" alt="${f.title}" class="cz-poster-img" loading="lazy" />`
-          : `<div class="cz-poster-art" style="${gradStyle(f)}"><span class="cz-poster-t">${f.title}</span></div>`;
-        return `<div class="cz-poster">${inner}${bar}</div>`;
-      }
-
-      // ---- shelf renderers ------------------------------------------------
-      // ROW — a section header + a HORIZONTAL poster rail of real 2:3 posters,
-      // width driven by the poster-size control. A couple show progress bars.
-      function renderRow(host) {
-        const items = films.slice(0, 8);
-        const prog = [0.62, 0.3, null, 0.85, null, 0.47, null, 0.14];
-        host.innerHTML = `
-          <div class="cz-shelf cz-shelf--top">
-            <div class="cz-shelf-head">
-              <span class="cz-shelf-title">Continue Watching</span>
-              <span class="cz-shelf-more">See All</span>
-            </div>
-            <div class="cz-rail cz-rail--poster">
-              ${items.map((f, i) => posterCard(f, prog[i % prog.length])).join('')}
+      /* ============================ iPhone ============================== */
+      function buildIPhone(films, state){
+        state = state || {};
+        const shelf = state.shelf || 'row';
+        const pw = IOSX.pw(state);
+        const F = films;
+        const kw = [F[0], F[1], F[2]];
+        const recent = [F[3], F[4], F[5], F[6], F[7]];
+        const action = F.filter(f => (f.genres||[]).some(g => /Fantasy|Science Fiction|Action/.test(g)));
+        const progs = [72, 41, 88];
+        const statusOver = (shelf === 'hero');
+        const status = `
+          <div class="ios-status${statusOver ? ' over' : ''}">
+            <div class="t">15:44</div>
+            <div class="isl"></div>
+            <div class="r">
+              <svg width="18" height="13" viewBox="0 0 18 13"><path d="M9 2.2c2.3 0 4.4.9 6 2.4l-1.3 1.3A6.6 6.6 0 0 0 9 4.1a6.6 6.6 0 0 0-4.7 1.8L3 4.6A8.6 8.6 0 0 1 9 2.2zm0 3.4c1.4 0 2.7.5 3.7 1.5l-1.3 1.3A3.6 3.6 0 0 0 9 7.3c-1 0-1.9.4-2.6 1L5.2 7.1A5.4 5.4 0 0 1 9 5.6zm0 3.4c.7 0 1.3.3 1.8.8L9 11 7.2 9.2c.5-.5 1.1-.8 1.8-.8z" fill="${statusOver ? '#fff' : 'var(--label)'}"/></svg>
+              <svg width="27" height="13" viewBox="0 0 27 13"><rect x="1" y="1.5" width="21" height="10" rx="3" fill="none" stroke="${statusOver ? '#fff' : 'var(--label)'}" stroke-opacity=".5"/><rect x="2.5" y="3" width="18" height="7" rx="1.6" fill="${statusOver ? '#fff' : 'var(--label)'}"/><rect x="23.5" y="4.5" width="1.6" height="4" rx="1" fill="${statusOver ? '#fff' : 'var(--label)'}" fill-opacity=".5"/></svg>
             </div>
           </div>`;
-      }
-
-      let carousel = { idx: 0, timer: null };
-      function renderSpotlight(host) {
-        const items = films.slice(0, 5);
-        host.innerHTML = `
-          <div class="cz-spot">
-            <div class="cz-spot-frame">
-              ${items.map((f, i) => `
-                <div class="cz-spot-slide${i === 0 ? ' is-on' : ''}" data-i="${i}" style="${gradStyle(f)}">
-                  ${f.backdrop ? `<img class="cz-spot-bg" src="/media/${f.backdrop}" alt="" loading="lazy" />` : ''}
-                  <div class="cz-spot-scrim"></div>
-                  <div class="cz-spot-body">
-                    ${logoOrTitle(f, 'cz-spot-logo')}
-                    <div class="cz-spot-meta">${metaLine(f)}</div>
-                  </div>
-                </div>`).join('')}
-              <div class="cz-dots">${items.map((_, i) => `<span class="cz-dot${i === 0 ? ' is-on' : ''}"></span>`).join('')}</div>
-            </div>
-          </div>
-          <div class="cz-shelf cz-shelf--top">
-            <div class="cz-shelf-head">
-              <span class="cz-shelf-title">Trending</span>
-              <span class="cz-shelf-more">See All</span>
-            </div>
-            <div class="cz-rail cz-rail--poster">
-              ${films.slice(2, 8).map((f, i) => posterCard(f, [0.4, 0.7, null, 0.9, null, 0.33][i % 6])).join('')}
-            </div>
+        const kwShelf = `
+          <div class="ios-sec">Keep Watching</div>
+          <div class="ios-shelf kw">
+            ${kw.map((f,i)=>`
+              <div class="ios-kwcard">
+                ${IOSX.land(f, progs[i]||60)}
+                <div class="iosx-land-title">${IOSX.esc(f.title)}</div>
+                <div class="iosx-land-sub">${IOSX.esc(f.title)} · S1E${i+1}</div>
+              </div>`).join('')}
           </div>`;
-        startCarousel(host, items.length);
-      }
-
-      function renderHero(host) {
-        const items = films.slice(0, 5);
-        host.innerHTML = `
-          <div class="cz-hero">
-            <div class="cz-hero-art">
-              ${items.map((f, i) => `
-                <div class="cz-hero-slide${i === 0 ? ' is-on' : ''}" data-i="${i}" style="${gradStyle(f)}">
-                  ${f.backdrop ? `<img class="cz-hero-bg" src="/media/${f.backdrop}" alt="" loading="lazy" />` : ''}
-                  ${f.backdrop ? `<img class="cz-hero-bg cz-hero-bg--blur" src="/media/${f.backdrop}" alt="" loading="lazy" aria-hidden="true" />` : ''}
-                </div>`).join('')}
-              <div class="cz-hero-scrim"></div>
-              <div class="cz-hero-fade"></div>
-            </div>
-            <div class="cz-hero-body">
-              <div class="cz-hero-caps">
-                ${items.map((f, i) => `
-                  <div class="cz-hero-cap${i === 0 ? ' is-on' : ''}" data-i="${i}">
-                    ${logoOrTitle(f, 'cz-hero-logo')}
-                    <div class="cz-hero-meta">${metaLine(f)}</div>
+        const recentShelf = `
+          <div class="ios-sec">Recently Added</div>
+          <div class="ios-shelf" style="--pw:${pw}px">
+            ${recent.map((f,i)=>`
+              <div class="ios-pitem">
+                ${IOSX.poster(f, {watched: i%3===0})}
+                <div class="iosx-poster-title">${IOSX.esc(f.title)}</div>
+                <div class="iosx-poster-sub">${f.year}</div>
+              </div>`).join('')}
+          </div>`;
+        const actionShelf = `
+          <div class="ios-sec">Action</div>
+          <div class="ios-shelf" style="--pw:${pw}px">
+            ${action.map((f,i)=>`
+              <div class="ios-pitem">
+                ${IOSX.poster(f, {watched: i%2===1})}
+                <div class="iosx-poster-title">${IOSX.esc(f.title)}</div>
+                <div class="iosx-poster-sub">${f.year}</div>
+              </div>`).join('')}
+          </div>`;
+        let top = '';
+        if (shelf === 'hero') {
+          const feats = [F[2], F[1], F[0]];
+          top = `
+            <div class="ios-hero">
+              ${feats.map((f,i)=>`<div class="cz-slide iosx-cross${i===0?' is-on':''}" data-i="${i}">${IOSX.heroInner(f)}</div>`).join('')}
+              <div class="cap">
+                <div class="capstage">
+                  ${feats.map((f,i)=>`<div class="cz-slide capslide${i===0?' is-on':''}" data-i="${i}">
+                    ${f.logo?`<img class="hlogo" src="/media/${f.logo}" alt="${IOSX.esc(f.title)}">`:`<div class="htitle">${IOSX.esc(f.title)}</div>`}
+                    <div class="hmeta">${IOSX.metaLine(f)}</div>
                   </div>`).join('')}
+                </div>
+                <div class="ios-resume">${IOSX_SVG.play}Resume</div>
+                <div class="ios-dots">${feats.map((f,i)=>`<div class="cz-dot${i===0?' is-on':''}" data-i="${i}"></div>`).join('')}</div>
               </div>
-              <span class="cz-resume">
-                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
-                Resume
-              </span>
-              <div class="cz-dots">${items.map((_, i) => `<span class="cz-dot${i === 0 ? ' is-on' : ''}"></span>`).join('')}</div>
+            </div>`;
+        } else if (shelf === 'spotlight') {
+          const f = F[2];
+          top = `
+            <div class="ios-navrow">
+              <div class="ios-circ">${IOSX_SVG.hamburger}</div>
+              <div class="ios-circ">${IOSX_SVG.filter}</div>
             </div>
-          </div>
-          <div class="cz-shelf cz-shelf--top cz-shelf--hero-peek">
-            <div class="cz-shelf-head">
-              <span class="cz-shelf-title">Keep Watching</span>
-              <span class="cz-shelf-more">See All</span>
+            <div class="ios-title">Home</div>
+            <div class="ios-spot">
+              ${IOSX.heroInner(f)}
+              <div class="cap">
+                ${f.logo?`<img class="hlogo" src="/media/${f.logo}" alt="">`:`<div class="htitle">${IOSX.esc(f.title)}</div>`}
+                <div class="hmeta">${IOSX.metaLine(f)}</div>
+                <div class="ios-resume">${IOSX_SVG.play}Resume</div>
+              </div>
+            </div>`;
+        } else {
+          top = `
+            <div class="ios-navrow">
+              <div class="ios-circ">${IOSX_SVG.hamburger}</div>
+              <div class="ios-circ">${IOSX_SVG.filter}</div>
             </div>
-            <div class="cz-rail cz-rail--poster">
-              ${films.slice(1, 7).map((f, i) => posterCard(f, [0.5, 0.8, null, 0.66, null, 0.9][i % 6])).join('')}
-            </div>
+            <div class="ios-title">Home</div>
+            <div class="ios-search">${IOSX_SVG.search}<span>Search everything</span></div>`;
+        }
+        const tabbar = `
+          <div class="ios-tabbar">
+            <div class="ios-tab on">${IOSX_SVG.house}<div class="lb">Home</div></div>
+            <div class="ios-tab">${IOSX_SVG.film}<div class="lb">Movies</div></div>
+            <div class="ios-tab">${IOSX_SVG.tv}<div class="lb">TV Shows</div></div>
+            <div class="ios-tab">${IOSX_SVG.gear}<div class="lb">Settings</div></div>
           </div>`;
-        startCarousel(host, items.length);
+        return `
+          <div class="ios-root">
+            <div class="ios-scroll">
+              ${shelf === 'hero' ? '' : status}
+              ${top}
+              ${kwShelf}
+              ${recentShelf}
+              ${actionShelf}
+              <div style="height:100px"></div>
+            </div>
+            ${shelf === 'hero' ? status : ''}
+            ${tabbar}
+          </div>`;
       }
 
-      function startCarousel(host, count) {
+      /* ============================= iPad ============================== */
+      function buildIPad(films, state){
+        state = state || {};
+        const shelf = state.shelf || 'row';
+        const pw = IOSX.pwPad(state);
+        const F = films;
+        const kw = [F[0], F[1], F[2], F[3]];
+        const recent = [F[3], F[4], F[5], F[6], F[7], F[0], F[1]];
+        const action = F.filter(f => (f.genres||[]).some(g => /Fantasy|Science Fiction|Action/.test(g)));
+        const drama = F.filter(f => (f.genres||[]).some(g => /Comedy|Family|Fantasy/.test(g)));
+        const progs = [58, 33, 74, 90];
+        const statusOver = (shelf === 'hero');
+        const status = `
+          <div class="ipad-status${statusOver ? ' over' : ''}">
+            <div class="l" style="${statusOver?'color:#fff':''}">15:49<span class="date" style="${statusOver?'color:#fff':''}">Fri 24 Jul</span></div>
+            <div class="r" style="${statusOver?'color:#fff':''}">
+              <svg width="18" height="13" viewBox="0 0 18 13"><path d="M9 2.2c2.3 0 4.4.9 6 2.4l-1.3 1.3A6.6 6.6 0 0 0 9 4.1a6.6 6.6 0 0 0-4.7 1.8L3 4.6A8.6 8.6 0 0 1 9 2.2zm0 3.4c1.4 0 2.7.5 3.7 1.5l-1.3 1.3A3.6 3.6 0 0 0 9 7.3c-1 0-1.9.4-2.6 1L5.2 7.1A5.4 5.4 0 0 1 9 5.6zm0 3.4c.7 0 1.3.3 1.8.8L9 11 7.2 9.2c.5-.5 1.1-.8 1.8-.8z" fill="${statusOver?'#fff':'var(--label)'}"/></svg>
+              <span>100%</span>
+              <svg width="27" height="13" viewBox="0 0 27 13"><rect x="1" y="1.5" width="21" height="10" rx="3" fill="none" stroke="${statusOver?'#fff':'var(--label)'}" stroke-opacity=".5"/><rect x="2.5" y="3" width="18" height="7" rx="1.6" fill="${statusOver?'#fff':'var(--label)'}"/><rect x="23.5" y="4.5" width="1.6" height="4" rx="1" fill="${statusOver?'#fff':'var(--label)'}" fill-opacity=".5"/></svg>
+            </div>
+          </div>`;
+        const nav = `
+          <div class="ipad-nav${statusOver?' over':''}">
+            <div class="ipad-circ">${IOSX_SVG.hamburger}</div>
+            <div class="ipad-seg">
+              <div class="ipad-segtab on">Home</div>
+              <div class="ipad-segtab">Movies</div>
+              <div class="ipad-segtab">TV Shows</div>
+              <div class="ipad-segtab">Downloads</div>
+            </div>
+            <div class="ipad-navright">
+              <div class="ipad-circ">${IOSX_SVG.filter}</div>
+              <div class="ipad-circ plain">${IOSX_SVG.search}</div>
+            </div>
+          </div>`;
+        const kwShelf = `
+          <div class="ipad-sec">Keep Watching</div>
+          <div class="ipad-shelf kw">
+            ${kw.map((f,i)=>`
+              <div class="ipad-kwcard">
+                ${IOSX.land(f, progs[i]||60)}
+                <div class="iosx-land-title">${IOSX.esc(f.title)}</div>
+                <div class="iosx-land-sub">${IOSX.esc(f.title)} · S1E${i+1}</div>
+              </div>`).join('')}
+          </div>`;
+        const shelfPosters = (title, arr) => `
+          <div class="ipad-sec">${title}</div>
+          <div class="ipad-shelf" style="--pw:${pw}px">
+            ${arr.map((f,i)=>`
+              <div class="ipad-pitem">
+                ${IOSX.poster(f, {watched: i%3===0})}
+                <div class="iosx-poster-title">${IOSX.esc(f.title)}</div>
+                <div class="iosx-poster-sub">${f.year}</div>
+              </div>`).join('')}
+          </div>`;
+        let top = '';
+        if (shelf === 'hero') {
+          const feats = [F[2], F[1], F[0]];
+          top = `
+            <div class="ipad-hero">
+              ${feats.map((f,i)=>`<div class="cz-slide iosx-cross${i===0?' is-on':''}" data-i="${i}">${IOSX.heroInner(f)}</div>`).join('')}
+              <div class="cap">
+                ${feats.map((f,i)=>`<div class="cz-slide${i===0?' is-on':''}" data-i="${i}" style="position:absolute;left:0;bottom:56px;display:flex;flex-direction:column;max-width:520px">
+                  ${f.logo?`<img class="hlogo" src="/media/${f.logo}" alt="${IOSX.esc(f.title)}">`:`<div class="htitle">${IOSX.esc(f.title)}</div>`}
+                  <div class="hmeta">${IOSX.metaLine(f)}</div>
+                </div>`).join('')}
+                <div class="ipad-resume">${IOSX_SVG.play}Resume</div>
+                <div class="ipad-dots">${feats.map((f,i)=>`<div class="cz-dot${i===0?' is-on':''}" data-i="${i}"></div>`).join('')}</div>
+              </div>
+            </div>`;
+        } else if (shelf === 'spotlight') {
+          const f = F[2];
+          top = `${nav}
+            <div class="ipad-spot">
+              ${IOSX.heroInner(f)}
+              <div class="cap">
+                ${f.logo?`<img class="hlogo" src="/media/${f.logo}" alt="">`:`<div class="htitle">${IOSX.esc(f.title)}</div>`}
+                <div class="hmeta">${IOSX.metaLine(f)}</div>
+                <div class="ipad-resume">${IOSX_SVG.play}Resume</div>
+              </div>
+            </div>`;
+        } else {
+          top = nav;
+        }
+        return `
+          <div class="ipad-root">
+            <div class="ipad-scroll">
+              ${shelf === 'hero' ? '' : status}
+              ${top}
+              ${kwShelf}
+              ${shelfPosters('Recently Added', recent)}
+              ${shelfPosters('Action', action)}
+              ${shelfPosters('Drama', drama)}
+              <div style="height:40px"></div>
+            </div>
+            ${shelf === 'hero' ? status : ''}
+          </div>`;
+      }
+
+      /* ============================= tvOS ============================== */
+      function buildTV(films, state){
+        const byId = {}; films.forEach(f=>byId[f.id]=f);
+        const media = (f)=>`/media/${f}`;
+        const withBackdrop = films.filter(f=>f.backdrop);
+        const heroPref = ['tos','sintel','cosmos-laundromat'].map(id=>byId[id]).filter(Boolean);
+        const heroList = (heroPref.length?heroPref:withBackdrop).slice(0,3);
+        const hero = heroList[0];
+        const heroSlides = heroList.map((f,i)=>`
+          <div class="tv-hero-slide cz-slide${i===0?' is-on':''}" data-i="${i}">
+            <div class="tv-hero-img" style="background-image:url('${media(f.backdrop)}')"></div>
+            <div class="tv-hero-scrim"></div>
+          </div>`).join('');
+        const f = hero;
+        const captionInner = f.logo && f.id!=='elephants'
+          ? `<img class="tv-logo" src="${media(f.logo)}" alt="${f.title}">`
+          : `<h1 class="tv-title">${f.title}</h1>`;
+        const rating = f.rating!=null ? `${f.rating.toFixed(1)}` : null;
+        const metaBits = [];
+        metaBits.push(`<span>${f.year}</span>`);
+        metaBits.push(`<span class="tv-dot"></span>`);
+        metaBits.push(`<span>${f.genres.slice(0,2).join(' · ')}</span>`);
+        metaBits.push(`<span class="tv-dot"></span>`);
+        metaBits.push(`<span>1h 12m</span>`);
+        metaBits.push(`<span class="tv-badge">${rating?('★ '+rating):'NR'}</span>`);
+        const desc = "In an apocalyptic future, a group of soldiers and scientists takes refuge in Amsterdam to try to resist the onslaught of a robotic force bent on destroying humankind.";
+        const caption = `
+          <div class="tv-caption">
+            ${captionInner}
+            <div class="tv-meta">${metaBits.join('')}</div>
+            <div class="tv-desc">${desc}</div>
+          </div>`;
+        const kwSource = withBackdrop.filter(x=>x.id!==f.id).concat(withBackdrop);
+        const kw = kwSource.slice(0,4);
+        const progVals = [0.62, 0.38, 0.15, 0.8];
+        const kwCards = kw.map((c,i)=>`
+          <div class="tv-land">
+            <div class="tv-land-card">
+              <div class="tv-land-img" style="background-image:url('${media(c.backdrop)}')"></div>
+              <div class="tv-prog"><i style="width:${Math.round(progVals[i%progVals.length]*100)}%"></i></div>
+            </div>
+            <div class="tv-land-label">${c.title} · S1E${i+1}</div>
+          </div>`).join('');
+        const posterW = {s:180, m:210, l:246, xl:290}[state && state.poster] || 246;
+        const posterH = Math.round(posterW*3/2);
+        const withPoster = films.filter(x=>x.poster);
+        const raSource = withPoster.concat(withPoster);
+        const ra = raSource.slice(0,8);
+        const raCards = ra.map(c=>`
+          <div class="tv-poster">
+            <div class="tv-poster-card" style="width:${posterW}px;height:${posterH}px;background-image:url('${media(c.poster)}')"></div>
+          </div>`).join('');
+        const ICONS = {
+          house: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 2.4 11.1c-.3.24-.14.75.24.75H4.5V20a1 1 0 0 0 1 1h4.1v-5.2a2.4 2.4 0 0 1 4.8 0V21h4.1a1 1 0 0 0 1-1v-8.15h1.86c.38 0 .54-.51.24-.75L12 3.2Z"/></svg>`,
+          film: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2.4"/><path d="M8 4v16M16 4v16M3 9h5M3 15h5M16 9h5M16 15h5" stroke-width="1.5"/></svg>`,
+          tv: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="5" width="19" height="12.5" rx="2.2"/><path d="M8 21h8" stroke-linecap="round"/></svg>`,
+          search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="6.4"/><path d="m16 16 4.2 4.2" stroke-linecap="round"/></svg>`,
+          down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7.4v8.2M12 15.6l-3.4-3.4M12 15.6l3.4-3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+          gear: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9.9 2.6h4.2l.5 2.4a7.4 7.4 0 0 1 1.9 1.1l2.3-.85 2.1 3.6-1.85 1.55a7.5 7.5 0 0 1 0 2.2l1.85 1.55-2.1 3.6-2.3-.85a7.4 7.4 0 0 1-1.9 1.1l-.5 2.4H9.9l-.5-2.4a7.4 7.4 0 0 1-1.9-1.1l-2.3.85-2.1-3.6 1.85-1.55a7.5 7.5 0 0 1 0-2.2L3 8.85l2.1-3.6 2.3.85a7.4 7.4 0 0 1 1.9-1.1l.5-2.4Z"/><circle cx="12" cy="12" r="3.1"/></svg>`,
+        };
+        const navItems = [
+          {ic:'house', lbl:'Home', sel:true},
+          {ic:'film', lbl:'Movies'},
+          {ic:'tv', lbl:'TV Shows'},
+          {ic:'search', lbl:'Search'},
+          {ic:'down', lbl:'Downloads'},
+        ];
+        const navHtml = navItems.map(n=>`
+          <div class="tv-nav${n.sel?' is-sel':''}">
+            <span class="tv-ic">${ICONS[n.ic]}</span><span class="tv-lbl">${n.lbl}</span>
+          </div>`).join('');
+        const topBtns = `
+          <div class="tv-topbtns">
+            <div class="tv-cbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M6.5 12h11M9 17h6"/></svg></div>
+            <div class="tv-cbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.6 3M20 5v5h-5"/></svg></div>
+          </div>`;
+        return `
+        <div class="tv-root">
+          <div class="tv-hero">${heroSlides}</div>
+          ${caption}
+          ${topBtns}
+          <div class="tv-shelves">
+            <div class="tv-kw">
+              <h2 class="tv-shelf-title">Keep Watching</h2>
+              <div class="tv-row">${kwCards}</div>
+            </div>
+            <div class="tv-recent">
+              <h2 class="tv-shelf-title">Recently Added</h2>
+              <div class="tv-row">${raCards}</div>
+            </div>
+          </div>
+          <div class="tv-dim"></div>
+          <div class="tv-sidebar">
+            <div class="tv-profile">
+              <div class="tv-avatar">O</div>
+              <div class="tv-profile-name">Owner</div>
+            </div>
+            <div class="tv-navlist">${navHtml}</div>
+            <div class="tv-nav-spacer"></div>
+            <div class="tv-navlist">
+              <div class="tv-nav">
+                <span class="tv-ic">${ICONS.gear}</span><span class="tv-lbl">Settings</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      /* ============================= macOS ============================= */
+      function buildMac(films, state){
+        state = state || {};
+        const byId = {}; films.forEach(f=>byId[f.id]=f);
+        const media = (f)=>`/media/${f}`;
+        const shelf = state.shelf || 'row';
+        const withBackdrop = films.filter(f=>f.backdrop);
+        const withPoster = films.filter(f=>f.poster);
+        const ICONS = {
+          house: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 2.4 11.1c-.3.24-.14.75.24.75H4.5V20a1 1 0 0 0 1 1h4.1v-5.2a2.4 2.4 0 0 1 4.8 0V21h4.1a1 1 0 0 0 1-1v-8.15h1.86c.38 0 .54-.51.24-.75L12 3.2Z"/></svg>`,
+          film: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2.4"/><path d="M8 4v16M16 4v16M3 9h5M3 15h5M16 9h5M16 15h5" stroke-width="1.5"/></svg>`,
+          tv: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="5" width="19" height="12.5" rx="2.2"/><path d="M8 21h8" stroke-linecap="round"/></svg>`,
+          down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7.4v8.2M12 15.6l-3.4-3.4M12 15.6l3.4-3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+          gear: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9.9 2.6h4.2l.5 2.4a7.4 7.4 0 0 1 1.9 1.1l2.3-.85 2.1 3.6-1.85 1.55a7.5 7.5 0 0 1 0 2.2l1.85 1.55-2.1 3.6-2.3-.85a7.4 7.4 0 0 1-1.9 1.1l-.5 2.4H9.9l-.5-2.4a7.4 7.4 0 0 1-1.9-1.1l-2.3.85-2.1-3.6 1.85-1.55a7.5 7.5 0 0 1 0-2.2L3 8.85l2.1-3.6 2.3.85a7.4 7.4 0 0 1 1.9-1.1l.5-2.4Z"/><circle cx="12" cy="12" r="3.1"/></svg>`,
+          chevDown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`,
+          magnifier: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="6.4"/><path d="m16 16 4.2 4.2" stroke-linecap="round"/></svg>`,
+          filter: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M6.5 12h11M9.5 17h5"/></svg>`,
+          play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z"/></svg>`,
+          check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 5 5 9-11"/></svg>`,
+          star: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.7 5.5 6 .9-4.35 4.24 1.03 6-5.38-2.83L6.62 19.6l1.03-6L3.3 9.4l6-.9L12 3Z"/></svg>`,
+        };
+        const navItems = [
+          {ic:'house', lbl:'Home', sel:true},
+          {ic:'film', lbl:'Movies'},
+          {ic:'tv', lbl:'TV Shows'},
+          {ic:'down', lbl:'Downloads'},
+        ];
+        const navHtml = navItems.map(n=>`
+          <div class="mac-nav${n.sel?' is-sel':''}">
+            <span class="mac-ic">${ICONS[n.ic]}</span><span class="mac-lbl">${n.lbl}</span>
+          </div>`).join('');
+        const sidebar = `
+        <div class="mac-sidebar">
+          <div class="mac-tl">
+            <div class="mac-lights">
+              <span class="mac-light mac-close"></span>
+              <span class="mac-light mac-min"></span>
+              <span class="mac-light mac-max"></span>
+            </div>
+          </div>
+          <div class="mac-profile">
+            <div class="mac-avatar">O</div>
+            <div class="mac-profile-txt">
+              <span class="mac-profile-name">Owner</span>
+              <span class="mac-profile-sub">Switch Profile</span>
+            </div>
+            <span class="mac-profile-chev">${ICONS.chevDown}</span>
+          </div>
+          <div class="mac-divider"></div>
+          <div class="mac-navwrap">
+            <div class="mac-navlist">${navHtml}</div>
+            <div class="mac-nav-spacer"></div>
+          </div>
+          <div class="mac-divider"></div>
+          <div class="mac-settingswrap">
+            <div class="mac-navlist">
+              <div class="mac-nav">
+                <span class="mac-ic">${ICONS.gear}</span><span class="mac-lbl">Settings</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        const isHero = shelf === 'hero';
+        const toolbar = `
+          <div class="mac-toolbar${isHero?' is-hero':''}">
+            <span class="mac-tb-title${isHero?' is-hero':''}">Home</span>
+            <div class="mac-tb-spacer"></div>
+            <div class="mac-search">${ICONS.magnifier}<span>Search</span></div>
+            <div class="mac-tb-btn">${ICONS.filter}</div>
+          </div>`;
+        const heroPref = ['tos','sintel','cosmos-laundromat','bbb'].map(id=>byId[id]).filter(Boolean);
+        const heroList = (heroPref.length?heroPref:withBackdrop).slice(0,3);
+        const captionOf = (f)=>{
+          const useLogo = f.logo && f.id!=='elephants';
+          const head = useLogo ? `<img class="mac-hero-logo" src="${media(f.logo)}" alt="${f.title}">` : `<h1 class="mac-hero-ttl">${f.title}</h1>`;
+          const rating = f.rating!=null ? f.rating.toFixed(1) : null;
+          const meta = [
+            `<span>${f.year}</span>`,
+            `<span class="mac-mdot"></span>`,
+            `<span>${f.genres.slice(0,2).join(' · ')}</span>`,
+            `<span class="mac-mdot"></span>`,
+            `<span>1h 12m</span>`,
+            rating ? `<span class="mac-mdot"></span><span class="mac-rating">${ICONS.star}${rating}</span>` : '',
+          ].join('');
+          return {head, meta};
+        };
+        function featuredHero(){
+          const slides = heroList.map((f,i)=>`
+            <div class="mac-hero-slide cz-slide${i===0?' is-on':''}" data-i="${i}">
+              <div class="mac-hero-img" style="background-image:url('${media(f.backdrop)}')"></div>
+              <div class="mac-hero-scrim"></div>
+            </div>`).join('');
+          const caps = heroList.map((f,i)=>{
+            const c = captionOf(f);
+            return `<div class="mac-hero-slide cz-slide${i===0?' is-on':''}" data-i="${i}" style="pointer-events:none">
+              <div class="mac-hero-cap">
+                ${c.head}
+                <div class="mac-hero-meta">${c.meta}</div>
+                <div class="mac-hero-btnrow">
+                  <span class="mac-resume">${ICONS.play}Resume</span>
+                  <div class="mac-hero-dots">${heroList.map((_,j)=>`<span class="cz-dot${j===0?' is-on':''}" data-i="${j}"></span>`).join('')}</div>
+                </div>
+              </div>
+            </div>`;
+          }).join('');
+          return `<div class="mac-hero">${slides}${caps}</div>`;
+        }
+        function featuredSpotlight(){
+          const slides = heroList.map((f,i)=>{
+            const c = captionOf(f);
+            return `<div class="mac-spot-slide cz-slide${i===0?' is-on':''}" data-i="${i}">
+              <div class="mac-spot-img" style="background-image:url('${media(f.backdrop)}')"></div>
+              <div class="mac-spot-scrim"></div>
+              <div class="mac-spot-cap">${c.head}<div class="mac-hero-meta">${c.meta}</div>
+                <div class="mac-hero-btnrow"><span class="mac-resume">${ICONS.play}Resume</span></div>
+              </div>
+            </div>`;
+          }).join('');
+          const dots = `<div class="mac-spot-dots"><div class="mac-hero-dots">${heroList.map((_,j)=>`<span class="cz-dot${j===0?' is-on':''}" data-i="${j}"></span>`).join('')}</div></div>`;
+          return `<div class="mac-spot">${slides}${dots}</div>`;
+        }
+        const kwSource = withBackdrop.concat(withBackdrop);
+        const kw = kwSource.slice(0,6);
+        const progVals = [0.62, 0.38, 0.15, 0.8, 0.5, 0.27];
+        const kwCards = kw.map((c,i)=>`
+          <div class="mac-land">
+            <div class="mac-land-card">
+              <div class="mac-land-img" style="background-image:url('${media(c.backdrop)}')"></div>
+              <div class="mac-land-prog"><i style="width:${Math.round(progVals[i%progVals.length]*100)}%"></i></div>
+            </div>
+            <div class="mac-land-meta">
+              <div class="mac-land-ttl">${['Chapter 1','Pilot','The Arrival','First Steps','Homecoming','The Return'][i%6]}</div>
+              <div class="mac-land-sub">${c.title} · S1E${i+1}</div>
+            </div>
+          </div>`).join('');
+        const posterW = {xs:120, s:140, m:160, l:184, xl:210}[state.poster] || 184;
+        const posterH = Math.round(posterW*3/2);
+        const watchedIds = new Set(['sintel','elephants','pepper']);
+        const posterCard = (c)=>{
+          const watched = watchedIds.has(c.id);
+          return `<div class="mac-poster" style="width:${posterW}px">
+            <div class="mac-poster-card" style="width:${posterW}px;height:${posterH}px;background-image:url('${media(c.poster)}')">
+              ${watched?`<div class="mac-poster-check">${ICONS.check}</div>`:''}
+            </div>
+            <div class="mac-poster-meta">
+              <div class="mac-poster-ttl">${c.title}</div>
+              <div class="mac-poster-sub">${c.year}</div>
+            </div>
+          </div>`;
+        };
+        const raSource = withPoster.concat(withPoster);
+        const recentCards = raSource.slice(0,8).map(posterCard).join('');
+        const actionSource = withPoster.filter(f=>f.genres.some(g=>/Action|Fantasy|Science/.test(g))).concat(withPoster);
+        const actionCards = actionSource.slice(0,8).map(posterCard).join('');
+        const shelvesHtml = `
+          <div class="mac-shelves">
+            <div class="mac-shelf">
+              <div class="mac-shelf-hd"><h2 class="mac-shelf-ttl">Keep Watching</h2><span class="mac-seeall">See All</span></div>
+              <div class="mac-rowscroll">${kwCards}</div>
+            </div>
+            <div class="mac-shelf">
+              <div class="mac-shelf-hd"><h2 class="mac-shelf-ttl">Recently Added</h2><span class="mac-seeall">See All</span></div>
+              <div class="mac-rowscroll">${recentCards}</div>
+            </div>
+            <div class="mac-shelf">
+              <div class="mac-shelf-hd"><h2 class="mac-shelf-ttl">Action</h2><span class="mac-seeall">See All</span></div>
+              <div class="mac-rowscroll">${actionCards}</div>
+            </div>
+          </div>`;
+        let featured = '';
+        if(shelf==='hero') featured = featuredHero();
+        else if(shelf==='spotlight') featured = featuredSpotlight();
+        const content = `
+          <div class="mac-content">
+            ${toolbar}
+            <div class="mac-scroll">
+              <div class="mac-scroll-inner">
+                ${featured}
+                ${shelvesHtml}
+              </div>
+            </div>
+          </div>`;
+        return `<div class="mac-root">${sidebar}${content}</div>`;
+      }
+
+      const BUILDERS = { iphone:buildIPhone, ipad:buildIPad, tv:buildTV, mac:buildMac };
+
+      /* ---- device geometry (logical px == pt) ---------------------------- */
+      const DEV = {
+        iphone: { lw:393, lh:852, want:300, bezel:10, frameRadius:52, screenRadius:44 },
+        ipad:   { lw:1194, lh:834, want:620, bezel:14, frameRadius:30, screenRadius:18 },
+        tv:     { lw:1920, lh:1080, want:640, bezel:'2.4%', frameRadius:16, screenRadius:10 },
+        mac:    { lw:1280, lh:800, want:640, bezel:0, frameRadius:12, screenRadius:11 },
+      };
+
+      const state = { device:'iphone', theme:'dark', accent:defaultAccent, poster:'l', shelf:'row' };
+
+      function computeScale(){
+        const d = DEV[state.device];
+        const avail = Math.max(240, Math.min((previewEl && previewEl.clientWidth) || 600, 720));
+        const want = Math.min(d.want, avail);
+        const scale = want / d.lw;
+        deviceEl.style.setProperty('--scale', scale);
+        deviceEl.style.setProperty('--lw', d.lw);
+        deviceEl.style.setProperty('--lh', d.lh);
+        deviceEl.style.setProperty('--bezel', typeof d.bezel==='number' ? d.bezel+'px' : d.bezel);
+        deviceEl.style.setProperty('--frame-radius', d.frameRadius+'px');
+        deviceEl.style.setProperty('--screen-radius', d.screenRadius+'px');
+      }
+      function retint(){ applyPalette(deviceEl, state.accent, state.theme, 1); }
+
+      let carouselTimer = null;
+      function stopCarousel(){ if(carouselTimer){ clearInterval(carouselTimer); carouselTimer=null; } }
+      function startCarousel(){
         stopCarousel();
-        carousel.idx = 0;
-        carousel.count = count;
-        carousel.host = host;
-        if (reduced || count <= 1) return;
-        carousel.timer = setInterval(() => {
-          carousel.idx = (carousel.idx + 1) % count;
-          setCarousel(host, carousel.idx);
+        if (reduced) return;
+        const slides = [...screen.querySelectorAll('.cz-slide')];
+        if (slides.length < 2) return;
+        const count = Math.max(...slides.map(s=>+s.dataset.i)) + 1;
+        if (count < 2) return;
+        let idx = 0;
+        carouselTimer = setInterval(()=>{
+          idx = (idx+1) % count;
+          screen.querySelectorAll('.cz-slide').forEach(s=>s.classList.toggle('is-on', +s.dataset.i===idx));
+          screen.querySelectorAll('.cz-dot').forEach(s=>s.classList.toggle('is-on', +s.dataset.i===idx));
         }, 5000);
       }
-      function stopCarousel() {
-        if (carousel.timer) { clearInterval(carousel.timer); carousel.timer = null; }
-      }
-      function setCarousel(host, idx) {
-        host.querySelectorAll('[data-i]').forEach((el) => {
-          el.classList.toggle('is-on', Number(el.dataset.i) === idx);
-        });
-        host.querySelectorAll('.cz-dot').forEach((d, i) => d.classList.toggle('is-on', i === idx));
-      }
 
-      function renderTopShelf() {
-        if (state.shelf === 'row') { stopCarousel(); renderRow(topshelf); }
-        else if (state.shelf === 'spotlight') renderSpotlight(topshelf);
-        else renderHero(topshelf);
-        stage.dataset.shelf = state.shelf;
-        // nav header hidden in hero (art bleeds to the top)
-        navhead.style.display = state.shelf === 'hero' ? 'none' : '';
+      function render(){
+        deviceEl.dataset.device = state.device;
+        computeScale();
+        screen.innerHTML = BUILDERS[state.device](films, state);
+        retint();
+        startCarousel();
       }
+      window.addEventListener('resize', computeScale);
 
-      // ---- static rail (second shelf) + chrome ----------------------------
-      function renderRail2() {
-        rail2.innerHTML = films.slice(2, 8).map((f) => posterCard(f, null)).join('');
-      }
-      function renderChrome() {
-        tabbar.innerHTML = TABS.map((t, i) => `
-          <span class="cz-tab${i === 0 ? ' is-on' : ''}">
-            ${svg(t.icon)}<span class="cz-tab-lbl">${t.label}</span>
-          </span>`).join('');
-        sidebarList.innerHTML = SIDEBAR.map((t, i) => `
-          <li class="cz-sb-item${i === 0 ? ' is-on' : ''}">
-            ${svg(t.icon)}<span class="cz-sb-lbl">${t.label}</span>
-          </li>`).join('');
-      }
-
-      // ---- apply state ----------------------------------------------------
-      function applyPoster() {
-        stage.dataset.poster = state.poster;
-        stage.style.setProperty('--poster-w', POSTER_W[state.poster] + 'px');
-      }
-      function applyLayout() {
-        preview.dataset.layout = state.layout;
-      }
-      function retint() {
-        applyPalette(stage, state.accent, state.theme, 1);
-      }
-
-      // ---- control wiring -------------------------------------------------
-      function moveThumb(seg) {
+      /* ---- segmented controls -------------------------------------------- */
+      function moveThumb(seg){
         const btns = [...seg.querySelectorAll('[role="radio"]')];
         const active = seg.querySelector('[aria-checked="true"]');
         const thumb = seg.querySelector('.cz-seg-thumb');
         if (!active || !thumb) return;
         const idx = btns.indexOf(active);
-        thumb.style.width = (100 / btns.length) + '%';
+        thumb.style.width = `calc((100% - 8px) / ${btns.length})`;
         thumb.style.transform = `translateX(${idx * 100}%)`;
       }
-
-      document.querySelectorAll('.cz-seg[data-group]').forEach((seg) => {
+      document.querySelectorAll('#customise .cz-seg[data-group]').forEach((seg)=>{
         const group = seg.dataset.group;
         const btns = [...seg.querySelectorAll('[role="radio"]')];
-        function select(btn, focus) {
-          btns.forEach((b) => b.setAttribute('aria-checked', b === btn ? 'true' : 'false'));
+        function select(btn, focus){
+          btns.forEach((b)=>b.setAttribute('aria-checked', b===btn?'true':'false'));
           moveThumb(seg);
           const val = btn.dataset.val;
-          if (group === 'theme') { state.theme = val === 'system' ? 'dark' : val; retint(); }
-          else if (group === 'poster') { state.poster = val; applyPoster(); }
-          else if (group === 'shelf') { state.shelf = val; renderTopShelf(); retint(); }
-          else if (group === 'layout') { state.layout = val; applyLayout(); }
+          if (group === 'theme') { state.theme = val==='system'?'dark':val; retint(); }
+          else if (group === 'poster') { state.poster = val; render(); }
+          else if (group === 'shelf') { state.shelf = val; render(); }
+          else if (group === 'device') { state.device = val; render(); }
           if (focus) btn.focus();
         }
-        btns.forEach((btn, i) => {
-          btn.addEventListener('click', () => select(btn));
-          btn.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-              e.preventDefault(); select(btns[(i + 1) % btns.length], true);
-            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-              e.preventDefault(); select(btns[(i - 1 + btns.length) % btns.length], true);
-            }
+        btns.forEach((btn,i)=>{
+          btn.addEventListener('click', ()=>select(btn));
+          btn.addEventListener('keydown', (e)=>{
+            if (e.key==='ArrowRight' || e.key==='ArrowDown') { e.preventDefault(); select(btns[(i+1)%btns.length], true); }
+            else if (e.key==='ArrowLeft' || e.key==='ArrowUp') { e.preventDefault(); select(btns[(i-1+btns.length)%btns.length], true); }
           });
         });
-        requestAnimationFrame(() => moveThumb(seg));
+        requestAnimationFrame(()=>moveThumb(seg));
       });
 
-      // Accent swatches
+      /* ---- accent swatches ----------------------------------------------- */
       const accentGroup = document.getElementById('cz-accents');
       const swatches = [...accentGroup.querySelectorAll('.cz-swatch[data-hex]')];
       const colorInput = document.getElementById('cz-color');
-      function selectAccent(hex, fromSwatch) {
-        state.accent = hex;
-        retint();
-        swatches.forEach((s) => s.setAttribute('aria-checked', s.dataset.hex.toLowerCase() === hex.toLowerCase() ? 'true' : 'false'));
-        const isPreset = swatches.some((s) => s.dataset.hex.toLowerCase() === hex.toLowerCase());
-        document.querySelector('.cz-swatch-custom').setAttribute('data-active', isPreset ? 'false' : 'true');
+      function markCustom(hex){
+        const isPreset = swatches.some((s)=>s.dataset.hex.toLowerCase()===hex.toLowerCase());
+        document.querySelector('#customise .cz-swatch-custom').setAttribute('data-active', isPreset?'false':'true');
+      }
+      function selectAccent(hex, fromSwatch){
+        state.accent = hex; retint();
+        swatches.forEach((s)=>s.setAttribute('aria-checked', s.dataset.hex.toLowerCase()===hex.toLowerCase()?'true':'false'));
+        markCustom(hex);
         if (fromSwatch) colorInput.value = hex;
       }
-      swatches.forEach((s, i) => {
-        s.addEventListener('click', () => selectAccent(s.dataset.hex, true));
-        s.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-            e.preventDefault(); const n = swatches[(i + 1) % swatches.length]; n.focus(); selectAccent(n.dataset.hex, true);
-          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-            e.preventDefault(); const n = swatches[(i - 1 + swatches.length) % swatches.length]; n.focus(); selectAccent(n.dataset.hex, true);
-          }
+      swatches.forEach((s,i)=>{
+        s.addEventListener('click', ()=>selectAccent(s.dataset.hex, true));
+        s.addEventListener('keydown', (e)=>{
+          if (e.key==='ArrowRight'||e.key==='ArrowDown') { e.preventDefault(); const n=swatches[(i+1)%swatches.length]; n.focus(); selectAccent(n.dataset.hex, true); }
+          else if (e.key==='ArrowLeft'||e.key==='ArrowUp') { e.preventDefault(); const n=swatches[(i-1+swatches.length)%swatches.length]; n.focus(); selectAccent(n.dataset.hex, true); }
         });
       });
-      colorInput.addEventListener('input', () => {
-        swatches.forEach((s) => s.setAttribute('aria-checked', 'false'));
-        state.accent = colorInput.value;
-        retint();
-        document.querySelector('.cz-swatch-custom').setAttribute('data-active', 'true');
+      colorInput.addEventListener('input', ()=>{
+        swatches.forEach((s)=>s.setAttribute('aria-checked','false'));
+        state.accent = colorInput.value; retint();
+        document.querySelector('#customise .cz-swatch-custom').setAttribute('data-active','true');
       });
 
-      // Randomise
-      const RThemes = ['light', 'dark', 'black'];
-      const RPoster = ['xs', 's', 'm', 'l', 'xl'];
-      const RShelf = ['row', 'spotlight', 'hero'];
-      const RLayout = ['tabs', 'sidebar'];
-      function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
-      document.getElementById('cz-random').addEventListener('click', () => {
-        const accent = presets[Math.floor(Math.random() * presets.length)].hex;
-        const theme = pick(RThemes), poster = pick(RPoster), shelf = pick(RShelf), layout = pick(RLayout);
-        syncSeg('theme', theme);
-        syncSeg('poster', poster);
-        syncSeg('shelf', shelf);
-        syncSeg('layout', layout);
-        state.theme = theme; state.poster = poster; state.shelf = shelf; state.layout = layout;
-        applyPoster(); renderTopShelf(); applyLayout();
-        selectAccent(accent, true);
-      });
-      function syncSeg(group, val) {
-        const seg = document.querySelector(`.cz-seg[data-group="${group}"]`);
-        seg.querySelectorAll('[role="radio"]').forEach((b) =>
-          b.setAttribute('aria-checked', b.dataset.val === val ? 'true' : 'false'));
+      /* ---- randomise ----------------------------------------------------- */
+      const RThemes=['light','dark','black'], RPoster=['xs','s','m','l','xl'], RShelf=['row','spotlight','hero'], RDevice=['iphone','ipad','tv','mac'];
+      function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+      function syncSeg(group, val){
+        const seg = document.querySelector(`#customise .cz-seg[data-group="${group}"]`);
+        seg.querySelectorAll('[role="radio"]').forEach((b)=>b.setAttribute('aria-checked', b.dataset.val===val?'true':'false'));
         moveThumb(seg);
       }
+      document.getElementById('cz-random').addEventListener('click', ()=>{
+        const accent = presets[Math.floor(Math.random()*presets.length)].hex;
+        const theme = pick(RThemes), poster = pick(RPoster), shelf = pick(RShelf), device = pick(RDevice);
+        syncSeg('theme', theme); syncSeg('poster', poster); syncSeg('shelf', shelf); syncSeg('device', device);
+        state.theme=theme; state.poster=poster; state.shelf=shelf; state.device=device; state.accent=accent;
+        swatches.forEach((s)=>s.setAttribute('aria-checked', s.dataset.hex.toLowerCase()===accent.toLowerCase()?'true':'false'));
+        colorInput.value = accent; markCustom(accent);
+        render();
+      });
 
-      // Pause carousel when preview off-screen (perf).
-      if ('IntersectionObserver' in window) {
-        new IntersectionObserver((entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              if (!reduced && (state.shelf === 'hero' || state.shelf === 'spotlight') && !carousel.timer && carousel.count > 1) {
-                carousel.timer = setInterval(() => {
-                  carousel.idx = (carousel.idx + 1) % carousel.count;
-                  setCarousel(carousel.host || topshelf, carousel.idx);
-                }, 5000);
-              }
-            } else {
-              stopCarousel();
-            }
-          });
-        }, { threshold: 0.15 }).observe(preview);
+      /* ---- pause carousel off-screen (perf) ------------------------------ */
+      if ('IntersectionObserver' in window && previewEl) {
+        new IntersectionObserver((entries)=>{
+          entries.forEach((e)=>{ if (e.isIntersecting) startCarousel(); else stopCarousel(); });
+        }, { threshold: 0.12 }).observe(previewEl);
       }
 
-      // ---- initial render -------------------------------------------------
-      renderChrome();
-      renderRail2();
-      applyPoster();
-      applyLayout();
-      renderTopShelf();
-      retint();
+      /* ---- initial render ------------------------------------------------ */
+      render();
     })();
   </script>
 
-  <!-- The interactive preview is built at runtime via innerHTML, so its nodes
-       carry no Astro scope attribute. All selectors here are uniquely cz-*-prefixed,
-       so the block is marked global to reach both the build-time controls and the
-       JS-injected preview content. -->
+  <!-- The preview is built at runtime via innerHTML, so its nodes carry no Astro
+       scope attribute. All selectors are uniquely prefixed (cz-/ios-/ipad-/tv-/
+       mac-/iosx-), so the block is global to reach the JS-injected content. -->
   <style is:global>
     /* ================================================================== */
     /*  Layout: heading + two-column control/preview                       */
@@ -688,7 +894,6 @@ const films = sampleFilms.map((f) => ({
     .cz-label { font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; color: var(--label); }
     .cz-hint { font-size: 0.75rem; color: var(--label-tertiary); }
 
-    /* Accent swatches */
     .cz-accents { display: flex; flex-wrap: wrap; gap: var(--space-3); }
     .cz-swatch {
       position: relative;
@@ -729,7 +934,6 @@ const films = sampleFilms.map((f) => ({
     }
     .cz-swatch-custom[data-active="true"] .cz-custom-dot { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 1px rgba(255,255,255,0.22); }
 
-    /* Segmented controls */
     .cz-seg {
       position: relative;
       display: grid;
@@ -756,7 +960,7 @@ const films = sampleFilms.map((f) => ({
     .cz-seg-thumb {
       position: absolute; z-index: 0;
       top: 4px; bottom: 4px; left: 4px;
-      width: 25%;
+      width: calc((100% - 8px) / 4);
       border-radius: var(--radius-pill);
       background: var(--accent);
       box-shadow: 0 2px 10px rgba(0,0,0,0.28);
@@ -772,299 +976,323 @@ const films = sampleFilms.map((f) => ({
     .cz-panel-note { font-size: 0.75rem; color: var(--label-tertiary); margin: 0; }
 
     /* ================================================================== */
-    /*  Device preview                                                     */
+    /*  True-to-scale device preview scaffold                              */
     /* ================================================================== */
-    .cz-preview {
-      display: flex; justify-content: center; align-items: flex-start;
-      perspective: 1400px;
-      --frame-w: 300px;
-      --frame-h: 640px;
-    }
-    .cz-preview[data-layout="sidebar"] { --frame-w: 580px; --frame-h: 440px; }
-    @media (max-width: 480px) {
-      .cz-preview { --frame-w: 264px; --frame-h: 564px; }
-      .cz-preview[data-layout="sidebar"] { --frame-w: min(100%, 430px); --frame-h: 330px; }
-    }
+    .cz-preview { display: flex; justify-content: center; align-items: flex-start; width: 100%; min-width: 0; }
+    .cz-device { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
 
-    .cz-device {
+    .cz-frame {
       position: relative;
-      width: var(--frame-w); height: var(--frame-h);
-      max-width: 100%;
-      border-radius: 46px;
-      padding: 10px;
+      padding: var(--bezel, 10px);
+      border-radius: var(--frame-radius, 44px);
       background:
         linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 40%),
         rgb(8, 10, 12);
-      box-shadow:
-        0 0 0 1.5px rgba(255,255,255,0.08),
-        var(--shadow-lg),
-        0 40px 90px rgba(0,0,0,0.5);
-      transition: width var(--dur-slow) var(--ease-spring), height var(--dur-slow) var(--ease-spring), border-radius var(--dur) var(--ease-out);
+      box-shadow: 0 0 0 1.5px rgba(255,255,255,0.08), var(--shadow-lg), 0 40px 90px rgba(0,0,0,0.5);
+      transition: border-radius var(--dur) var(--ease-out), padding var(--dur) var(--ease-out);
     }
-    .cz-preview[data-layout="sidebar"] .cz-device { border-radius: 30px; }
+    .cz-device[data-device="tv"] .cz-frame {
+      background: linear-gradient(180deg, rgb(12,14,17) 0%, rgb(7,9,11) 55%, rgb(5,6,8) 100%);
+      box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 1px rgba(255,255,255,0.06), 0 40px 90px rgba(0,0,0,0.5);
+    }
+    .cz-device[data-device="mac"] .cz-frame {
+      background: var(--bg); overflow: hidden;
+      box-shadow: 0 0 0 0.5px var(--glass-border), var(--shadow-lg), 0 40px 90px rgba(0,0,0,0.5);
+    }
+
+    .cz-screen-clip {
+      position: relative; overflow: hidden;
+      width: calc(var(--lw) * var(--scale) * 1px);
+      height: calc(var(--lh) * var(--scale) * 1px);
+      border-radius: var(--screen-radius, 38px);
+      background: var(--bg);
+    }
+    .cz-screen {
+      position: absolute; top: 0; left: 0;
+      width: calc(var(--lw) * 1px);
+      height: calc(var(--lh) * 1px);
+      transform: scale(var(--scale));
+      transform-origin: top left;
+      color: var(--label);
+      background: var(--bg);
+      font-family: -apple-system, system-ui, sans-serif;
+    }
 
     .cz-device-glow {
-      position: absolute; inset: -20% -10% -30%;
+      position: absolute; inset: -14% -8% -18%;
       z-index: -1; pointer-events: none;
-      background: radial-gradient(60% 50% at 50% 30%, var(--accent-muted), transparent 70%);
-      filter: blur(40px); opacity: 0.55;
-      transition: background var(--dur) var(--ease-out);
+      background: radial-gradient(60% 50% at 50% 40%, var(--accent-muted), transparent 70%);
+      filter: blur(40px); opacity: 0.5;
     }
 
-    .cz-stage {
-      position: relative;
-      width: 100%; height: 100%;
-      border-radius: 38px;
-      overflow: hidden;
-      background: var(--bg);
-      color: var(--label);
-      display: flex;
-      font-size: 13px;
-      transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
-    }
-    .cz-preview[data-layout="sidebar"] .cz-stage { border-radius: 22px; }
+    .cz-tvstand { display: none; flex-direction: column; align-items: center; }
+    .cz-device[data-device="tv"] .cz-tvstand { display: flex; }
+    .cz-tv-neck { width: 60px; height: 14px; background: linear-gradient(180deg, rgb(9,11,13), rgb(6,7,9)); border-radius: 0 0 4px 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+    .cz-tv-foot { position: relative; width: 170px; height: 8px; border-radius: 6px; background: linear-gradient(180deg, rgb(13,15,18), rgb(6,7,9)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 4px rgba(0,0,0,0.4); }
+    .cz-tv-foot::after { content: ''; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%); width: 150%; height: 22px; background: radial-gradient(50% 60% at 50% 50%, rgba(0,0,0,0.5), transparent 72%); filter: blur(4px); }
 
-    /* Content column */
-    .cz-content { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    /* Shared carousel slide/dot behaviour */
+    .cz-screen .cz-slide { opacity: 0; transition: opacity .6s; }
+    .cz-screen .cz-slide.is-on { opacity: 1; }
+    .cz-screen .cz-dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.4); transition: all .4s; }
+    .cz-screen .cz-dot.is-on { width: 20px; background: #fff; }
 
-    /* Status bar */
-    .cz-statusbar {
-      position: relative; z-index: 6;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 22px 4px; height: 34px;
-      color: var(--label);
-      flex-shrink: 0;
-    }
-    .cz-clock { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
-    .cz-island {
-      position: absolute; left: 50%; top: 9px; transform: translateX(-50%);
-      width: 78px; height: 21px; border-radius: 999px; background: #000;
-    }
-    .cz-preview[data-layout="sidebar"] .cz-island { display: none; }
-    .cz-status-glyphs { display: inline-flex; align-items: center; gap: 5px; }
+    /* ================================================================== */
+    /*  iOS / iPadOS modules                                               */
+    /* ================================================================== */
+    .iosx-poster{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,var(--_gt,#333),var(--_gb,#111));box-shadow:0 1px 3px rgba(0,0,0,.18);flex:none}
+    .iosx-poster img{width:100%;height:100%;object-fit:cover;display:block}
+    .iosx-poster-title{font:600 15px/1.2 -apple-system,system-ui,sans-serif;color:var(--label);letter-spacing:-.2px;margin:7px 1px 1px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .iosx-poster-sub{font:400 13px/1.3 -apple-system,system-ui,sans-serif;color:var(--label-secondary);margin:1px}
+    .iosx-badge{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+    .iosx-badge svg{width:13px;height:13px;fill:none;stroke:var(--accent-fg);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .iosx-land{position:relative;border-radius:12px;overflow:hidden;flex:none;background:linear-gradient(160deg,var(--_gt,#333),var(--_gb,#111));box-shadow:0 1px 4px rgba(0,0,0,.22)}
+    .iosx-land img{width:100%;height:100%;object-fit:cover;display:block}
+    .iosx-prog{position:absolute;left:8px;right:8px;bottom:8px;height:4px;border-radius:2px;background:rgba(255,255,255,.30);overflow:hidden}
+    .iosx-prog i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:2px;display:block}
+    .iosx-land-title{font:600 17px/1.2 -apple-system,system-ui,sans-serif;color:var(--label);letter-spacing:-.3px;margin:8px 2px 0}
+    .iosx-land-sub{font:400 13px/1.3 -apple-system,system-ui,sans-serif;color:var(--label-secondary);margin:2px}
+    .cz-screen .ios-root{position:absolute;inset:0;background:var(--bg);color:var(--label);font-family:-apple-system,system-ui,sans-serif;overflow:hidden}
+    .ios-scroll{position:absolute;inset:0;overflow:hidden}
+    .ios-status{position:relative;height:59px;flex:none;z-index:5;display:flex;align-items:center}
+    .ios-status.over{position:absolute;left:0;right:0;top:0}
+    .ios-status .t{position:absolute;left:33px;top:17px;font:600 17px/1 -apple-system,system-ui,sans-serif;color:var(--label);letter-spacing:.1px}
+    .ios-status .isl{position:absolute;left:50%;top:11px;transform:translateX(-50%);width:125px;height:37px;border-radius:20px;background:#000}
+    .ios-status .r{position:absolute;right:22px;top:19px;display:flex;align-items:center;gap:7px}
+    .ios-status .r svg{display:block}
+    .ios-status.over .t{color:#fff}
+    .ios-navrow{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 0}
+    .ios-circ{width:44px;height:44px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.10)}
+    .ios-circ svg{width:19px;height:19px;stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .ios-title{font:800 34px/1.05 -apple-system,system-ui,sans-serif;letter-spacing:-.8px;color:var(--label);margin:8px 20px 0}
+    .ios-search{display:flex;align-items:center;gap:9px;height:50px;margin:14px 20px 0;padding:0 15px;border-radius:14px;background:var(--bg-secondary)}
+    .ios-search svg{width:18px;height:18px;stroke:var(--label-secondary);stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+    .ios-search span{font:400 18px/1 -apple-system,system-ui,sans-serif;color:var(--label-secondary)}
+    .ios-sec{font:800 22px/1.1 -apple-system,system-ui,sans-serif;letter-spacing:-.5px;color:var(--label);margin:26px 20px 12px}
+    .ios-shelf{display:flex;gap:14px;padding:0 20px;overflow:hidden}
+    .ios-shelf.kw{align-items:flex-start}
+    .ios-kwcard{width:340px}
+    .ios-kwcard .iosx-land{width:340px;height:191px}
+    .ios-pitem{width:var(--pw,124px)}
+    .ios-pitem .iosx-poster{width:var(--pw,124px);height:calc(var(--pw,124px)*1.5)}
+    .ios-tabbar{position:absolute;left:16px;right:16px;bottom:14px;height:64px;z-index:6;border-radius:32px;background:var(--glass-fill);border:1px solid var(--glass-hairline);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);box-shadow:0 8px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.18);display:flex;align-items:center;padding:0 8px}
+    .ios-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0;border-radius:22px;color:var(--label-secondary)}
+    .ios-tab svg{width:24px;height:24px}
+    .ios-tab .lb{font:600 10px/1 -apple-system,system-ui,sans-serif;letter-spacing:.1px}
+    .ios-tab.on{color:var(--accent);background:var(--accent-subtle,rgba(255,255,255,.16))}
+    .ios-tab.on svg{fill:currentColor;stroke:currentColor}
+    .ios-tab svg.line{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .ios-tab svg.fill{fill:currentColor}
+    .ios-hero{position:relative;width:100%;height:520px;flex:none;overflow:hidden;background:#111}
+    .ios-hero .bg{position:absolute;inset:0}
+    .ios-hero .bg img{width:100%;height:100%;object-fit:cover}
+    .ios-hero .scrim{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 34%,rgba(0,0,0,0) 46%,var(--bg) 99%)}
+    .ios-hero .cap{position:absolute;left:20px;right:20px;bottom:26px;display:flex;flex-direction:column;align-items:center;text-align:center}
+    .ios-hero .capstage{position:relative;width:100%;height:110px;margin-bottom:6px}
+    .ios-hero .capslide{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center}
+    .ios-hero .hlogo{height:64px;max-width:80%;object-fit:contain;margin-bottom:12px;filter:drop-shadow(0 2px 10px rgba(0,0,0,.6))}
+    .ios-hero .htitle{font:800 38px/1 -apple-system,system-ui,sans-serif;color:#fff;letter-spacing:-.5px;margin-bottom:12px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+    .ios-hero .hmeta{font:600 13px/1.3 -apple-system,system-ui,sans-serif;color:rgba(255,255,255,.86);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+    .ios-resume{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 26px;border-radius:23px;background:var(--accent);color:var(--accent-fg);font:700 16px/1 -apple-system,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+    .ios-resume svg{width:16px;height:16px;fill:currentColor}
+    .ios-dots{display:flex;gap:6px;margin-top:16px}
+    .iosx-cross{position:absolute;inset:0}
+    .ios-spot{margin:14px 20px 0;border-radius:16px;overflow:hidden;position:relative;height:230px;background:#111;box-shadow:0 4px 16px rgba(0,0,0,.22)}
+    .ios-spot .bg{position:absolute;inset:0}
+    .ios-spot .bg img{width:100%;height:100%;object-fit:cover}
+    .ios-spot .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78),rgba(0,0,0,.05) 60%)}
+    .ios-spot .cap{position:absolute;left:18px;right:18px;bottom:16px;display:flex;flex-direction:column;align-items:flex-start}
+    .ios-spot .hlogo{height:44px;max-width:60%;object-fit:contain;margin-bottom:8px}
+    .ios-spot .htitle{font:800 26px/1 -apple-system,system-ui,sans-serif;color:#fff;margin-bottom:6px}
+    .ios-spot .hmeta{font:600 12px/1 -apple-system,system-ui,sans-serif;color:rgba(255,255,255,.8);margin-bottom:12px}
+    .cz-screen .ipad-root{position:absolute;inset:0;background:var(--bg);color:var(--label);font-family:-apple-system,system-ui,sans-serif;overflow:hidden}
+    .ipad-scroll{position:absolute;inset:0;overflow:hidden}
+    .ipad-status{position:relative;height:44px;flex:none;z-index:5}
+    .ipad-status.over{position:absolute;left:0;right:0;top:0}
+    .ipad-status .l{position:absolute;left:24px;top:13px;display:flex;align-items:center;gap:10px;font:600 15px/1 -apple-system,system-ui,sans-serif;color:var(--label)}
+    .ipad-status .l .date{font-weight:600;color:var(--label)}
+    .ipad-status .r{position:absolute;right:24px;top:14px;display:flex;align-items:center;gap:8px;font:600 15px/1 -apple-system,system-ui,sans-serif;color:var(--label)}
+    .ipad-nav{position:relative;display:flex;align-items:center;justify-content:space-between;padding:8px 24px 6px;z-index:4}
+    .ipad-nav.over{background:transparent}
+    .ipad-circ{width:44px;height:44px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+    .ipad-circ svg{width:20px;height:20px;stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .ipad-circ.plain svg{stroke:var(--label)}
+    .ipad-seg{display:flex;align-items:center;gap:2px;padding:5px;border-radius:22px;background:var(--glass-fill);border:1px solid var(--glass-hairline);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .ipad-segtab{padding:8px 20px;border-radius:18px;font:600 17px/1 -apple-system,system-ui,sans-serif;color:var(--label);letter-spacing:-.2px}
+    .ipad-segtab.on{background:var(--card);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+    .ipad-navright{display:flex;align-items:center;gap:12px}
+    .ipad-sec{font:800 24px/1.1 -apple-system,system-ui,sans-serif;letter-spacing:-.5px;color:var(--label);margin:22px 24px 14px}
+    .ipad-shelf{display:flex;gap:16px;padding:0 24px;overflow:hidden}
+    .ipad-shelf.kw{align-items:flex-start}
+    .ipad-kwcard{width:360px}
+    .ipad-kwcard .iosx-land{width:360px;height:202px}
+    .ipad-pitem{width:var(--pw,150px)}
+    .ipad-pitem .iosx-poster{width:var(--pw,150px);height:calc(var(--pw,150px)*1.5)}
+    .ipad-hero{position:relative;width:100%;height:560px;flex:none;overflow:hidden;background:#111}
+    .ipad-hero .bg{position:absolute;inset:0}
+    .ipad-hero .bg img{width:100%;height:100%;object-fit:cover}
+    .ipad-hero .scrim{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.3) 0%,rgba(0,0,0,0) 40%,var(--bg) 99%),linear-gradient(to right,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 55%)}
+    .ipad-hero .cap{position:absolute;left:48px;bottom:48px;max-width:520px;display:flex;flex-direction:column}
+    .ipad-hero .hlogo{height:88px;max-width:420px;object-fit:contain;object-position:left;margin-bottom:16px;filter:drop-shadow(0 2px 12px rgba(0,0,0,.6))}
+    .ipad-hero .htitle{font:800 56px/1 -apple-system,system-ui,sans-serif;color:#fff;letter-spacing:-.5px;margin-bottom:14px;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+    .ipad-hero .hmeta{font:600 15px/1.3 -apple-system,system-ui,sans-serif;color:rgba(255,255,255,.86);margin-bottom:20px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+    .ipad-resume{display:inline-flex;align-items:center;gap:9px;height:50px;padding:0 30px;border-radius:25px;background:var(--accent);color:var(--accent-fg);align-self:flex-start;font:700 17px/1 -apple-system,system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.28)}
+    .ipad-resume svg{width:17px;height:17px;fill:currentColor}
+    .ipad-dots{display:flex;gap:7px;margin-top:20px}
+    .ipad-spot{margin:16px 24px 0;border-radius:20px;overflow:hidden;position:relative;height:340px;background:#111;box-shadow:0 6px 20px rgba(0,0,0,.22)}
+    .ipad-spot .bg{position:absolute;inset:0}
+    .ipad-spot .bg img{width:100%;height:100%;object-fit:cover}
+    .ipad-spot .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75),rgba(0,0,0,.05) 55%),linear-gradient(to right,rgba(0,0,0,.5),rgba(0,0,0,0) 50%)}
+    .ipad-spot .cap{position:absolute;left:28px;bottom:26px;max-width:440px;display:flex;flex-direction:column}
+    .ipad-spot .hlogo{height:60px;max-width:300px;object-fit:contain;object-position:left;margin-bottom:10px}
+    .ipad-spot .htitle{font:800 36px/1 -apple-system,system-ui,sans-serif;color:#fff;margin-bottom:8px}
+    .ipad-spot .hmeta{font:600 13px/1 -apple-system,system-ui,sans-serif;color:rgba(255,255,255,.82);margin-bottom:14px}
 
-    /* Nav header */
-    .cz-navhead {
-      position: relative; z-index: 5;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 18px 10px; flex-shrink: 0;
-    }
-    .cz-navtitle { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--label); }
-    .cz-navavatar {
-      width: 26px; height: 26px; border-radius: 999px;
-      background: var(--accent);
-      color: var(--accent-fg);
-      display: grid; place-items: center;
-    }
+    /* ================================================================== */
+    /*  tvOS module                                                        */
+    /* ================================================================== */
+    .tv-root{position:absolute;inset:0;overflow:hidden;font-family:-apple-system,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--label);background:#000;}
+    .tv-hero{position:absolute;inset:0;z-index:0;}
+    .tv-hero-slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;}
+    .tv-hero-slide.is-on{opacity:1;}
+    .tv-hero-img{position:absolute;inset:0;background-size:cover;background-position:center;}
+    .tv-hero-scrim{position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 34%, rgba(0,0,0,0.10) 58%, rgba(0,0,0,0) 78%),linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 26%, rgba(0,0,0,0) 52%);}
+    .tv-caption{position:absolute;left:520px;top:196px;right:96px;z-index:2;}
+    .tv-title{font-size:76px;line-height:1.0;font-weight:700;letter-spacing:-0.5px;color:var(--label);margin:0;text-shadow:0 2px 24px rgba(0,0,0,0.55);}
+    .tv-logo{max-width:640px;max-height:190px;object-fit:contain;object-position:left center;filter:drop-shadow(0 3px 20px rgba(0,0,0,0.55));display:block;}
+    .tv-meta{display:flex;align-items:center;gap:14px;margin-top:26px;font-size:29px;font-weight:500;color:var(--label);text-shadow:0 1px 12px rgba(0,0,0,0.55);}
+    .tv-meta .tv-dot{width:5px;height:5px;border-radius:50%;background:var(--label-tertiary);}
+    .tv-badge{font-size:23px;font-weight:600;padding:2px 12px;border-radius:6px;border:1.5px solid var(--label-secondary);color:var(--label-secondary);line-height:1.25;}
+    .tv-desc{margin-top:22px;font-size:29px;line-height:1.35;font-weight:400;color:var(--label);max-width:1060px;text-shadow:0 1px 12px rgba(0,0,0,0.5);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .tv-topbtns{position:absolute;top:104px;right:96px;z-index:3;display:flex;gap:24px;}
+    .tv-cbtn{width:64px;height:64px;border-radius:50%;background:var(--glass-fill);border:1px solid var(--glass-hairline);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+    .tv-cbtn svg{width:30px;height:30px;color:var(--label);}
+    .tv-shelves{position:absolute;left:520px;right:0;top:504px;z-index:2;}
+    .tv-shelf-title{font-size:38px;font-weight:700;color:var(--label);margin:0 0 22px 0;text-shadow:0 1px 12px rgba(0,0,0,0.5);}
+    .tv-row{display:flex;gap:40px;}
+    .tv-land{width:462px;flex:0 0 auto;}
+    .tv-land-card{position:relative;width:462px;height:260px;border-radius:12px;overflow:hidden;background:#111;box-shadow:0 8px 30px rgba(0,0,0,0.45);}
+    .tv-land-img{position:absolute;inset:0;background-size:cover;background-position:center;}
+    .tv-prog{position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(255,255,255,0.22);}
+    .tv-prog > i{display:block;height:100%;background:var(--accent);}
+    .tv-land-label{margin-top:16px;font-size:29px;font-weight:500;color:var(--label);white-space:nowrap;overflow:hidden;text-shadow:0 1px 10px rgba(0,0,0,0.5);}
+    .tv-recent{margin-top:56px;}
+    .tv-poster{flex:0 0 auto;}
+    .tv-poster-card{border-radius:12px;overflow:hidden;background-size:cover;background-position:center;box-shadow:0 8px 30px rgba(0,0,0,0.45);}
+    .tv-dim{position:absolute;inset:0;z-index:4;background:linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 14%, rgba(0,0,0,0.45) 24%, rgba(0,0,0,0) 40%);}
+    .tv-sidebar{position:absolute;left:0;top:0;bottom:0;width:400px;z-index:5;padding:60px 24px 60px 40px;box-sizing:border-box;display:flex;flex-direction:column;background:linear-gradient(90deg, rgba(8,10,9,0.92) 0%, rgba(10,14,11,0.72) 62%, rgba(10,14,11,0) 100%);}
+    .tv-profile{display:flex;align-items:center;gap:18px;height:44px;margin-bottom:42px;}
+    .tv-avatar{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-fg);font-size:22px;font-weight:600;border:1px solid var(--glass-hairline);}
+    .tv-profile-name{font-size:29px;font-weight:600;color:var(--label);}
+    .tv-navlist{display:flex;flex-direction:column;gap:18px;}
+    .tv-nav{display:flex;align-items:center;gap:18px;height:40px;padding:0 16px;border-radius:12px;box-sizing:content-box;color:var(--label-secondary);}
+    .tv-nav .tv-ic{width:44px;height:40px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+    .tv-nav .tv-ic svg{width:25px;height:25px;}
+    .tv-nav .tv-lbl{font-size:29px;font-weight:500;white-space:nowrap;}
+    .tv-nav.is-sel{background:#fff;color:#000;}
+    .tv-nav.is-sel .tv-lbl{color:#000;font-weight:600;}
+    .tv-nav-spacer{flex:1 1 auto;}
 
-    .cz-scroll { flex: 1; overflow: hidden; position: relative; }
-
-    /* ---- Shelves ---- */
-    .cz-shelf { padding: 12px 0 4px; }
-    .cz-shelf-head { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 8px; }
-    .cz-shelf-title { font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--label); }
-    .cz-shelf-more { font-size: 12px; font-weight: 600; color: var(--accent); }
-    .cz-rail {
-      display: flex; gap: 12px; padding: 0 16px 4px;
-      overflow-x: auto; scrollbar-width: none;
-      align-items: flex-start;
-    }
-    .cz-rail::-webkit-scrollbar { display: none; }
-
-    /* Poster cards — real 2:3 posters, 12px radius (matches app cardRadius) */
-    .cz-poster {
-      position: relative; flex-shrink: 0;
-      border-radius: var(--radius-card);
-      overflow: hidden;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.34);
-      background: var(--card);
-    }
-    .cz-rail--poster .cz-poster {
-      width: var(--poster-w, 112px);
-      height: calc(var(--poster-w, 112px) * 3 / 2);
-      transition: width var(--dur-slow) var(--ease-spring),
-                  height var(--dur-slow) var(--ease-spring);
-    }
-    .cz-rail--fixed .cz-poster {
-      width: 74px;
-      height: 111px;
-      transition: none;
-    }
-    .cz-poster-art, .cz-poster-img { width: 100%; height: 100%; min-width: 0; min-height: 0; display: block; }
-    .cz-poster-art { display: grid; place-items: center; padding: 10%; }
-    .cz-poster-img { object-fit: cover; }
-    .cz-poster-t {
-      font-family: var(--font-display); font-weight: 700; font-size: 12px; line-height: 1.12;
-      color: #fff; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-    }
-    /* Capsule progress: 4px pill inset ~8px, accent over black/0.5 track */
-    .cz-poster-prog {
-      position: absolute; left: 8px; right: 8px; bottom: 8px; height: 4px;
-      border-radius: 999px; background: rgba(0,0,0,0.5); overflow: hidden;
-    }
-    .cz-poster-prog-fill { display: block; height: 100%; border-radius: 999px; background: var(--accent); min-width: 4px; }
-
-    /* ---- Spotlight ---- */
-    .cz-spot { padding: 10px 16px 4px; }
-    .cz-spot-frame {
-      position: relative; width: 100%; aspect-ratio: 16 / 9;
-      border-radius: 16px; overflow: hidden;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.4);
-    }
-    .cz-spot-slide {
-      position: absolute; inset: 0;
-      opacity: 0; transition: opacity 0.55s var(--ease-in-out);
-    }
-    .cz-spot-slide.is-on { opacity: 1; }
-    .cz-spot-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .cz-spot-scrim {
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0) 45%, rgba(0,0,0,0.8));
-    }
-    .cz-spot-body {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
-      gap: 5px; padding: 0 14px 14px;
-    }
-    .cz-spot-logo.cz-logo-img { max-width: 55%; max-height: 38px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
-    .cz-spot-logo.cz-logo-txt { font-family: var(--font-display); font-weight: 800; font-size: 19px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
-    .cz-spot-meta { font-size: 10.5px; color: rgba(255,255,255,0.85); font-weight: 600; }
-
-    /* ---- Hero — art bleeds to the very top, blurs into the background ---- */
-    .cz-hero {
-      position: relative;
-      /* bleed up behind the status bar */
-      margin-top: -46px;
-      min-height: 330px;
-    }
-    .cz-hero-art { position: absolute; inset: 0; overflow: hidden; }
-    .cz-hero-slide {
-      position: absolute; inset: 0;
-      opacity: 0; transition: opacity 0.6s var(--ease-in-out);
-    }
-    .cz-hero-slide.is-on { opacity: 1; }
-    .cz-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 28%; }
-    /* Blurred lower copy: crisp band at top, blur/dissolve toward the base */
-    .cz-hero-bg--blur {
-      filter: blur(16px);
-      -webkit-mask-image: linear-gradient(to bottom, transparent 40%, #000 58%, rgba(0,0,0,0.4) 82%, transparent 94%);
-      mask-image: linear-gradient(to bottom, transparent 40%, #000 58%, rgba(0,0,0,0.4) 82%, transparent 94%);
-    }
-    /* Crisp copy owns the top; dissolves at ~52% so the blur takes over */
-    .cz-hero-bg:not(.cz-hero-bg--blur) {
-      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 60%);
-      mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 60%);
-    }
-    /* Top scrim for status-bar legibility */
-    .cz-hero-scrim {
-      position: absolute; left: 0; right: 0; top: 0; height: 90px; z-index: 2;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.35), transparent);
-      pointer-events: none;
-    }
-    /* Caption legibility band + final dissolve into the page background */
-    .cz-hero-fade {
-      position: absolute; inset: 0; z-index: 2; pointer-events: none;
-      background:
-        linear-gradient(to bottom,
-          transparent 34%,
-          rgba(0,0,0,0.5) 62%,
-          rgba(0,0,0,0.2) 78%,
-          var(--bg) 98%);
-    }
-    .cz-hero-body {
-      position: relative; z-index: 3;
-      /* Ride the lower crisp art (~62% down), above the peeking shelf */
-      padding: 202px 16px 0;
-      display: flex; flex-direction: column; align-items: center; gap: 9px;
-      text-align: center;
-    }
-    .cz-hero-caps { position: relative; width: 100%; min-height: 58px; display: grid; place-items: end center; }
-    .cz-hero-cap {
-      grid-area: 1 / 1;
-      display: flex; flex-direction: column; align-items: center; gap: 5px;
-      opacity: 0; transition: opacity 0.6s var(--ease-in-out);
-    }
-    .cz-hero-cap.is-on { opacity: 1; }
-    .cz-hero-logo.cz-logo-img { max-width: 66%; max-height: 50px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); }
-    .cz-hero-logo.cz-logo-txt { font-family: var(--font-display); font-weight: 800; font-size: 24px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.7); }
-    .cz-hero-meta { font-size: 11px; color: rgba(255,255,255,0.9); font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
-    .cz-resume {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 7px 20px; border-radius: 999px;
-      background: var(--accent); color: var(--accent-fg);
-      font-weight: 700; font-size: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-    }
-
-    .cz-shelf--hero-peek { padding-top: 4px; }
-
-    /* Dots */
-    .cz-dots { display: flex; gap: 5px; justify-content: center; }
-    .cz-spot-frame .cz-dots { position: absolute; left: 0; right: 0; bottom: 8px; z-index: 3; }
-    .cz-dot { width: 6px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.4); transition: all var(--dur) var(--ease-out); }
-    .cz-dot.is-on { width: 16px; background: #fff; }
-    .cz-star { color: var(--accent); }
-
-    /* ---- iOS 26 Liquid-Glass tab bar (floating, inset from bottom) ---- */
-    .cz-tabbar-wrap {
-      position: relative; z-index: 5;
-      padding: 0 14px 16px;
-      flex-shrink: 0;
-    }
-    .cz-tabbar {
-      display: flex; align-items: center; justify-content: space-around;
-      padding: 9px 6px 8px;
-      border-radius: 26px;
-      background: var(--glass-fill, rgba(28, 30, 34, 0.52));
-      -webkit-backdrop-filter: blur(22px) saturate(1.7);
-      backdrop-filter: blur(22px) saturate(1.7);
-      border: 1px solid var(--glass-hairline, rgba(255,255,255,0.14));
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.12) inset,
-        0 10px 26px rgba(0,0,0,0.38),
-        0 2px 6px rgba(0,0,0,0.22);
-      transition: background-color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
-    }
-    .cz-tab {
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      color: var(--label-secondary);
-      transition: color var(--dur) var(--ease-out);
-    }
-    .cz-tab svg { width: 22px; height: 22px; }
-    .cz-tab-lbl { font-size: 10px; font-weight: 600; }
-    .cz-tab.is-on { color: var(--accent); }
-
-    /* ---- Sidebar ---- */
-    .cz-sidebar {
-      display: none;
-      flex-direction: column; gap: 4px;
-      width: 184px; flex-shrink: 0;
-      padding: 16px 12px;
-      background: var(--bg-grouped);
-      border-right: 1px solid var(--separator);
-    }
-    .cz-preview[data-layout="sidebar"] .cz-sidebar { display: flex; }
-    .cz-sb-brand { display: flex; align-items: center; gap: 8px; padding: 4px 8px 14px; }
-    .cz-sb-dot { width: 20px; height: 20px; border-radius: 6px; background: var(--accent); }
-    .cz-sb-brandtxt { font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--label); }
-    .cz-sb-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
-    .cz-sb-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 11px; border-radius: 10px;
-      color: var(--label-secondary); font-weight: 600; font-size: 13px;
-      transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
-    }
-    .cz-sb-item svg { width: 19px; height: 19px; }
-    .cz-sb-item.is-on { background: var(--accent-subtle); color: var(--accent); }
-
-    /* In sidebar layout: hide the tab bar and the dynamic island; show sidebar */
-    .cz-preview[data-layout="sidebar"] .cz-tabbar-wrap { display: none; }
+    /* ================================================================== */
+    /*  macOS module                                                       */
+    /* ================================================================== */
+    .mac-root{position:absolute;inset:0;display:flex;overflow:hidden;font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--label);background:var(--bg);}
+    .mac-sidebar{position:relative;z-index:2;width:220px;flex:0 0 220px;box-sizing:border-box;display:flex;flex-direction:column;background:color-mix(in srgb, var(--bg-grouped) 78%, transparent);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);border-right:1px solid var(--separator);}
+    .mac-tl{height:52px;flex:0 0 52px;display:flex;align-items:center;padding-left:20px;box-sizing:border-box;}
+    .mac-lights{display:flex;gap:8px;}
+    .mac-light{width:12px;height:12px;border-radius:50%;position:relative;box-shadow:inset 0 0 0 0.5px rgba(0,0,0,0.14);}
+    .mac-light.mac-close{background:rgb(255,95,87);}
+    .mac-light.mac-min{background:rgb(254,188,46);}
+    .mac-light.mac-max{background:rgb(40,200,64);}
+    .mac-profile{display:flex;align-items:center;gap:9px;padding:2px 14px 12px 14px;}
+    .mac-avatar{width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-fg);font-size:14px;font-weight:600;letter-spacing:-0.2px;box-shadow:0 1px 2px rgba(0,0,0,0.18);}
+    .mac-profile-txt{display:flex;flex-direction:column;min-width:0;flex:1 1 auto;line-height:1.15;}
+    .mac-profile-name{font-size:13px;font-weight:600;color:var(--label);letter-spacing:-0.1px;}
+    .mac-profile-sub{font-size:11px;font-weight:400;color:var(--label-secondary);margin-top:1px;}
+    .mac-profile-chev{width:12px;height:12px;color:var(--label-tertiary);flex:0 0 auto;}
+    .mac-profile-chev svg{width:12px;height:12px;display:block;}
+    .mac-divider{height:1px;background:var(--separator);margin:0 12px;}
+    .mac-navwrap{flex:1 1 auto;overflow:hidden;padding:6px 10px 0 10px;display:flex;flex-direction:column;}
+    .mac-navlist{display:flex;flex-direction:column;gap:2px;}
+    .mac-nav{display:flex;align-items:center;gap:9px;height:28px;padding:0 8px;border-radius:6px;box-sizing:border-box;color:var(--label);cursor:default;}
+    .mac-nav .mac-ic{width:18px;height:18px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--label-secondary);}
+    .mac-nav .mac-ic svg{width:15px;height:15px;display:block;}
+    .mac-nav .mac-lbl{font-size:13px;font-weight:400;letter-spacing:-0.1px;white-space:nowrap;}
+    .mac-nav.is-sel{background:var(--accent-subtle);}
+    .mac-nav.is-sel .mac-ic{color:var(--accent);}
+    .mac-nav.is-sel .mac-lbl{color:var(--accent);font-weight:500;}
+    .mac-nav-spacer{flex:1 1 auto;}
+    .mac-settingswrap{padding:6px 10px 12px 10px;}
+    .mac-content{position:relative;z-index:1;flex:1 1 auto;min-width:0;display:flex;flex-direction:column;background:var(--bg);}
+    .mac-toolbar{height:52px;flex:0 0 52px;box-sizing:border-box;position:relative;z-index:5;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--separator);background:color-mix(in srgb, var(--bg) 72%, transparent);-webkit-backdrop-filter:saturate(180%) blur(30px);backdrop-filter:saturate(180%) blur(30px);}
+    .mac-toolbar.is-hero{background:transparent;border-bottom-color:transparent;}
+    .mac-tb-title{font-size:15px;font-weight:600;color:var(--label);letter-spacing:-0.2px;}
+    .mac-tb-title.is-hero{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
+    .mac-tb-spacer{flex:1 1 auto;}
+    .mac-search{display:flex;align-items:center;gap:6px;width:200px;height:28px;box-sizing:border-box;padding:0 9px;border-radius:7px;background:var(--bg-secondary);border:1px solid var(--separator);color:var(--label-tertiary);}
+    .mac-toolbar.is-hero .mac-search{background:rgba(255,255,255,0.16);border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);}
+    .mac-search svg{width:13px;height:13px;flex:0 0 auto;}
+    .mac-search span{font-size:13px;font-weight:400;}
+    .mac-tb-btn{width:28px;height:28px;border-radius:7px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--label-secondary);background:var(--bg-secondary);border:1px solid var(--separator);}
+    .mac-toolbar.is-hero .mac-tb-btn{background:rgba(255,255,255,0.16);border-color:rgba(255,255,255,0.22);color:#fff;}
+    .mac-tb-btn svg{width:15px;height:15px;display:block;}
+    .mac-scroll{flex:1 1 auto;position:relative;overflow:hidden;}
+    .mac-scroll-inner{position:absolute;inset:0;}
+    .mac-hero{position:relative;height:340px;overflow:hidden;margin-top:-52px;}
+    .mac-hero-slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;}
+    .mac-hero-slide.is-on{opacity:1;}
+    .mac-hero-img{position:absolute;inset:0;background-size:cover;background-position:center 22%;}
+    .mac-hero-scrim{position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.34) 30%, rgba(0,0,0,0) 60%),linear-gradient(0deg, var(--bg) 0.5%, color-mix(in srgb, var(--bg) 55%, transparent) 22%, rgba(0,0,0,0) 46%),linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 40%);}
+    .mac-hero-cap{position:absolute;left:32px;bottom:34px;right:120px;z-index:2;}
+    .mac-hero-logo{max-width:340px;max-height:96px;object-fit:contain;object-position:left bottom;display:block;filter:drop-shadow(0 2px 14px rgba(0,0,0,0.5));}
+    .mac-hero-ttl{font-size:44px;line-height:1;font-weight:800;letter-spacing:-0.5px;color:#fff;margin:0;text-shadow:0 2px 18px rgba(0,0,0,0.55);}
+    .mac-hero-meta{display:flex;align-items:center;gap:9px;margin-top:14px;font-size:13px;font-weight:500;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,0.6);}
+    .mac-hero-meta .mac-mdot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,0.7);}
+    .mac-hero-meta .mac-rating{display:inline-flex;align-items:center;gap:3px;}
+    .mac-hero-meta .mac-rating svg{width:12px;height:12px;color:#ffcf3f;}
+    .mac-hero-btnrow{display:flex;align-items:center;gap:14px;margin-top:18px;}
+    .mac-resume{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 18px;border-radius:8px;background:var(--accent);color:var(--accent-fg);font-size:14px;font-weight:600;letter-spacing:-0.1px;box-shadow:0 2px 10px rgba(0,0,0,0.28);}
+    .mac-resume svg{width:14px;height:14px;}
+    .mac-hero-dots{display:flex;gap:7px;}
+    .mac-hero-dots .cz-dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,0.4);transition:all .4s ease;}
+    .mac-hero-dots .cz-dot.is-on{width:18px;background:#fff;}
+    .mac-spot{margin:20px 32px 0 32px;position:relative;border-radius:14px;overflow:hidden;aspect-ratio:16/9;max-height:300px;box-shadow:0 10px 34px rgba(0,0,0,0.3);}
+    .mac-spot-slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;}
+    .mac-spot-slide.is-on{opacity:1;}
+    .mac-spot-img{position:absolute;inset:0;background-size:cover;background-position:center;}
+    .mac-spot-scrim{position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 34%, rgba(0,0,0,0) 62%),linear-gradient(0deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0) 48%);}
+    .mac-spot-cap{position:absolute;left:26px;bottom:24px;right:100px;z-index:2;}
+    .mac-spot-cap .mac-hero-logo{max-width:260px;max-height:74px;}
+    .mac-spot-cap .mac-hero-ttl{font-size:34px;}
+    .mac-spot-dots{position:absolute;right:20px;bottom:22px;z-index:3;}
+    .mac-shelves{padding:4px 0 28px 0;}
+    .mac-shelf{margin-top:22px;}
+    .mac-shelf:first-child{margin-top:12px;}
+    .mac-shelf-hd{display:flex;align-items:baseline;justify-content:space-between;padding:0 32px;margin-bottom:14px;}
+    .mac-shelf-ttl{font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label);margin:0;}
+    .mac-seeall{font-size:13px;font-weight:500;color:var(--accent);letter-spacing:-0.1px;}
+    .mac-rowscroll{display:flex;gap:16px;padding:2px 32px 8px 32px;overflow:hidden;}
+    .mac-land{flex:0 0 auto;width:236px;}
+    .mac-land-card{position:relative;width:236px;height:133px;border-radius:10px;overflow:hidden;background:var(--card);box-shadow:0 3px 12px rgba(0,0,0,0.18);}
+    .mac-land-img{position:absolute;inset:0;background-size:cover;background-position:center;}
+    .mac-land-prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,0.28);}
+    .mac-land-prog > i{display:block;height:100%;background:var(--accent);}
+    .mac-land-meta{margin-top:9px;}
+    .mac-land-ttl{font-size:13px;font-weight:600;color:var(--label);letter-spacing:-0.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .mac-land-sub{font-size:12px;font-weight:400;color:var(--label-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .mac-poster{flex:0 0 auto;}
+    .mac-poster-card{position:relative;border-radius:11px;overflow:hidden;background-size:cover;background-position:center;background-color:var(--card);box-shadow:0 3px 12px rgba(0,0,0,0.2);}
+    .mac-poster-check{position:absolute;top:7px;right:7px;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.35);}
+    .mac-poster-check svg{width:12px;height:12px;color:var(--accent-fg);display:block;}
+    .mac-poster-meta{margin-top:8px;width:100%;}
+    .mac-poster-ttl{font-size:13px;font-weight:600;color:var(--label);letter-spacing:-0.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .mac-poster-sub{font-size:12px;font-weight:400;color:var(--label-secondary);margin-top:1px;}
 
     /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
-      .cz-device, .cz-rail--poster .cz-poster, .cz-seg-thumb,
-      .cz-swatch, .cz-spot-slide, .cz-hero-slide, .cz-hero-cap, .cz-dot,
-      .cz-random svg {
+      .cz-swatch, .cz-seg-thumb, .cz-frame,
+      .cz-screen .cz-slide, .cz-screen .cz-dot,
+      .tv-hero-slide, .mac-hero-slide, .mac-spot-slide, .cz-random svg {
         transition-duration: 0.001ms !important;
       }
     }

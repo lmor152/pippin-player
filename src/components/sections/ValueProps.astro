@@ -31,7 +31,6 @@ const payFeatures = [
   'One-time purchase',
   'All your Apple devices',
   'Family Sharing included',
-  'No subscriptions, ever',
 ];
 ---
 
@@ -110,8 +109,6 @@ const payFeatures = [
         <ul class="vp-chips">
           <li>Picture in Picture</li>
           <li>AirPlay</li>
-          <li>Handoff</li>
-          <li>Widgets</li>
           <li>Focus</li>
           <li>System players</li>
         </ul>
@@ -120,81 +117,20 @@ const payFeatures = [
       <div class="vp-visual" aria-hidden="true">
         <div class="glass vp-stage vp-stage--devices">
           <div class="vp-devices">
-            <!-- Mac -->
             <div class="vp-dev vp-dev--mac">
-              <div class="vp-screen">
-                <span class="vp-ui vp-ui--sidebar"></span>
-                <span class="vp-ui vp-ui--grid">
-                  {gridFilms.map((f) => (
-                    <img
-                      class="vp-tile"
-                      src={`/media/${f.poster}`}
-                      alt=""
-                      loading="lazy"
-                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
-                    />
-                  ))}
-                </span>
-              </div>
-              <span class="vp-stand"></span>
+              <img class="vp-shot" src="/media/previews/mac-row.png" alt="" width="1214" height="758" loading="lazy" decoding="async" />
               <span class="vp-label">Mac</span>
             </div>
-            <!-- iPad -->
             <div class="vp-dev vp-dev--ipad">
-              <div class="vp-screen">
-                <span class="vp-ui vp-ui--sidebar vp-ui--thin"></span>
-                <span class="vp-ui vp-ui--grid vp-ui--grid-2">
-                  {gridFilms.slice(0, 4).map((f) => (
-                    <img
-                      class="vp-tile"
-                      src={`/media/${f.poster}`}
-                      alt=""
-                      loading="lazy"
-                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
-                    />
-                  ))}
-                </span>
-              </div>
+              <img class="vp-shot" src="/media/previews/ipad-row.png" alt="" width="1214" height="904" loading="lazy" decoding="async" />
               <span class="vp-label">iPad</span>
             </div>
-            <!-- iPhone -->
             <div class="vp-dev vp-dev--iphone">
-              <div class="vp-screen">
-                <span class="vp-ui vp-ui--stack">
-                  {gridFilms.slice(0, 2).map((f) => (
-                    <img
-                      class="vp-tile vp-tile--wide"
-                      src={`/media/${f.backdrop}`}
-                      alt=""
-                      loading="lazy"
-                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
-                    />
-                  ))}
-                </span>
-                <span class="vp-ui vp-ui--tabs"></span>
-              </div>
+              <img class="vp-shot" src="/media/previews/iphone-row.png" alt="" width="640" height="1340" loading="lazy" decoding="async" />
               <span class="vp-label">iPhone</span>
             </div>
-            <!-- Apple TV -->
             <div class="vp-dev vp-dev--tv">
-              <div class="vp-screen">
-                <span
-                  class="vp-ui vp-ui--hero"
-                  style={heroFilm.backdrop ? `background-image:url('/media/${heroFilm.backdrop}')` : `background:linear-gradient(120deg, ${heroFilm.gradTop}, ${heroFilm.gradBottom})`}
-                ></span>
-                <span class="vp-ui vp-ui--rail">
-                  {gridFilms.slice(0, 4).map((f) => (
-                    <img
-                      class="vp-tile"
-                      src={`/media/${f.poster}`}
-                      alt=""
-                      loading="lazy"
-                      style={`background:linear-gradient(160deg, ${f.gradTop}, ${f.gradBottom})`}
-                    />
-                  ))}
-                </span>
-              </div>
-              <span class="vp-tvbase"></span>
+              <img class="vp-shot" src="/media/previews/tv-row.png" alt="" width="1214" height="786" loading="lazy" decoding="async" />
               <span class="vp-label">Apple&nbsp;TV</span>
             </div>
           </div>
@@ -525,7 +461,18 @@ const payFeatures = [
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    flex: 0 0 auto;
   }
+  /* Rendered device shots — pixel-identical to the live Customiser preview */
+  .vp-shot {
+    display: block;
+    height: auto;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.4));
+  }
+  .vp-dev--mac .vp-shot { width: 130px; }
+  .vp-dev--ipad .vp-shot { width: 100px; }
+  .vp-dev--iphone .vp-shot { width: 52px; }
+  .vp-dev--tv .vp-shot { width: 126px; }
   .vp-label {
     font-size: 0.68rem;
     font-weight: 600;
@@ -571,7 +518,7 @@ const payFeatures = [
     width: 120px;
     height: 72px;
     border-radius: 8px;
-    flex-direction: column;
+    flex-direction: row;
   }
   .vp-tvbase {
     width: 46px;
@@ -581,12 +528,33 @@ const payFeatures = [
   }
 
   /* UI hints inside screens */
+
+  /* Mac source-list sidebar (with faint nav rows) */
   .vp-ui--sidebar {
-    width: 26%;
-    background: linear-gradient(var(--accent-muted), var(--accent-subtle));
+    width: 27%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 5px;
+    background: var(--bg);
     border-right: 1px solid var(--glass-border);
   }
-  .vp-ui--sidebar.vp-ui--thin { width: 22%; }
+  .vp-navrow {
+    height: 4px;
+    width: 78%;
+    border-radius: 2px;
+    background: var(--label-tertiary);
+    opacity: 0.5;
+  }
+  .vp-navdot {
+    height: 8px;
+    width: 100%;
+    border-radius: 3px;
+    background: var(--accent-subtle);
+    box-shadow: inset 0 0 0 1px var(--accent-muted);
+  }
+  .vp-navdot--on { background: var(--accent-subtle); }
+
   .vp-ui--grid {
     flex: 1;
     display: grid;
@@ -608,6 +576,35 @@ const payFeatures = [
   }
   .vp-tile--wide { aspect-ratio: 16 / 9; }
 
+  /* iPad top segmented nav strip */
+  .vp-ui--topnav {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    gap: 3px;
+    padding: 3px 4px;
+    border-radius: 999px;
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+  }
+  .vp-seg {
+    width: 12px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--label-tertiary);
+    opacity: 0.55;
+  }
+  .vp-seg--on {
+    width: 15px;
+    background: var(--accent);
+    opacity: 1;
+  }
+  .vp-dev--ipad .vp-ui--grid { padding-top: 16px; }
+
+  /* iPhone content stack + floating bottom tab bar */
   .vp-ui--stack {
     flex: 1;
     margin: 5px;
@@ -617,10 +614,48 @@ const payFeatures = [
     overflow: hidden;
   }
   .vp-ui--tabs {
-    height: 14px;
-    background: var(--accent-subtle);
-    border-top: 1px solid var(--glass-border);
-    box-shadow: inset 0 2px 0 var(--accent-muted);
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(6px);
+  }
+  .vp-tab {
+    width: 5px;
+    height: 5px;
+    border-radius: 2px;
+    background: var(--label-tertiary);
+    opacity: 0.5;
+  }
+  .vp-tab--on {
+    background: var(--accent);
+    opacity: 1;
+    box-shadow: 0 0 5px var(--accent-muted);
+  }
+
+  /* Apple TV — left rail + main (hero over poster rail) */
+  .vp-ui--tvrail {
+    width: 26%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 5px;
+    background: var(--bg);
+    border-right: 1px solid var(--glass-border);
+  }
+  .vp-ui--tvmain {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   .vp-ui--hero {
     height: 58%;
@@ -769,10 +804,10 @@ const payFeatures = [
 
   @media (max-width: 480px) {
     .vp-devices { gap: var(--space-2); }
-    .vp-dev--mac .vp-screen { width: 108px; height: 68px; }
-    .vp-dev--tv .vp-screen { width: 96px; height: 58px; }
-    .vp-dev--ipad .vp-screen { width: 66px; height: 84px; }
-    .vp-dev--iphone .vp-screen { width: 38px; height: 80px; }
+    .vp-dev--mac .vp-shot { width: 104px; }
+    .vp-dev--tv .vp-shot { width: 100px; }
+    .vp-dev--ipad .vp-shot { width: 80px; }
+    .vp-dev--iphone .vp-shot { width: 44px; }
     .vp-bubble { width: 44px; height: 44px; font-size: 0.9rem; }
     .vp-bubble--b { width: 52px; height: 52px; }
   }
