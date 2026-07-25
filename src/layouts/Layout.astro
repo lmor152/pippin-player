@@ -49,6 +49,9 @@ const ogImage = Astro.site ? new URL(image, Astro.site).toString() : image;
     <!-- Favicon (mark) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    <!-- Vendored device mockups (devices.css, MIT) — used by the Hero + live previewer -->
+    <link rel="stylesheet" href="/vendor/devices.min.css" />
+
     <!-- Self-hosted display font preload -->
     <link
       rel="preload"

@@ -1,38 +1,10 @@
 ---
 /**
  * Hero — id="top". The first impression: a cinematic Emerald Depths hero with
- * floating CSS device mockups (iPhone Home + Mac window) recreating Pippin's UI.
+ * floating CSS device chassis (Apple TV · iPad · Mac · iPhone). Each chassis
+ * clips a real simulator screen capture (see /media/previews/simulator-*).
  * Owned by the Hero section agent.
  */
-import { sampleFilms } from '../../lib/sampleData.js';
-
-// Look up helper by id, tolerant of missing entries.
-const byId = (id) => sampleFilms.find((f) => f.id === id);
-
-// iPhone Home HERO — a real backdrop bleeding to the top with a real clear-logo.
-// Hard-references the 'cosmos-laundromat' film per the manifest (logo is null →
-// styled title text, which is exactly what the real app renders for it).
-const backdropFilm = byId('cosmos-laundromat') ?? sampleFilms[0];
-
-// Continue Watching rail — real 2:3 posters. Pick a spread of valid ids and give
-// each a stable resume position (the second one shows an accent progress bar).
-const phoneShelf = ['sintel', 'tos', 'bbb', 'elephants', 'pepper']
-  .map(byId)
-  .filter(Boolean)
-  .map((f, i) => ({ ...f, progress: [0, 0.62, 0, 0.31, 0][i] ?? 0 }));
-
-// Mac Keep Watching — real 16:9 backdrops with a resume position.
-const macKeep = ['bbb', 'sintel', 'tos'].map(byId).filter(Boolean);
-// Mac Recently Added shelf — real posters (2:3).
-const macGrid = sampleFilms.slice(0, 6);
-
-// Small helpers.
-const metaLine = (f) => {
-  const parts = [String(f.year)];
-  if (f.rating != null) parts.push(`★ ${f.rating.toFixed(1)}`);
-  parts.push(f.genres.slice(0, 2).join(' · '));
-  return parts.join('  ·  ');
-};
 ---
 
 <section class="section hero" id="top">
@@ -45,8 +17,8 @@ const metaLine = (f) => {
     <span class="hero-vignette"></span>
   </div>
 
-  <div class="container hero-grid">
-    <!-- Copy column -->
+  <div class="container">
+    <!-- Copy block (centered, at the top) -->
     <div class="hero-copy">
       <p class="eyebrow reveal">Plex &amp; Jellyfin · Reimagined</p>
 
@@ -56,10 +28,9 @@ const metaLine = (f) => {
       </h1>
 
       <p class="hero-sub reveal" style="--reveal-delay:160ms">
-        A ruthlessly polished, endlessly customisable client for Plex and
-        Jellyfin — powered by an MPVKit player that plays <em>anything</em>.
-        Native to iPhone, iPad, Mac and Apple TV, with SharePlay, Seerr,
-        Sonarr &amp; Radarr built in. Pay once, share with your family.
+        A polished and hugely customisable client for Plex and
+        Jellyfin. Native to iPhone, iPad, Mac & Apple TV with Seerr,
+        Sonarr/Radarr integrations.
       </p>
 
       <div class="hero-cta reveal" style="--reveal-delay:240ms">
@@ -97,24 +68,87 @@ const metaLine = (f) => {
       </div>
     </div>
 
-    <!-- Device composition -->
-    <div class="hero-stage reveal" style="--reveal-delay:200ms" aria-hidden="true">
-      <div class="stage-inner" data-parallax>
-        <!-- Apple TV / depth hint behind -->
-        <div class="depth-slab" data-depth="0.3"></div>
+    <!-- Full-width, all-devices showcase -->
+    <div class="hero-showcase reveal" style="--reveal-delay:360ms" aria-hidden="true">
+      <div class="showcase-stage">
+        <div class="showcase-inner" data-parallax>
+          <!-- Grounding glow puddle beneath the cluster -->
+          <span class="showcase-glow"></span>
 
-        <!-- Mac window -->
-        <div class="mac" data-depth="0.6">
-          <img class="hero-shot hero-shot--mac" src="/media/previews/mac-hero.png" alt="Pippin's Mac app showing the Home screen" width="1214" height="758" loading="lazy" decoding="async" />
+          <!-- Apple TV — bespoke slim-bezel flat panel on a pedestal stand,
+               reusing the live previewer's exact chassis + stand. -->
+          <div class="sc-tv" data-depth="0.2">
+            <div class="tv-panel">
+              <!-- Full-bleed 16:9 capture of the LIVE tvOS previewer (Blender
+                   demo art, green accent): the compact top-right hero feathering
+                   into the theme's dark surface, the transparent sidebar and the
+                   Keep Watching / Recently Added shelves. Being a clean 16:9 frame
+                   with no baked margins, object-fit:cover fills the panel edge to
+                   edge — no black band above or gaps at the bezels. -->
+              <div class="tv-screen-crop">
+                <img
+                  src="/media/previews/simulator-screenshot-tv.webp"
+                  alt="Pippin on Apple TV showing the tvOS home screen"
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+            <div class="tv-stand" aria-hidden="true">
+              <span class="tv-neck"></span>
+              <span class="tv-foot"></span>
+            </div>
+          </div>
+
+          <!-- iPad Pro — devices.css frame rotated 90° to landscape. The screen
+               image is overlaid (unrotated) over the screen hole so the content
+               reads upright, exactly like the live previewer does it. -->
+          <div class="sc-ipad" data-depth="0.5">
+            <div class="ipad-box">
+              <div class="device device-ipad-pro device-spacegray">
+                <div class="device-frame"><div class="device-screen"></div></div>
+                <div class="device-btns"></div>
+                <div class="device-sensors"></div>
+              </div>
+              <img
+                class="ipad-shot"
+                src="/media/previews/simulator-screenshot-ipad.webp"
+                alt="Pippin on iPad showing the library in landscape"
+                width="1400"
+                height="973"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </div>
+
+          <!-- MacBook Pro — devices.css frame (space grey) -->
+          <div class="sc-mac" data-depth="0.5">
+            <div class="device device-macbook-pro device-spacegray">
+              <div class="device-frame">
+                <img class="device-screen" src="/media/previews/simulator-screenshot-mac.webp" alt="Pippin's Mac app showing the Home screen" width="1600" height="1040" loading="lazy" decoding="async" />
+              </div>
+              <div class="device-header"></div>
+              <div class="device-power"></div>
+            </div>
+          </div>
+
+          <!-- iPhone — devices.css frame (space-grey/black metal rails). A full
+               iOS simulator screen capture fills .device-screen and is clipped
+               by the chassis. The capture already carries the Dynamic Island, so
+               the frame's own header/sensors are omitted to avoid doubling it. -->
+          <div class="sc-phone" data-depth="0.9">
+            <div class="device device-iphone-14-pro device-black">
+              <div class="device-frame">
+                <img class="device-screen" src="/media/previews/simulator-screenshot-iPhone.webp" alt="Pippin's iPhone app showing the Home screen" width="720" height="1565" decoding="async" />
+              </div>
+              <div class="device-btns"></div>
+              <div class="device-power"></div>
+            </div>
+          </div>
         </div>
-
-        <!-- iPhone -->
-        <div class="phone" data-depth="1">
-          <img class="hero-shot hero-shot--phone" src="/media/previews/iphone-hero.png" alt="Pippin's iPhone app showing a featured title" width="640" height="1340" decoding="async" />
-        </div>
-
-        <!-- Accent glow puddle under devices -->
-        <div class="stage-glow"></div>
       </div>
     </div>
   </div>
@@ -221,15 +255,12 @@ const metaLine = (f) => {
   }
 
   /* ---------- Layout ---------- */
-  .hero-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-    gap: var(--space-8, 4rem);
-    align-items: center;
-  }
-
+  /* Copy sits centered at the top; the device showcase spans the full
+     container width below it. */
   .hero-copy {
-    max-width: 34rem;
+    max-width: 46rem;
+    margin: 0 auto;
+    text-align: center;
   }
   .hero-title {
     font-family: var(--font-display);
@@ -266,6 +297,7 @@ const metaLine = (f) => {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: var(--space-3, 0.9rem);
     margin-top: var(--space-6, 2rem);
   }
@@ -324,6 +356,7 @@ const metaLine = (f) => {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem 1.25rem;
   }
   .hero-devices {
@@ -347,622 +380,341 @@ const metaLine = (f) => {
     box-shadow: 0 0 10px var(--accent);
   }
 
-  /* ---------- Stage ---------- */
-  .hero-stage {
-    position: relative;
-    min-height: 480px;
-    perspective: 1400px;
+  /* ================================================================== */
+  /*  Device showcase — full-width, all four devices                    */
+  /* ================================================================== */
+  /* The stage is a container-query context with a fixed aspect ratio, so
+     EVERY device — sized and positioned in `cqw` (1cqw == 1% of the stage
+     width) — scales fluidly and proportionally as the container grows or
+     shrinks. Nothing here uses viewport units, so the whole cluster tracks
+     the container, never the window. */
+  .hero-showcase {
+    margin-top: clamp(2.5rem, 6vw, 5rem);
   }
-  .stage-inner {
+  .showcase-stage {
     position: relative;
     width: 100%;
-    height: 100%;
-    min-height: 480px;
-    transform-style: preserve-3d;
+    container-type: inline-size;
+    aspect-ratio: 1120 / 600;
   }
-
-  /* Rendered device shots (pixel-identical to the live Customiser preview) */
-  .hero-shot {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-  .hero-shot--mac {
-    filter: drop-shadow(0 26px 52px rgba(0, 0, 0, 0.5));
-  }
-  .hero-shot--phone {
-    filter: drop-shadow(0 20px 44px rgba(0, 0, 0, 0.55))
-      drop-shadow(0 0 46px var(--accent-muted));
-  }
-
-  .depth-slab {
+  .showcase-inner {
     position: absolute;
-    top: 4%;
-    right: 2%;
-    width: 62%;
-    height: 68%;
-    border-radius: var(--radius-xl, 28px);
-    background: linear-gradient(
-      150deg,
-      var(--glass-strong, rgba(255, 255, 255, 0.06)),
-      transparent 70%
-    );
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-    transform: translateZ(-60px) rotate(4deg);
-    opacity: 0.55;
-    will-change: transform;
+    inset: 0;
   }
 
-  .stage-glow {
+  /* Grounding glow puddle beneath the cluster */
+  .showcase-glow {
     position: absolute;
     left: 50%;
-    bottom: 2%;
-    width: 78%;
-    height: 120px;
+    bottom: -4cqw;
+    width: 82cqw;
+    height: 26cqw;
     transform: translateX(-50%);
     background: radial-gradient(
       ellipse at center,
       var(--accent-muted),
       transparent 70%
     );
-    filter: blur(30px);
-    opacity: 0.6;
-    z-index: -1;
+    filter: blur(34px);
+    opacity: 0.55;
+    z-index: 0;
   }
 
-  /* ---------- Mac window ---------- */
-  .mac {
+  /* Shared: wrappers get their own will-change; float lives on the wrapper's
+     `transform`, parallax on its `translate` — the two compose cleanly. */
+  .sc-tv,
+  .sc-ipad,
+  .sc-mac,
+  .sc-phone {
     position: absolute;
-    top: 6%;
-    right: -2%;
-    width: 74%;
     will-change: transform;
-    animation: float-mac 9s ease-in-out infinite;
-  }
-  .mac-frame {
-    border-radius: var(--radius-lg, 20px);
-    overflow: hidden;
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-    box-shadow: var(--shadow-lg);
-    background: var(--bg-secondary);
-  }
-  .mac-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 12px;
-    background: var(--glass, rgba(255, 255, 255, 0.04));
-    border-bottom: 1px solid var(--hairline, rgba(255, 255, 255, 0.06));
-    position: relative;
-  }
-  .dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-  }
-  .dot-r {
-    background: #ff5f57;
-  }
-  .dot-y {
-    background: #febc2e;
-  }
-  .dot-g {
-    background: #28c840;
-  }
-  .mac-title {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--label-secondary);
-  }
-  .mac-body {
-    display: grid;
-    grid-template-columns: 34% 1fr;
-    min-height: 220px;
-  }
-  .mac-side {
-    padding: 0.7rem 0.6rem 0.8rem;
-    background: var(--bg-grouped, rgba(255, 255, 255, 0.02));
-    border-right: 1px solid var(--hairline, rgba(255, 255, 255, 0.06));
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  /* Profile header — matches the app's source-list header */
-  .mac-profile {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 2px 4px 4px;
-  }
-  .mac-avatar {
-    width: 22px;
-    height: 22px;
-    flex: none;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: var(--accent-foreground, #06130d);
-    background: var(--accent);
-  }
-  .mac-profile-txt {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    line-height: 1.15;
-  }
-  .mac-profile-name {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--label);
-  }
-  .mac-profile-sub {
-    font-size: 0.6rem;
-    color: var(--label-secondary);
-  }
-  .mac-profile-chev {
-    width: 11px;
-    height: 11px;
-    margin-left: auto;
-    flex: none;
-    color: var(--label-tertiary, rgba(255, 255, 255, 0.4));
-  }
-  .mac-side-sep {
-    height: 1px;
-    margin: 5px 4px;
-    background: var(--hairline, rgba(255, 255, 255, 0.07));
-  }
-  .mac-navlist {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .side-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 8px;
-    border-radius: var(--radius-sm, 8px);
-    font-size: 0.76rem;
-    color: var(--label);
-    background: none;
-    border: none;
-    text-align: left;
-    cursor: default;
-    font-family: inherit;
-  }
-  .side-row .ico {
-    width: 15px;
-    height: 15px;
-    flex: none;
-    color: var(--label-secondary);
-  }
-  .side-row .ico-fill {
-    fill: currentColor;
-  }
-  .side-row.is-active {
-    background: var(--accent-subtle);
-    color: var(--accent);
-    font-weight: 500;
-  }
-  .side-row.is-active .ico {
-    color: var(--accent);
-  }
-  /* Settings pinned to the foot of the source list (Plex-style, matches app) */
-  .side-row--foot {
-    margin-top: auto;
-  }
-  .mac-content {
-    padding: 0.8rem 0.9rem 0.9rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    overflow: hidden;
-  }
-  .mac-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  .mac-content-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--label);
-    letter-spacing: -0.01em;
-  }
-  .mac-tb-spacer {
-    flex: 1;
-  }
-  .mac-search {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    border-radius: var(--radius-sm, 8px);
-    background: var(--glass, rgba(255, 255, 255, 0.05));
-    border: 1px solid var(--hairline, rgba(255, 255, 255, 0.08));
-    font-size: 0.66rem;
-    color: var(--label-tertiary, rgba(255, 255, 255, 0.45));
-  }
-  .mac-search svg {
-    width: 12px;
-    height: 12px;
-  }
-  .mac-tb-btn {
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    border-radius: var(--radius-sm, 8px);
-    background: var(--glass, rgba(255, 255, 255, 0.05));
-    border: 1px solid var(--hairline, rgba(255, 255, 255, 0.08));
-    color: var(--label-secondary);
-  }
-  .mac-tb-btn svg {
-    width: 13px;
-    height: 13px;
-  }
-  .mac-shelf-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.72rem;
-    color: var(--label);
-    letter-spacing: -0.01em;
-    margin-top: 0.15rem;
-  }
-  /* Keep Watching row — real 16:9 backdrops with a resume bar */
-  .mac-kwrow {
-    display: flex;
-    gap: 0.5rem;
-    overflow: hidden;
-  }
-  .land {
-    position: relative;
-    width: 40%;
-    flex: none;
-    aspect-ratio: 16 / 9;
-    border-radius: var(--radius-card, 10px);
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--gt), var(--gb));
-    box-shadow: var(--shadow-sm);
-  }
-  .land-prog {
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: 7px;
-    height: 3px;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.45);
-    overflow: hidden;
-  }
-  .land-prog > span {
-    position: absolute;
-    inset: 0;
-    right: auto;
-    background: var(--accent);
-    border-radius: 999px;
-    box-shadow: 0 0 6px var(--accent);
-  }
-  .mac-grid {
-    display: flex;
-    gap: 0.5rem;
-    overflow: hidden;
-  }
-  .mac-grid .poster {
-    width: 18%;
-    flex: none;
   }
 
-  /* ---------- Real poster cards ---------- */
-  .poster {
-    position: relative;
-    aspect-ratio: 2 / 3;
-    border-radius: var(--radius-card, 12px);
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--gt), var(--gb));
-    box-shadow: var(--shadow-sm);
+  /* ---------- Apple TV — slim graphite flat panel on a pedestal stand ------- */
+  /* This reuses the live previewer's exact Apple TV chassis + stand (from
+     Customiser.astro): DEV_TV frameRadius 16, screenRadius 10, 1.35% bezel,
+     graphite gradients, the same crisp shadows and the neck/foot stand. The
+     panel + stand stack and centre; the stand's neck/foot are sized in cqw of
+     the panel width (container-type below), reproducing the previewer's
+     screen-relative proportions at any scale. */
+  .sc-tv {
+    width: 60cqw;
+    left: 20cqw;
+    top: 0;
+    z-index: 1;
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: sc-float-tv 13s ease-in-out infinite;
   }
-  .poster-img {
+  .tv-panel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 1.35%;
+    border-radius: 16px;
+    background:
+      /* top metallic gloss */
+      linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 4%, transparent 13%),
+      /* subtle vertical side sheen */
+      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, transparent 7%, transparent 93%, rgba(255, 255, 255, 0.05) 100%),
+      /* graphite body */
+      linear-gradient(180deg, rgb(40, 42, 47) 0%, rgb(26, 28, 32) 42%, rgb(15, 16, 19) 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.07),   /* crisp outer inner-edge */
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.18),   /* top rim light */
+      inset 0 -1.5px 1px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(0, 0, 0, 0.7),                /* crisp graphite edge */
+      0 1px 0 rgba(255, 255, 255, 0.05),           /* outer top rim highlight */
+      0 26px 54px -18px rgba(0, 0, 0, 0.72),       /* clean drop shadow */
+      0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  /* The screenshot is the display; a dark 1px ring + faint highlight give the
+     crisp screen boundary the previewer draws on its screen-clip. */
+  .tv-screen-crop {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.85),
+      0 0 0 2px rgba(255, 255, 255, 0.04);
+  }
+  .tv-screen-crop img {
     position: absolute;
     inset: 0;
+    display: block;
     width: 100%;
+    max-width: none;
     height: 100%;
     object-fit: cover;
-    display: block;
   }
 
-  .poster-sm {
-    width: 82px;
-    flex: none;
-  }
-  .poster-prog {
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-  }
-  .poster-prog > span {
-    position: absolute;
-    inset: 0;
-    right: auto;
-    background: var(--accent);
-    border-radius: 999px;
-    box-shadow: 0 0 6px var(--accent);
-  }
-
-  /* ---------- iPhone ---------- */
-  .phone {
-    position: absolute;
-    left: -1%;
-    bottom: 0;
-    width: 42%;
-    max-width: 250px;
-    z-index: 2;
-    will-change: transform;
-    animation: float-phone 8s ease-in-out infinite;
-  }
-  .phone-frame {
-    position: relative;
-    aspect-ratio: 9 / 19.3;
-    border-radius: 44px;
-    padding: 8px;
-    background: linear-gradient(160deg, #23262b, #0c0d10);
-    box-shadow:
-      var(--shadow-lg),
-      0 0 60px var(--accent-muted);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .phone-island {
-    position: absolute;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 32%;
-    height: 16px;
-    border-radius: 10px;
-    background: #000;
-    z-index: 3;
-  }
-  .phone-screen {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 37px;
-    overflow: hidden;
-    background: var(--bg);
+  /* ---- Premium stand: slim central neck into a low, wide brushed foot ---- */
+  .tv-stand {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    margin-top: 0.3cqw;
+  }
+  .tv-neck {
+    width: 4.7cqw;
+    height: 6.25cqw;
+    background: linear-gradient(
+      90deg,
+      rgb(14, 15, 18) 0%,
+      rgb(48, 51, 56) 22%,
+      rgb(72, 76, 82) 50%,
+      rgb(42, 45, 50) 78%,
+      rgb(12, 13, 16) 100%
+    );
+    border-radius: 0 0 3px 3px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+      0 0.4cqw 0.7cqw -0.15cqw rgba(0, 0, 0, 0.4);
+  }
+  .tv-foot {
+    position: relative;
+    width: 42cqw;
+    height: 2.03cqw;
+    border-radius: 4px 4px 7px 7px;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.12) 18%,
+        rgba(255, 255, 255, 0) 38%,
+        rgba(255, 255, 255, 0.09) 63%,
+        rgba(255, 255, 255, 0) 84%
+      ),
+      linear-gradient(
+        180deg,
+        rgb(80, 84, 90) 0%,
+        rgb(52, 55, 61) 40%,
+        rgb(26, 28, 32) 74%,
+        rgb(14, 15, 18) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.55),
+      0 0.6cqw 1.4cqw -0.45cqw rgba(0, 0, 0, 0.5);
+  }
+  .tv-foot::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -1.1cqw;
+    transform: translateX(-50%);
+    width: 84%;
+    height: 1.4cqw;
+    background: radial-gradient(
+      58% 100% at 50% 0%,
+      rgba(0, 0, 0, 0.48),
+      transparent 76%
+    );
+    filter: blur(0.55cqw);
   }
 
-  /* Status bar — floats over the hero art, white glyphs */
-  .ph-status {
+  /* ---------- iPad Pro — devices.css frame rotated 90° to landscape ---------- */
+  .sc-ipad {
+    width: 34cqw;
+    left: 1.5cqw;
+    bottom: 1cqw;
+    z-index: 2;
+    filter: drop-shadow(0 2.2cqw 3cqw rgba(0, 0, 0, 0.5));
+  }
+  /* Bounding box of the LANDSCAPE iPad: the portrait frame is 560×778, so
+     rotated it occupies 778×560. Its own container context lets the frame and
+     the overlaid screenshot both scale off this box's width. */
+  .ipad-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 778 / 560;
+    container-type: inline-size;
+  }
+  /* Drop devices.css's 2px inset screen border: the unrotated .ipad-shot overlay
+     sits on top of this (empty) screen hole, so the border would otherwise peek
+     as a thin dark ring around the shot. */
+  .ipad-box .device-screen { border: 0; }
+  /* Rotate the whole frame; scale so the 778px landscape span == the box.
+     Both operands of the division are lengths (required for a valid calc). */
+  .ipad-box .device {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    transform: translate(-50%, -50%) rotate(90deg) scale(calc(100cqw / 778px));
+  }
+  /* Overlay the screenshot (unrotated) over the centered screen hole. The
+     landscape screen is 724×506; the screen is centered in the frame. */
+  /* Fully-rectangular capture, overlaid on the rotated screen hole and clipped
+     to the frame's CONCENTRIC inner radius (frame 36 − 27 bezel = 9) so the
+     black bezel stays a uniform width right around the corner — no wedge. The
+     image aspect (1194×834) matches the screen exactly, so cover neither crops
+     nor distorts. */
+  .ipad-shot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100cqw * 724 / 778);
+    height: calc(100cqw * 506 / 778);
+    object-fit: cover;
+    border-radius: calc(100cqw * 9 / 778);
+    clip-path: inset(0 round calc(100cqw * 9 / 778));
+    z-index: 2;
+  }
+
+  /* ---------- Mac — devices.css MacBook Pro (space grey) ---------- */
+  .sc-mac {
+    width: 40cqw;
+    right: 1.5cqw;
+    bottom: 3cqw;
+    /* Reserve the MacBook Pro's true footprint (740×434) so the scaled
+       device fills the box exactly. */
+    aspect-ratio: 740 / 434;
+    container-type: inline-size;
+    z-index: 2;
+    filter: drop-shadow(0 2.4cqw 3.4cqw rgba(0, 0, 0, 0.52));
+  }
+  /* devices.css frames are a fixed 740px wide; scale fluidly to fill .sc-mac. */
+  .sc-mac .device {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 11px 20px 0;
-    color: #fff;
-    pointer-events: none;
+    transform-origin: top left;
+    transform: scale(calc(100cqw / 740px));
   }
-  .ph-time {
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+  /* The screenshot IS the devices.css screen element, so it inherits the frame's
+     exact screen size + radius; object-fit:cover fills it edge-to-edge (no
+     letterbox), and border:0 drops devices.css's 2px inset screen border so the
+     shot meets the chassis bezel directly instead of leaving a dark ring. */
+  .sc-mac .device-screen {
+    object-fit: cover;
+    /* Capture is a touch taller than the 16:10 screen; anchor to the top so the
+       menu bar + content stay and only the empty desktop below is trimmed. */
+    object-position: top;
+    border: 0;
+    clip-path: inset(0 round 10px);
   }
-  .ph-status-icons {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .ph-status-icons svg {
-    height: 9px;
-    width: auto;
-  }
-  .ph-batt {
-    height: 10px;
-  }
+  .sc-phone .device-screen { clip-path: inset(0 round 49px); }
 
-  .ph-hero {
-    position: relative;
-    height: 44%;
-    flex: none;
+  /* ---------- iPhone — the closest / most prominent small device ---------- */
+  /* devices.css device-iphone-14-pro frame (metal rails), matching the live
+     previewer. Reserve the frame's true 428×868 footprint and scale it to
+     fill .sc-phone, exactly like .sc-mac. */
+  .sc-phone {
+    width: 14.5cqw;
+    left: 33cqw;
+    bottom: -3cqw;
+    aspect-ratio: 428 / 868;
+    container-type: inline-size;
+    z-index: 3;
+    filter: drop-shadow(0 2cqw 3cqw rgba(0, 0, 0, 0.6))
+      drop-shadow(0 0 3cqw var(--accent-muted));
+    animation: sc-float-phone 9s ease-in-out infinite;
   }
-  .ph-backdrop {
+  /* devices.css frames are a fixed 428px wide; scale fluidly to fill .sc-phone. */
+  .sc-phone .device {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+    transform: scale(calc(100cqw / 428px));
+  }
+  /* The overlaid screenshot fills the rounded screen hole. */
+  .sc-phone .device-screen {
     object-fit: cover;
   }
-  .ph-scrim {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(
-        to top,
-        var(--bg) 1%,
-        rgba(0, 0, 0, 0.2) 45%,
-        transparent 78%
-      ),
-      linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.35),
-        transparent 22%
-      );
-  }
-  .ph-hero-text {
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    bottom: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  .ph-hero-logo {
-    max-width: 62%;
-    max-height: 34px;
-    object-fit: contain;
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
-  }
-  .ph-hero-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.92rem;
-    line-height: 1.05;
-    color: #fff;
-    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
-  }
-  .ph-hero-meta {
-    font-size: 0.55rem;
-    color: rgba(255, 255, 255, 0.85);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  }
-  .ph-resume {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-    padding: 4px 12px;
-    border-radius: var(--radius-pill, 999px);
-    background: var(--accent);
-    color: var(--accent-foreground, #06130d);
-    font-size: 0.62rem;
-    font-weight: 700;
-    box-shadow: 0 2px 10px var(--accent-muted, rgba(0, 0, 0, 0.3));
-  }
-  .ph-resume svg {
-    width: 10px;
-    height: 10px;
-  }
 
-  .ph-shelf {
-    flex: 1;
-    padding: 12px 0 8px 14px;
-    min-height: 0;
-  }
-  .ph-shelf-title {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: var(--label);
-    letter-spacing: 0.01em;
-  }
-  .ph-rail {
-    display: flex;
-    gap: 8px;
-    margin-top: 9px;
-    overflow: hidden;
-  }
-
-  /* iOS 26 Liquid Glass tab bar — floating, translucent, blurred */
-  .ph-tabs {
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    z-index: 5;
-    display: flex;
-    justify-content: space-around;
-    padding: 8px 6px;
-    border-radius: var(--radius-pill, 999px);
-    background: color-mix(in oklab, var(--bg-secondary, #101a15) 62%, transparent);
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.14);
-    backdrop-filter: blur(18px) saturate(1.4);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  }
-  .ph-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 4px 6px;
-    border-radius: 12px;
-    font-size: 0.48rem;
-    font-weight: 600;
-    color: var(--label-tertiary, rgba(255, 255, 255, 0.45));
-  }
-  .ph-tab svg {
-    width: 18px;
-    height: 18px;
-  }
-  .ph-fill {
-    fill: currentColor;
-  }
-  .ph-tab.is-active {
-    color: var(--accent);
-    background: var(--accent-subtle, rgba(255, 255, 255, 0.14));
-  }
-
-  /* ---------- Float animations ---------- */
-  @keyframes float-mac {
+  /* ---------- Float animations (gentle; wrapper transform only) ---------- */
+  @keyframes sc-float-phone {
     0%,
     100% {
       transform: translateY(0);
     }
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-1.1cqw);
     }
   }
-  @keyframes float-phone {
+  @keyframes sc-float-tv {
     0%,
     100% {
       transform: translateY(0);
     }
     50% {
-      transform: translateY(10px);
+      transform: translateY(0.6cqw);
     }
   }
 
-  /* ---------- Responsive ---------- */
-  @media (max-width: 980px) {
-    .hero-grid {
-      grid-template-columns: 1fr;
-      gap: var(--space-6, 2.5rem);
-      text-align: center;
+  /* ---------- Responsive: gracefully thin the cluster ---------- */
+  /* Tablet — drop the Mac, enlarge & recenter TV + iPad + iPhone. */
+  @media (max-width: 860px) {
+    .showcase-stage {
+      aspect-ratio: 900 / 620;
     }
-    .hero-copy {
-      max-width: 40rem;
-      margin: 0 auto;
+    .sc-mac {
+      display: none;
     }
-    .hero-cta,
-    .hero-platforms {
-      justify-content: center;
+    .sc-tv {
+      width: 78cqw;
+      left: 11cqw;
     }
-    .hero-stage {
-      min-height: 420px;
-      margin-top: var(--space-2, 0.5rem);
+    .sc-ipad {
+      width: 46cqw;
+      left: 2cqw;
+      bottom: 0;
     }
-    .stage-inner {
-      min-height: 420px;
-    }
-    .mac {
-      width: 72%;
-      right: 0;
-    }
-    .phone {
-      width: 40%;
-      max-width: 230px;
+    .sc-phone {
+      width: 24cqw;
+      left: 40cqw;
     }
   }
 
+  /* Phone — a focused TV backdrop + a big, prominent iPhone. */
   @media (max-width: 560px) {
     .hero {
       padding-top: calc(var(--nav-height, 64px) + var(--space-7, 3rem));
@@ -970,20 +722,20 @@ const metaLine = (f) => {
     .hero-title br {
       display: none;
     }
-    .hero-stage {
-      min-height: 380px;
+    .showcase-stage {
+      aspect-ratio: 640 / 640;
     }
-    .stage-inner {
-      min-height: 380px;
-      transform: scale(0.95);
+    .sc-ipad {
+      display: none;
     }
-    .mac {
-      width: 82%;
-      top: 2%;
+    .sc-tv {
+      width: 92cqw;
+      left: 4cqw;
+      top: 2cqw;
     }
-    .phone {
-      width: 46%;
-      left: -2%;
+    .sc-phone {
+      width: 40cqw;
+      left: 30cqw;
     }
     .appstore-badge,
     .hero-ghost {
@@ -992,17 +744,11 @@ const metaLine = (f) => {
     }
   }
 
-  @media (max-width: 400px) {
-    .stage-inner {
-      transform: scale(0.88);
-    }
-  }
-
   /* ---------- Reduced motion ---------- */
   @media (prefers-reduced-motion: reduce) {
     .aurora,
-    .mac,
-    .phone {
+    .sc-tv,
+    .sc-phone {
       animation: none !important;
     }
   }
@@ -1017,7 +763,7 @@ const metaLine = (f) => {
     const finePointer = window.matchMedia('(pointer: fine)').matches;
     if (reduce || !finePointer) return;
 
-    const stage = document.querySelector('.hero-stage');
+    const stage = document.querySelector('.showcase-stage');
     const inner = stage?.querySelector('[data-parallax]');
     if (!stage || !inner) return;
 
