@@ -1,6 +1,6 @@
 # Pippin
 
-**Pippin** is a highly polished, customisable client for [Plex](https://www.plex.tv/) and [Jellyfin](https://jellyfin.org/) — with a built-in player that rivals Infuse. Available on iPhone, iPad, Mac, and Apple TV.
+**Pippin** is customisable Apple-native client for [Plex](https://www.plex.tv/) and [Jellyfin](https://jellyfin.org/) with a powerful player based on MPVKit.
 
 This repository is the public home for **bug reports, feature requests, and discussion**. The app's source code lives in a separate private repository.
 
