@@ -4,6 +4,14 @@
 
 This repository is the public home for **bug reports, feature requests, and discussion**. The app's source code lives in a separate private repository.
 
+## Installing Pippin
+
+Pippin is currently in beta via TestFlight. To install it:
+
+1. Install [TestFlight](https://apps.apple.com/app/testflight/id899247664) from the App Store on your device.
+2. Open the [Pippin TestFlight beta](https://testflight.apple.com/join/ee9dF3Rt) link and accept the invitation.
+3. Install Pippin from TestFlight and you're ready to go.
+
 ## Found a bug or have an idea?
 
 - 🐛 [Report a bug](https://github.com/lmor152/pippin-player/issues/new?template=bug_report.yml)
