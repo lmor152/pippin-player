@@ -112,6 +112,14 @@ const contactEmail = 'mail@pippinplayer.com';
           to fulfil the request (for example, a title or content identifier).
         </p>
         <p>
+          You can also supply your <strong>own API key</strong> for some of
+          these providers in Pippin&rsquo;s settings. When you do, Pippin
+          contacts that provider directly using your key, without going through
+          the Worker. (Subdl subtitle search always requires your own key and is
+          contacted directly.) Requests made this way are governed by that
+          provider&rsquo;s own privacy policy.
+        </p>
+        <p>
           <strong>Casting.</strong> If you cast to a Chromecast or Google TV
           device, Pippin uses Google&rsquo;s Cast SDK to discover and control
           that device. The Cast SDK collects device identifiers, product
