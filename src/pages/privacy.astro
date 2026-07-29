@@ -1,0 +1,249 @@
+---
+/**
+ * Privacy Policy — standalone legal page.
+ *
+ * Serves two purposes:
+ *   1. The "Privacy Policy URL" required by App Store Connect for the iOS and
+ *      macOS apps (https://pippinplayer.com/privacy).
+ *   2. The canonical source of the copy that is pasted into App Store Connect's
+ *      tvOS privacy-policy TEXT field (Apple TV has no browser, so the text is
+ *      entered directly there — keep the two in sync from this file).
+ *
+ * Content reflects the app's actual data flows (see the app's
+ * PrivacyInfo.xcprivacy manifests): the app collects no data and does no
+ * tracking; it talks to the user's own servers and, for metadata/subtitles,
+ * to a few providers via the Pippin Cloudflare Worker (key injection only).
+ * Casting invokes the Google Cast SDK, which collects its own diagnostics.
+ */
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const lastUpdated = '29 July 2026';
+const contactEmail = 'mail@pippinplayer.com';
+---
+<Layout
+  title="Privacy Policy — Pippin"
+  description="Pippin's privacy policy. Pippin collects no personal data and does not track you — it connects directly to the media servers you configure."
+>
+  <Nav />
+  <main class="legal" id="top">
+    <div class="container legal__inner">
+      <header class="legal__header reveal">
+        <p class="legal__eyebrow">Legal</p>
+        <h1 class="legal__title">Privacy Policy</h1>
+        <p class="legal__updated">Last updated: {lastUpdated}</p>
+      </header>
+
+      <div class="legal__body reveal">
+        <p class="legal__lede">
+          Pippin is designed to keep your data yours. The app collects no
+          personal information, contains no analytics or advertising, and does
+          not track you across apps or websites. It connects directly to the
+          media servers and services you choose to configure. This policy
+          explains what that means in practice.
+        </p>
+
+        <h2>Who this applies to</h2>
+        <p>
+          This policy covers the Pippin apps for iPhone, iPad, Mac and Apple TV
+          (&ldquo;Pippin&rdquo;, &ldquo;the app&rdquo;, &ldquo;we&rdquo;) and
+          this website. Pippin is a client for media servers such as
+          <a href="https://www.plex.tv/" target="_blank" rel="noopener noreferrer">Plex</a>
+          and
+          <a href="https://jellyfin.org/" target="_blank" rel="noopener noreferrer">Jellyfin</a>.
+          It is not affiliated with, endorsed by, or operated by Plex, Jellyfin,
+          or any other third-party service.
+        </p>
+
+        <h2>Data we collect</h2>
+        <p>
+          <strong>None.</strong> Pippin does not collect, transmit to us, or
+          store on our servers any personal data. We do not operate accounts,
+          we do not run analytics, and we have no advertising or tracking SDKs.
+          We never receive your media library, viewing history, or server
+          credentials.
+        </p>
+
+        <h2>Data stored on your device</h2>
+        <p>
+          Everything Pippin needs to work is kept locally on your device (and,
+          where you enable it, in Apple&rsquo;s iCloud/keychain sync under your
+          own Apple Account). This includes:
+        </p>
+        <ul>
+          <li>The servers and services you add, and their connection details.</li>
+          <li>
+            Sign-in credentials and access tokens, stored in the device
+            keychain.
+          </li>
+          <li>
+            Your app settings, layout customisations, and downloaded media for
+            offline playback.
+          </li>
+        </ul>
+        <p>
+          This data stays on your device. Deleting the app removes it. Your
+          server credentials are sent only to the servers you configure, never
+          to us.
+        </p>
+
+        <h2>Connections the app makes</h2>
+        <p><strong>Your media servers.</strong> Pippin connects directly to the
+          Plex, Jellyfin, and companion services (such as Overseerr/Jellyseerr,
+          Radarr, and Sonarr) that you set up. Your credentials and requests go
+          straight to those servers over your own network or the addresses you
+          provide. We are not in the middle of these connections.
+        </p>
+        <p>
+          <strong>Sign-in.</strong> If you sign in with Plex, authentication is
+          handled directly with Plex&rsquo;s own sign-in service under
+          <a href="https://www.plex.tv/about/privacy-legal/" target="_blank" rel="noopener noreferrer">Plex&rsquo;s privacy policy</a>.
+        </p>
+        <p>
+          <strong>Artwork &amp; subtitles.</strong> To enrich metadata and find
+          subtitles, Pippin may contact providers including
+          <a href="https://www.themoviedb.org/privacy-policy" target="_blank" rel="noopener noreferrer">TMDB</a>,
+          fanart.tv, and subtitle services (Subdl / OpenSubtitles). To keep API
+          keys out of the app, these requests are relayed through Pippin&rsquo;s
+          Cloudflare Worker, which injects the relevant key and forwards the
+          request. The Worker does not require or store any personal
+          information about you; it passes along only the metadata query needed
+          to fulfil the request (for example, a title or content identifier).
+        </p>
+        <p>
+          <strong>Casting.</strong> If you cast to a Chromecast or Google TV
+          device, Pippin uses Google&rsquo;s Cast SDK to discover and control
+          that device. The Cast SDK collects device identifiers, product
+          interaction, and diagnostic data for its own operation, governed by
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google&rsquo;s privacy policy</a>.
+          This happens only when you use casting. Pippin does not use this data
+          and does not use it to track you.
+        </p>
+
+        <h2>Face ID / Touch ID</h2>
+        <p>
+          If you enable Pippin&rsquo;s profile lock, Face ID or Touch ID may be
+          used to unlock a protected profile. This authentication is performed
+          entirely by Apple on your device. Pippin never receives or stores your
+          biometric data.
+        </p>
+
+        <h2>Tracking</h2>
+        <p>
+          Pippin does not track you. We do not collect data to link your
+          activity to you across other companies&rsquo; apps or websites, and we
+          show no advertising. Pippin&rsquo;s App Tracking Transparency status is
+          &ldquo;not used for tracking.&rdquo;
+        </p>
+
+        <h2>Children&rsquo;s privacy</h2>
+        <p>
+          Pippin is not directed at children and does not knowingly collect any
+          information from anyone, including children under 13.
+        </p>
+
+        <h2>Your rights</h2>
+        <p>
+          Because we do not collect or hold any personal data about you, there
+          is nothing for us to access, correct, or delete on our side. You
+          remain in full control of the data stored on your device and on the
+          servers you connect to. Questions about the data held by a connected
+          service (Plex, Jellyfin, TMDB, Google, etc.) should be directed to
+          that service under its own privacy policy.
+        </p>
+
+        <h2>Changes to this policy</h2>
+        <p>
+          If this policy changes, we will update the date at the top of this
+          page. Material changes will be reflected here before they take effect.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Questions about this policy? Email
+          <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
+        </p>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .legal {
+    padding-block: calc(var(--nav-height) + var(--space-8)) var(--space-9);
+  }
+  .legal__inner {
+    max-width: 760px;
+  }
+  .legal__eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: var(--space-3);
+  }
+  .legal__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 6vw, 3rem);
+    line-height: 1.05;
+    color: var(--label);
+  }
+  .legal__updated {
+    margin-top: var(--space-3);
+    font-size: 0.9375rem;
+    color: var(--label-tertiary);
+  }
+
+  .legal__body {
+    margin-top: var(--space-7);
+  }
+  .legal__lede {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--label);
+    padding: var(--space-5);
+    background-color: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+  }
+  .legal__body h2 {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    color: var(--label);
+    margin-top: var(--space-7);
+    margin-bottom: var(--space-3);
+  }
+  .legal__body p {
+    color: var(--label-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--space-4);
+  }
+  .legal__body ul {
+    margin: 0 0 var(--space-4);
+    padding-left: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .legal__body li {
+    color: var(--label-secondary);
+    line-height: 1.6;
+  }
+  .legal__body strong {
+    color: var(--label);
+    font-weight: 600;
+  }
+  .legal__body a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .legal__body a:hover {
+    opacity: 0.8;
+  }
+</style>
