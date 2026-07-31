@@ -1,0 +1,70 @@
+diff --git a/video/out/vo_avfoundation.m b/video/out/vo_avfoundation.m
+index ddee791..aaf6b89 100644
+--- a/video/out/vo_avfoundation.m
++++ b/video/out/vo_avfoundation.m
+@@ -27,6 +27,7 @@
+ #include "common/common.h"
+ #include "options/m_config.h"
+ #include "options/m_option.h"
++#include "options/options.h"
+ #include "osdep/timer.h"
+ #include "vo.h"
+ #include "video/mp_image.h"
+@@ -151,6 +152,10 @@
+     bool timebase_paused;
+     bool playback_paused;
+     double timebase_rate;
++    // Live view of the root option group, read for --speed so the timebase
++    // rate tracks the authoritative playback speed instead of being inferred
++    // from per-frame timing.
++    struct m_config_cache *root_opts_cache;
+ 
+     // Track if OSD callback was invoked this frame
+     bool osd_callback_invoked;
+@@ -357,6 +362,28 @@ static double infer_timebase_rate(struct priv *p, int64_t media_pts_ns,
+     return inferred >= 0.05 && inferred <= 8.0 ? inferred : rate;
+ }
+ 
++// The timebase rate must be mpv's actual --speed. Inferring it from a single
++// frame pair (media pts delta / host time delta) wobbles with scheduling
++// jitter and framedrops; each wobble past the change threshold re-anchors the
++// timebase at a wrong rate, which shows up as judder that worsens the further
++// playback speed is from 1x. Falls back to inference only if the option read
++// is unavailable.
++static double target_timebase_rate(struct vo *vo, int64_t media_pts_ns,
++                                   int64_t present_host_ns)
++{
++    struct priv *p = vo->priv;
++
++    if (p->root_opts_cache) {
++        m_config_cache_update(p->root_opts_cache);
++        struct MPOpts *root_opts = p->root_opts_cache->opts;
++        double speed = root_opts->playback_speed;
++        if (speed >= 0.01 && speed <= 100.0)
++            return speed;
++    }
++
++    return infer_timebase_rate(p, media_pts_ns, present_host_ns);
++}
++
+ static void update_media_timebase_for_frame(struct vo *vo)
+ {
+     struct priv *p = vo->priv;
+@@ -370,7 +397,7 @@ static void update_media_timebase_for_frame(struct vo *vo)
+     int64_t media_pts_ns = p->next_media_pts_ns;
+     double rate = p->playback_paused
+         ? 0.0
+-        : infer_timebase_rate(p, media_pts_ns, present_host_ns);
++        : target_timebase_rate(vo, media_pts_ns, present_host_ns);
+ 
+     bool should_anchor = !p->timebase_anchor_valid || p->timebase_paused ||
+         p->playback_paused || fabs(rate - p->timebase_rate) > 0.01;
+@@ -2594,6 +2621,8 @@ static int preinit(struct vo *vo)
+     p->opts = p->opts_cache->opts;
+     m_config_cache_set_wakeup_cb(p->opts_cache, avfoundation_opts_wakeup, vo);
+ 
++    p->root_opts_cache = m_config_cache_alloc(p, vo->global, &mp_opt_root);
++
+     if (vo->opts->WinID == -1) {
+         MP_ERR(vo, "No AVSampleBufferDisplayLayer provided via --wid\n");
+         return -1;
