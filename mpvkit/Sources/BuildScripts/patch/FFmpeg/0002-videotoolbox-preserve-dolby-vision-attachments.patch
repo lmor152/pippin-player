@@ -1,0 +1,42 @@
+From: Pippin <noreply@pippin.app>
+Date: Sat, 2 Aug 2026 00:00:00 +0000
+Subject: [PATCH] videotoolbox: preserve Dolby Vision output attachments
+
+Ported from edde746/MPVKit (Plezy fork) for Pippin native Dolby Vision
+VideoToolbox decode. Base: stock FFmpeg n8.0.1. License LGPLv2.1+.
+---
+diff --git a/libavcodec/videotoolbox.c b/libavcodec/videotoolbox.c
+index 7957d07..ed0c27c 100644
+--- a/libavcodec/videotoolbox.c
++++ b/libavcodec/videotoolbox.c
+@@ -119,6 +119,8 @@ int ff_videotoolbox_buffer_append(VTContext *vtctx,
+     return 0;
+ }
+ 
++static int videotoolbox_dovi_should_preserve_attachments(AVCodecContext *avctx);
++
+ static int videotoolbox_postproc_frame(void *avctx, AVFrame *frame)
+ {
+     int ret;
+@@ -135,7 +137,8 @@ static int videotoolbox_postproc_frame(void *avctx, AVFrame *frame)
+     frame->crop_top = 0;
+     frame->crop_bottom = 0;
+ 
+-    if ((ret = av_vt_pixbuf_set_attachments(avctx, ref->pixbuf, frame)) < 0)
++    if (!videotoolbox_dovi_should_preserve_attachments(avctx) &&
++        (ret = av_vt_pixbuf_set_attachments(avctx, ref->pixbuf, frame)) < 0)
+         return ret;
+ 
+     frame->data[3] = (uint8_t*)ref->pixbuf;
+@@ -861,6 +864,11 @@ static int videotoolbox_dovi_is_apple_hevc(const AVDOVIDecoderConfigurationRecor
+     }
+ }
+ 
++static int videotoolbox_dovi_should_preserve_attachments(AVCodecContext *avctx)
++{
++    return videotoolbox_dovi_is_apple_hevc(videotoolbox_dovi_get_conf(avctx));
++}
++
+ static CFDataRef videotoolbox_dovi_extradata_create(const AVDOVIDecoderConfigurationRecord *dovi)
+ {
+     uint8_t buf[24] = { 0 };

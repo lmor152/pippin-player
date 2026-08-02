@@ -1,0 +1,26 @@
+From: Pippin <noreply@pippin.app>
+Date: Sat, 2 Aug 2026 00:00:00 +0000
+Subject: [PATCH] videotoolbox: never signal Dolby Vision metadata compression in dvvC
+
+Ported from edde746/MPVKit (Plezy fork) for Pippin native Dolby Vision
+VideoToolbox decode. Base: stock FFmpeg n8.0.1. License LGPLv2.1+.
+---
+diff --git a/libavcodec/videotoolbox.c b/libavcodec/videotoolbox.c
+index 18761b8..cee7712 100644
+--- a/libavcodec/videotoolbox.c
++++ b/libavcodec/videotoolbox.c
+@@ -964,8 +964,12 @@ static CFDataRef videotoolbox_dovi_extradata_create(const AVDOVIDecoderConfigura
+             (!!dovi->el_present_flag) << 1 |
+             !!dovi->bl_present_flag;
+     AV_WB16(buf + 2, flags);
+-    buf[4] = (dovi->dv_bl_signal_compatibility_id & 0x0f) << 4 |
+-             (dovi->dv_md_compression & 0x03) << 2;
++    /* Always signal uncompressed DV metadata. Legacy MPEG-TS muxers fill the
++     * old-spec reserved bits after the compatibility id with ones, which the
++     * mpegts demuxer reads back as dv_md_compression = extended; VideoToolbox
++     * rejects such dvvC atoms with kVTVideoDecoderUnsupportedDataFormatErr.
++     * Backward-compatible profiles must signal 0 here per the Dolby spec. */
++    buf[4] = (dovi->dv_bl_signal_compatibility_id & 0x0f) << 4;
+ 
+     return CFDataCreate(kCFAllocatorDefault, buf, sizeof(buf));
+ }

@@ -1,0 +1,394 @@
+Multichannel LPCM output path for ao_avfoundation (Pippin-original, no upstream).
+
+On Apple / AVFoundation, only Dolby formats (AC-3 / E-AC-3 / MAT-Atmos) can be
+bitstreamed by a third-party app; Pippin's 0006 handles those on the compressed
+passthrough path. DTS, DTS-HD MA, TrueHD and multichannel FLAC/PCM CANNOT be
+bitstream-passed-through by a third-party app on Apple platforms, so parity comes
+from a robust multichannel LPCM path: once mpv has decoded such sources to PCM,
+emit correctly-laid-out 5.1 / 7.1 (or a clean stereo downmix) to the renderer.
+
+This patch reworks ONLY the non-compressed (PCM) branch of ao_avfoundation.m and
+leaves Pippin's 0006 AC-3 / E-AC-3 passthrough untouched. It:
+
+  1. Channel layout + order. For a recognized 5.1 / 7.1 bed it rewrites
+     ao->channels into a canonical CoreAudio MPEG order and describes the format
+     with the matching standard layout TAG, instead of a bag of per-channel
+     descriptions the HDMI/AVFoundation path has to guess from. mpv reorders its
+     decoded output to ao->channels and the layout is built from that same order,
+     so data and layout are consistent by construction:
+
+       mpv speaker order                         CoreAudio tag / slot order
+       ----------------------------------------  ---------------------------------
+       5.1  FL FR FC LFE (BL|SL) (BR|SR)          MPEG_5_1_A  L R C LFE Ls Rs
+       7.1  FL FR FC LFE  SL SR  BL BR            MPEG_7_1_C  L R C LFE Ls Rs Rls Rrs
+
+     For 7.1 mpv's SIDE pair (SL/SR) maps to the tag's primary surround (Ls/Rs)
+     and mpv's BACK pair (BL/BR) to the rear surround (Rls/Rrs), matching a
+     physical home-theatre 7.1 bed. Any other configuration (mono, stereo,
+     3.0/4.0, 6.1, exotic 8ch, height beds) is left on mpv's existing
+     description-based layout (ca_get_acl) unchanged.
+
+  2. Route capability negotiation (tvOS/iOS). Before locking the format, the
+     output route is checked with the same positive-evidence rule the compressed
+     path uses: supportedOutputChannelLayouts is populated for CarPlay/AirPlay
+     and empty by design on HDMI, so a non-empty list with no >2ch entry is the
+     only "stereo only" signal; empty/unavailable stays "unknown" and never
+     blocks multichannel. When the route is stereo-only, ao->channels is dropped
+     to stereo so the CORE downmixes cleanly rather than shipping 5.1/7.1 the
+     system would silently fold or drop. Route-change and rendering-capabilities
+     notifications are observed and, edge-triggered, request a reload when the
+     stereo/multichannel boundary is crossed (mirrors edde746 libmpv 0010's
+     spdif route-capability observation, adapted to the PCM path).
+
+  3. Conservative fallback. Anything uncertain falls back to the exact stock PCM
+     behavior; the compressed AC-3 / E-AC-3 path from Pippin's 0006 is untouched.
+
+License: LGPL-2.1-or-later (same as mpv). Applies after Pippin's libmpv 0006.
+diff --git a/audio/out/ao_avfoundation.m b/audio/out/ao_avfoundation.m
+index 95b2973..7f1675c 100644
+--- a/audio/out/ao_avfoundation.m
++++ b/audio/out/ao_avfoundation.m
+@@ -36,6 +36,15 @@ @interface AVObserver : NSObject {
+     struct ao *ao;
+ }
+ - (void)handleRestartNotification:(NSNotification*)notification;
++#if TARGET_OS_IPHONE
++// Multichannel LPCM route negotiation (0013): the connected receiver's channel
++// capability can change under us (HDMI 5.1 -> AirPods stereo, or back), which
++// invalidates the layout negotiated at init.
++- (void)handleRouteChange:(NSNotification*)notification;
++- (void)handleRenderingCapabilitiesChange:(NSNotification*)notification;
++#endif
++// Null the AO pointer so a late notification cannot reach a freed AO.
++- (void)invalidate;
+ @end
+ 
+ struct priv {
+@@ -53,6 +62,11 @@ - (void)handleRestartNotification:(NSNotification*)notification;
+     uint32_t pt_format_id;      // kAudioFormatAC3 / kAudioFormatEnhancedAC3
+     int pt_data_type;           // expected IEC 61937 Pc data-type code
+     int pt_rate;                // elementary sample rate for the compressed ASBD
++
++    // Multichannel LPCM route negotiation state (see the block comment above
++    // pcm_canonical_multichannel()). Only meaningful on the PCM path.
++    bool pcm_route_multichannel; // last observed "route can carry >2 channels"
++    bool pcm_downmixed;          // init forced a stereo downmix in the core
+ };
+ 
+ static int64_t CMTimeGetNanoseconds(CMTime time)
+@@ -66,6 +80,149 @@ static CMTime CMTimeFromNanoseconds(int64_t time)
+     return CMTimeMake(time, 1000000000);
+ }
+ 
++// --- Multichannel LPCM output (0013, Pippin-original) ------------------------
++//
++// On Apple/AVFoundation only Dolby (AC-3/E-AC-3/MAT-Atmos) can be bitstreamed
++// by a third-party app; the compressed passthrough path above handles those.
++// Everything else that arrives as multichannel PCM -- DTS / DTS-HD MA / TrueHD /
++// multichannel FLAC / raw PCM, once mpv has decoded it -- has to be output as
++// correctly-laid-out LPCM here. Two things make that reliable:
++//
++//   1. A standard CoreAudio channel-layout TAG (not a bag of per-channel
++//      descriptions) so the HDMI/AVFoundation renderer knows exactly which
++//      physical speaker each interleaved channel drives.
++//   2. Negotiating the count against the current route: if the receiver can
++//      only take stereo, ask the core to downmix rather than shipping 5.1/7.1
++//      that the system would silently fold or drop.
++//
++// Channel-layout mapping (mpv speaker order -> CoreAudio tag / slot order).
++// mpv reorders its decoded output to match ao->channels, and the layout is
++// built from that same order, so data and layout stay consistent:
++//
++//   5.1  ao->channels := FL FR FC LFE  (BL|SL) (BR|SR)
++//        -> kAudioChannelLayoutTag_MPEG_5_1_A   [ L R C LFE Ls  Rs        ]
++//   7.1  ao->channels := FL FR FC LFE  SL SR  BL BR
++//        -> kAudioChannelLayoutTag_MPEG_7_1_C   [ L R C LFE Ls  Rs Rls Rrs ]
++//        mpv's SIDE pair -> the tag's primary surround (Ls/Rs); mpv's BACK
++//        pair -> the tag's rear surround (Rls/Rrs), which is the physical
++//        arrangement of a home-theatre 7.1 bed.
++//
++// Any other configuration (mono, stereo, 3.0/4.0, 6.1, exotic 8ch, height
++// beds) returns false and the caller keeps mpv's existing description-based
++// layout (ca_get_acl) untouched. Conservative by design: when unsure, do
++// exactly what the stock PCM path already did.
++
++static bool pcm_chmap_has(const struct mp_chmap *c, int speaker)
++{
++    for (int i = 0; i < c->num; i++) {
++        if (c->speaker[i] == speaker)
++            return true;
++    }
++    return false;
++}
++
++// Rewrite ao->channels into a canonical MPEG order for a recognized 5.1/7.1
++// bed and report the matching layout tag. Returns false (ao->channels left
++// unchanged) for anything not recognized.
++static bool pcm_canonical_multichannel(struct ao *ao, AudioChannelLayoutTag *tag_out)
++{
++    struct mp_chmap *ch = &ao->channels;
++
++    bool front = pcm_chmap_has(ch, MP_SPEAKER_ID_FL) &&
++                 pcm_chmap_has(ch, MP_SPEAKER_ID_FR) &&
++                 pcm_chmap_has(ch, MP_SPEAKER_ID_FC) &&
++                 pcm_chmap_has(ch, MP_SPEAKER_ID_LFE);
++    if (!front)
++        return false;
++
++    if (ch->num == 6) {
++        // Require a MATCHED surround pair -- both members from the same pair --
++        // so a mixed/asymmetric layout (e.g. BL + SR) is never silently retagged
++        // as standard 5.1. Either pair maps to the tag's Ls/Rs positions.
++        int sl, sr;
++        if (pcm_chmap_has(ch, MP_SPEAKER_ID_BL) &&
++            pcm_chmap_has(ch, MP_SPEAKER_ID_BR)) {
++            sl = MP_SPEAKER_ID_BL;  sr = MP_SPEAKER_ID_BR;
++        } else if (pcm_chmap_has(ch, MP_SPEAKER_ID_SL) &&
++                   pcm_chmap_has(ch, MP_SPEAKER_ID_SR)) {
++            sl = MP_SPEAKER_ID_SL;  sr = MP_SPEAKER_ID_SR;
++        } else {
++            return false;
++        }
++        struct mp_chmap n = { .num = 6 };
++        n.speaker[0] = MP_SPEAKER_ID_FL;  n.speaker[1] = MP_SPEAKER_ID_FR;
++        n.speaker[2] = MP_SPEAKER_ID_FC;  n.speaker[3] = MP_SPEAKER_ID_LFE;
++        n.speaker[4] = sl;                n.speaker[5] = sr;
++        *ch = n;
++        *tag_out = kAudioChannelLayoutTag_MPEG_5_1_A;
++        return true;
++    }
++
++    if (ch->num == 8 &&
++        pcm_chmap_has(ch, MP_SPEAKER_ID_SL) && pcm_chmap_has(ch, MP_SPEAKER_ID_SR) &&
++        pcm_chmap_has(ch, MP_SPEAKER_ID_BL) && pcm_chmap_has(ch, MP_SPEAKER_ID_BR)) {
++        struct mp_chmap n = { .num = 8 };
++        n.speaker[0] = MP_SPEAKER_ID_FL;  n.speaker[1] = MP_SPEAKER_ID_FR;
++        n.speaker[2] = MP_SPEAKER_ID_FC;  n.speaker[3] = MP_SPEAKER_ID_LFE;
++        n.speaker[4] = MP_SPEAKER_ID_SL;  n.speaker[5] = MP_SPEAKER_ID_SR;
++        n.speaker[6] = MP_SPEAKER_ID_BL;  n.speaker[7] = MP_SPEAKER_ID_BR;
++        *ch = n;
++        *tag_out = kAudioChannelLayoutTag_MPEG_7_1_C;
++        return true;
++    }
++
++    return false;
++}
++
++#if TARGET_OS_IPHONE
++// Does the current output route advertise a multichannel-capable layout?
++// Positive-evidence only (adapted from the compressed path's route reasoning):
++// supportedOutputChannelLayouts is populated for CarPlay/AirPlay routes and is
++// empty by design on HDMI, so a NON-EMPTY list that holds no >2ch entry is the
++// only signal treated as "stereo only". Empty or unavailable == unknown, and
++// unknown never blocks multichannel -- the renderer downmixes if it must.
++static bool pcm_route_supports_multichannel(struct ao *ao)
++{
++    if (@available(tvOS 17.2, iOS 17.2, *)) {
++        NSArray<AVAudioChannelLayout *> *layouts =
++            AVAudioSession.sharedInstance.supportedOutputChannelLayouts;
++        if (layouts.count > 0) {
++            for (AVAudioChannelLayout *layout in layouts) {
++                if (layout.channelCount > 2)
++                    return true;
++            }
++            MP_WARN(ao, "output route advertises only stereo layouts\n");
++            return false;
++        }
++    }
++    return true;
++}
++
++// Re-run the route capability decision and act only on a change that affects
++// us. Edge-triggered so a flapping capability cannot spin the AO: a reload
++// re-enters init(), which renegotiates the layout/downmix from scratch.
++static void pcm_reevaluate_capabilities(struct ao *ao, const char *reason)
++{
++    struct priv *p = ao->priv;
++    if (p->passthrough)
++        return;   // the compressed path owns its own recovery
++    bool supported = pcm_route_supports_multichannel(ao);
++    if (supported == p->pcm_route_multichannel)
++        return;
++    p->pcm_route_multichannel = supported;
++
++    // Reload only when the stereo/multichannel boundary crossing actually
++    // changes what we should be sending: we downmixed and width came back, or
++    // we are running wide and the route lost multichannel.
++    if ((p->pcm_downmixed && supported) ||
++        (!p->pcm_downmixed && !supported && ao->channels.num > 2)) {
++        MP_INFO(ao, "output route capability changed (%s); reloading audio to "
++                "renegotiate the channel layout\n", reason);
++        ao_request_reload(ao);
++    }
++}
++#endif
++
+ // --- AC-3 / E-AC-3 compressed-audio passthrough ------------------------------
+ //
+ // mpv delivers compressed audio to an ao as IEC 61937 ("S/PDIF") data bursts:
+@@ -505,6 +662,37 @@ - (void)handleRestartNotification:(NSNotification*)notification {
+     stop(ao);
+     start(ao);
+ }
++#if TARGET_OS_IPHONE
++// Both handlers hop onto p->queue so the capability re-check is serialized
++// with feeding and cannot race a teardown; stop()/uninit() drain the queue.
++- (void)handleRouteChange:(NSNotification*)notification {
++    @synchronized(self) {
++        if (!ao)
++            return;
++        struct ao *_ao = ao;
++        struct priv *p = _ao->priv;
++        dispatch_async(p->queue, ^{
++            pcm_reevaluate_capabilities(_ao, "route change");
++        });
++    }
++}
++- (void)handleRenderingCapabilitiesChange:(NSNotification*)notification {
++    @synchronized(self) {
++        if (!ao)
++            return;
++        struct ao *_ao = ao;
++        struct priv *p = _ao->priv;
++        dispatch_async(p->queue, ^{
++            pcm_reevaluate_capabilities(_ao, "capabilities change");
++        });
++    }
++}
++#endif
++- (void)invalidate {
++    @synchronized(self) {
++        ao = NULL;
++    }
++}
+ @end
+ 
+ static int init(struct ao *ao)
+@@ -514,11 +702,32 @@ static int init(struct ao *ao)
+ 
+ #if TARGET_OS_IPHONE
+     AVAudioSession *instance = AVAudioSession.sharedInstance;
+-    NSInteger maxChannels = instance.maximumOutputNumberOfChannels;
+-    NSInteger prefChannels = MIN(maxChannels, ao->channels.num);
+     [instance setCategory:AVAudioSessionCategoryPlayback error:nil];
+     [instance setMode:AVAudioSessionModeMoviePlayback error:nil];
++
++    // Multichannel LPCM route negotiation (0013). The compressed passthrough
++    // path handles its own routing; here we only touch the PCM case.
++    bool pcm_multichannel = !af_fmt_is_spdif(ao->format) && ao->channels.num > 2;
++#if HAVE_MACOS_12_FEATURES
++    if (pcm_multichannel) {
++        if (@available(tvOS 15.0, iOS 15.0, *))
++            [instance setSupportsMultichannelContent:YES error:nil];
++    }
++#endif
+     [instance setActive:YES error:nil];
++
++    p->pcm_route_multichannel = pcm_route_supports_multichannel(ao);
++    if (pcm_multichannel && !p->pcm_route_multichannel) {
++        // The route can only carry stereo: downmix in the core rather than
++        // handing the renderer 5.1/7.1 it would silently fold or drop.
++        MP_INFO(ao, "output route is stereo-only; requesting a stereo downmix "
++                "from the core instead of %d-channel PCM\n", ao->channels.num);
++        mp_chmap_from_channels(&ao->channels, 2);
++        p->pcm_downmixed = true;
++    }
++
++    NSInteger maxChannels = instance.maximumOutputNumberOfChannels;
++    NSInteger prefChannels = MIN(maxChannels, ao->channels.num);
+     [instance setPreferredOutputNumberOfChannels:prefChannels error:nil];
+ #endif
+ 
+@@ -577,17 +786,34 @@ static int init(struct ao *ao)
+             goto error;
+         }
+ 
++        // Multichannel LPCM (0013): for a recognized 5.1/7.1 bed, reorder
++        // ao->channels into a standard CoreAudio MPEG layout and describe it
++        // with that tag, so the HDMI/AVFoundation path renders the correct
++        // per-speaker mapping. Any other configuration keeps mpv's
++        // description-based layout (ca_get_acl) unchanged.
++        AudioChannelLayoutTag mc_tag = 0;
++        bool mc_explicit = pcm_canonical_multichannel(ao, &mc_tag);
++
+         AudioStreamBasicDescription asbd;
+         ca_fill_asbd(ao, &asbd);
+-        size_t layout_size;
+-        layout = ca_get_acl(ao, &layout_size);
++
++        AudioChannelLayout mc_layout = { .mChannelLayoutTag = mc_tag };
++        AudioChannelLayout *acl = &mc_layout;
++        size_t layout_size = sizeof(mc_layout);
++        if (mc_explicit) {
++            MP_INFO(ao, "multichannel PCM: %d ch, layout tag 0x%08x\n",
++                    ao->channels.num, (unsigned)mc_tag);
++        } else {
++            layout = ca_get_acl(ao, &layout_size);
++            acl = layout;
++        }
+ 
+         OSStatus err;
+         if ((err = CMAudioFormatDescriptionCreate(
+             NULL,
+             &asbd,
+             layout_size,
+-            layout,
++            acl,
+             0,
+             NULL,
+             NULL,
+@@ -597,8 +823,10 @@ static int init(struct ao *ao)
+             MP_VERBOSE(ao, "CMAudioFormatDescriptionCreate returned %d\n", err);
+             goto error;
+         }
+-        talloc_free(layout);
+-        layout = NULL;
++        if (layout) {
++            talloc_free(layout);
++            layout = NULL;
++        }
+ 
+         // AVSampleBufferAudioRenderer read ahead aggressively
+         ao->device_buffer = ao->samplerate * 2;
+@@ -612,6 +840,20 @@ static int init(struct ao *ao)
+     }
+ #endif
+     [center addObserver:p->observer selector:@selector(handleRestartNotification:) name:AVSampleBufferAudioRendererWasFlushedAutomaticallyNotification object:p->renderer];
++#if TARGET_OS_IPHONE
++    // Multichannel LPCM route negotiation (0013): watch for the connected
++    // receiver's capability changing while we play.
++    if (@available(tvOS 17.2, iOS 17.2, *)) {
++        [center addObserver:p->observer
++                   selector:@selector(handleRenderingCapabilitiesChange:)
++                       name:AVAudioSessionRenderingCapabilitiesChangeNotification
++                     object:AVAudioSession.sharedInstance];
++    }
++    [center addObserver:p->observer
++               selector:@selector(handleRouteChange:)
++                   name:AVAudioSessionRouteChangeNotification
++                 object:AVAudioSession.sharedInstance];
++#endif
+ 
+     return CONTROL_OK;
+ 
+@@ -636,6 +878,12 @@ static void uninit(struct ao *ao)
+ {
+     struct priv *p = ao->priv;
+ 
++    // Stop notifications and null the observer's AO before teardown so a late
++    // route/capabilities callback cannot reach a half-freed AO; stop() then
++    // drains p->queue, so any block already dispatched runs while ao is valid.
++    [p->observer invalidate];
++    [[NSNotificationCenter defaultCenter] removeObserver:p->observer];
++
+     stop(ao);
+ 
+     [p->renderer release];
+@@ -645,7 +893,6 @@ static void uninit(struct ao *ao)
+     // still be NULL if no audio was ever fed.
+     if (p->format_description) CFRelease(p->format_description);
+ 
+-    [[NSNotificationCenter defaultCenter] removeObserver:p->observer];
+     [p->observer release];
+ 
+ #if TARGET_OS_IPHONE

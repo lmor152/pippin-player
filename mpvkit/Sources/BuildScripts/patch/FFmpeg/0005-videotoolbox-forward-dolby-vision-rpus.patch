@@ -1,0 +1,68 @@
+From: Pippin <noreply@pippin.app>
+Date: Sat, 2 Aug 2026 00:00:00 +0000
+Subject: [PATCH] videotoolbox: forward Dolby Vision RPU NALs
+
+Ported from edde746/MPVKit (Plezy fork) for Pippin native Dolby Vision
+VideoToolbox decode. Base: stock FFmpeg n8.0.1. License LGPLv2.1+.
+---
+diff --git a/libavcodec/hevc/hevcdec.c b/libavcodec/hevc/hevcdec.c
+index 8a845f5..8ec2c20 100644
+--- a/libavcodec/hevc/hevcdec.c
++++ b/libavcodec/hevc/hevcdec.c
+@@ -3743,7 +3743,7 @@ static int decode_nal_units(HEVCContext *s, const uint8_t *buf, int length)
+         H2645NAL *nal = &s->pkt.nals[s->pkt.nb_nals - 1];
+         if (s->rpu_buf) {
+             av_buffer_unref(&s->rpu_buf);
+-            av_log(s->avctx, AV_LOG_WARNING, "Multiple Dolby Vision RPUs found in one AU. Skipping previous.\n");
++            av_log(s->avctx, AV_LOG_VERBOSE, "Multiple Dolby Vision RPUs found in one AU. Skipping previous.\n");
+         }
+ 
+         s->rpu_buf = av_buffer_alloc(nal->raw_size - 2);
+diff --git a/libavcodec/videotoolbox.c b/libavcodec/videotoolbox.c
+index c747ec4..18761b8 100644
+--- a/libavcodec/videotoolbox.c
++++ b/libavcodec/videotoolbox.c
+@@ -1318,6 +1318,32 @@ static int videotoolbox_hevc_decode_slice(AVCodecContext *avctx,
+     return videotoolbox_common_decode_slice(avctx, buffer, size);
+ }
+ 
++static int videotoolbox_hevc_append_dovi_rpus(AVCodecContext *avctx)
++{
++    HEVCContext *h = avctx->priv_data;
++    const AVDOVIDecoderConfigurationRecord *dovi = videotoolbox_dovi_get_conf(avctx);
++
++    if (!videotoolbox_dovi_is_apple_hevc(dovi))
++        return 0;
++
++    for (int i = 0; i < h->pkt.nb_nals; i++) {
++        H2645NAL *nal = &h->pkt.nals[i];
++        int ret;
++
++        if (nal->type != HEVC_NAL_UNSPEC62 || nal->raw_size <= 2)
++            continue;
++
++        ret = videotoolbox_common_decode_slice(avctx, nal->raw_data, nal->raw_size);
++        if (ret < 0) {
++            av_log(avctx, AV_LOG_WARNING,
++                   "Failed to append Dolby Vision RPU; stripping this RPU.\n");
++            continue;
++        }
++    }
++
++    return 0;
++}
++
+ 
+ static int videotoolbox_hevc_decode_params(AVCodecContext *avctx,
+                                            int type,
+@@ -1334,7 +1360,9 @@ static int videotoolbox_hevc_end_frame(AVCodecContext *avctx)
+     VTContext *vtctx = avctx->internal->hwaccel_priv_data;
+     int ret;
+ 
+-    ret = ff_videotoolbox_common_end_frame(avctx, frame);
++    ret = videotoolbox_hevc_append_dovi_rpus(avctx);
++    if (ret >= 0)
++        ret = ff_videotoolbox_common_end_frame(avctx, frame);
+     vtctx->bitstream_size = 0;
+     return ret;
+ }

@@ -1,0 +1,65 @@
+diff --git a/video/out/vulkan/context_moltenvk.m b/video/out/vulkan/context_moltenvk.m
+index 445b907..06abaa8 100644
+--- a/video/out/vulkan/context_moltenvk.m
++++ b/video/out/vulkan/context_moltenvk.m
+@@ -26,6 +26,7 @@
+ struct priv {
+     struct mpvk_ctx vk;
+     CAMetalLayer *layer;
++    bool was_hidden;
+ };
+ 
+ static void moltenvk_uninit(struct ra_ctx *ctx)
+@@ -35,6 +36,18 @@ static void moltenvk_uninit(struct ra_ctx *ctx)
+     mpvk_uninit(&p->vk);
+ }
+ 
++// Presentation gate: the embedding app hides the CAMetalLayer while the
++// window is occluded, the app is hidden, or the displays are asleep.
++// Skipping start_frame while hidden prevents present-completion spins in
++// the swapchain (one core pinned at 100% after long display sleep).
++// CALayer reads are safe off the main thread; upstream context_mac.m
++// reads NSWindow.occlusionState from this same hook.
++static bool moltenvk_check_visible(struct ra_ctx *ctx)
++{
++    struct priv *p = ctx->priv;
++    return !p->layer.hidden;
++}
++
+ static bool moltenvk_init(struct ra_ctx *ctx)
+ {
+     struct priv *p = ctx->priv = talloc_zero(ctx, struct priv);
+@@ -50,12 +63,15 @@ static bool moltenvk_init(struct ra_ctx *ctx)
+         goto fail;
+ 
+     p->layer = (__bridge CAMetalLayer *)(intptr_t)ctx->vo->opts->WinID;
++    p->was_hidden = p->layer.hidden;
+     VkMetalSurfaceCreateInfoEXT info = {
+          .sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT,
+          .pLayer = p->layer,
+     };
+ 
+-    struct ra_ctx_params params = {0};
++    struct ra_ctx_params params = {
++        .check_visible = moltenvk_check_visible,
++    };
+ 
+     VkInstance inst = vk->vkinst->instance;
+     VkResult res = vkCreateMetalSurfaceEXT(inst, &info, NULL, &vk->surface);
+@@ -83,6 +99,16 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx)
+ 
+ static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *arg)
+ {
++    struct priv *p = ctx->priv;
++
++    // Regression lesson from upstream (mpv#16693 / 9f153e2a): on becoming
++    // visible again a redraw must be forced, or a paused video shows a
++    // stale frame (redraws attempted while hidden were skipped).
++    bool hidden = p->layer.hidden;
++    if (p->was_hidden && !hidden)
++        *events |= VO_EVENT_EXPOSE;
++    p->was_hidden = hidden;
++
+     return VO_NOTIMPL;
+ }
+ 

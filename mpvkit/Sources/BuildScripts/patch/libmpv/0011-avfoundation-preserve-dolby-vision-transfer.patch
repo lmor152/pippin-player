@@ -1,0 +1,44 @@
+diff --git a/video/out/vo_avfoundation.m b/video/out/vo_avfoundation.m
+index a959840..e1c4087 100644
+--- a/video/out/vo_avfoundation.m
++++ b/video/out/vo_avfoundation.m
+@@ -1166,6 +1166,27 @@ static void tag_pixel_buffer_color_metadata(CVPixelBufferRef pixbuf,
+         set_colorspace_from_attachments(pixbuf);
+ }
+ 
++static void restore_dolby_vision_transfer(CVPixelBufferRef pixbuf,
++                                          const struct mp_image_params *params)
++{
++    // Restrict to Profile 5 specifically. Neither PL_COLOR_SYSTEM_DOLBYVISION
++    // nor the DolbyVisionRPUData attachment identifies a profile, and P5 is
++    // PQ-based; requiring PQ transfer keeps this off P7/P8 and off any
++    // sRGB/BT.1886/HLG-mapped frame, so only P5's stripped PQ tag is restored.
++    if (!pixbuf || params->repr.sys != PL_COLOR_SYSTEM_DOLBYVISION ||
++        params->color.transfer != PL_COLOR_TRC_PQ)
++        return;
++    if (!CVBufferGetAttachment(pixbuf, CFSTR("DolbyVisionRPUData"), NULL) ||
++        CVBufferGetAttachment(pixbuf, kCVImageBufferTransferFunctionKey, NULL))
++        return;
++
++    CFStringRef transfer = get_cv_transfer_function(params->color.transfer);
++    if (transfer) {
++        CVBufferSetAttachment(pixbuf, kCVImageBufferTransferFunctionKey,
++                              transfer, kCVAttachmentMode_ShouldPropagate);
++    }
++}
++
+ static void tag_pixel_buffer_pixel_aspect(struct vo *vo, CVPixelBufferRef pixbuf)
+ {
+     if (!pixbuf || !vo->params)
+@@ -3121,6 +3142,11 @@ static CMSampleBufferRef create_video_sample_buffer(struct vo *vo, mp_image_t *m
+         // ratio; AVSampleBufferDisplayLayer only honors it via a buffer attachment.
+         tag_pixel_buffer_pixel_aspect(vo, finalBuffer);
+ 
++        // Profile 5 may retain its RPU while losing VideoToolbox's PQ tag.
++        // Its color primaries and matrix must remain unspecified.
++        if (mpi->imgfmt == IMGFMT_VIDEOTOOLBOX && finalBuffer == pixbuf)
++            restore_dolby_vision_transfer(finalBuffer, &mpi->params);
++
+         // The format description is stable across frames from the same pool;
+         // CMVideoFormatDescriptionMatchesImageBuffer compares dimensions,
+         // pixel format and the relevant attachments, so any real change
