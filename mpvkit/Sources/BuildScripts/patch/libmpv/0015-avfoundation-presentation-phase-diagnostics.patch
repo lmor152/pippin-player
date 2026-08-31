@@ -1,0 +1,345 @@
+Per-frame presentation-phase instrumentation for vo_avfoundation (Pippin-original).
+
+The tvOS VO has no vblank feedback and runs under --video-sync=audio, so mpv
+never computes display-fps, estimated-display-fps, vsync-ratio, vsync-jitter,
+mistimed-frame-count or vo-delayed-frame-count for it -- all six read as
+unavailable. Two cleanly bracketed judder episodes on device produced no
+distinguishing signal at all: the timebase rate held at exactly 1.00000, the
+pacing counters from 0010 were zero, and the heartbeat cadence was undisturbed.
+
+The untested hypothesis is a beat between the audio clock frames are scheduled
+on and the host/display clock the AVSampleBufferDisplayLayer paces from: with
+no display-clock awareness, presentation phase would walk slowly against vblank
+-- matching the reported "slowly gets worse, then slowly gets better".
+
+This adds the one measurement that would show it. Every non-anchoring frame
+already computes the timebase's projected media position at that frame's
+presentation host time; the difference against the frame's own PTS is exactly
+the audio-vs-host phase error, and it was previously discarded unless it
+exceeded the 20ms re-anchor threshold. It is now accumulated and summarised
+once per ~5s window alongside the existing "Presentation pacing over ..." line,
+in the same style and on the same cadence. Nothing is logged per frame.
+
+Example line:
+
+  Presentation phase over 5.00s: n=120 (120 smp), mean 3.42 ms, median 3.40 ms,
+  min 1.10 ms, max 5.80 ms, walk +0.684 ms/s, min pre-enqueue lead 8.20 ms,
+  0 already late before enqueue, 0 anchors
+
+Reading it:
+
+  * `walk` is the movement of this window's mean against the previous one,
+    per second of playback -- the direct read of a slow phase walk. It is
+    divided by the delta between the two windows' sample-time CENTROIDS, not
+    by a window duration: a mean is located at its centroid, so the separation
+    between two means is not either window's length unless both happen to be
+    equal, which a pause or a stalled flip_page breaks.
+  * `walk n/a` means the number is not measurable, and is deliberately distinct
+    from a measured `+0.000 ms/s`. It prints on the first window, after a seek
+    or reconfigure, and whenever either this window or the one it would be
+    compared against contained a timebase anchor -- an anchor zeroes the phase,
+    so a mean spanning one carries a sawtooth reset that would be read as
+    drift. Only anchor-free windows are retained as history.
+  * A mean stepping consistently in one direction across successive windows,
+    all reporting `0 anchors` and a numeric walk, is the phase walk. A flat
+    mean with a wide min/max spread is ordinary scheduling jitter.
+  * `n=` is every frame measured; `(N smp)` is how many the median was computed
+    from. They are equal at any real frame rate (a 5s window holds 120 frames
+    at 24fps, 300 at 60fps, against a 512-sample reservoir). Past the cap the
+    reservoir keeps a uniform random sample of the WHOLE window (Algorithm R),
+    never the first N -- a first-N buffer would describe only the start of the
+    window, which is exactly wrong for a signal that walks. Even sample counts
+    average the two middle values.
+  * The lead figures are named "pre-enqueue" because they are measured in
+    update_media_timebase_for_frame, before the OSD and video samples are
+    handed to the display layer. A frame that only becomes late during enqueue
+    is not counted.
+
+Phase diagnostics carry their own window bounds and their own anchor count
+rather than borrowing 0010's pacing counters: reset_media_timing() discards the
+samples on a seek, and the summary must not then be labelled with a window
+length and an anchor count that span discarded frames. The reported window is
+the span the retained samples actually cover.
+
+diff --git a/video/out/vo_avfoundation.m b/video/out/vo_avfoundation.m
+index 12b9dd9..dc7dcb3 100644
+--- a/video/out/vo_avfoundation.m
++++ b/video/out/vo_avfoundation.m
+@@ -16,6 +16,7 @@
+  */
+ 
+ #include <math.h>
++#include <stdio.h>
+ #include <stdlib.h>
+ #include <stdatomic.h>
+ #include <limits.h>
+@@ -50,6 +51,13 @@
+ #import <AppKit/AppKit.h>
+ #endif
+ 
++// Presentation-phase samples retained per diagnostic window for the median.
++// A 5s window holds 120 frames at 24fps and 300 at 60fps, so the reservoir is
++// the entire window for any real frame rate; past the cap, samples are kept by
++// reservoir sampling (see record_presentation_phase) so the retained set stays
++// a uniform sample of the WHOLE window rather than only its opening frames.
++#define AVF_PHASE_SAMPLE_CAP 512
++
+ struct avf_render_geometry {
+     int w, h;
+     struct mp_rect src, dst;
+@@ -184,6 +192,53 @@
+     int diag_drop_count;
+     int diag_anchor_count;
+ 
++    // Per-frame presentation-phase samples. Each sample is the frame's
++    // intended presentation position (media_pts_ns, scheduled off the audio
++    // clock -- tvOS runs --video-sync=audio) subtracted from where the media
++    // timebase will actually be at that frame's presentation host time. It is
++    // the phase error between mpv's PTS schedule and the host clock the
++    // display layer paces from. This VO gets no vblank feedback and mpv only
++    // computes mistimed-frame-count / vo-delayed-frame-count on the
++    // display-sync path, so this is the only intended-vs-actual presentation
++    // signal available here.
++    //
++    // These carry their OWN window bounds and anchor count rather than
++    // borrowing the diag_window_* pacing counters above: reset_media_timing()
++    // discards the samples on a seek, and a phase summary must not then be
++    // labelled with a window length and an anchor count that span discarded
++    // frames.
++    int diag_phase_count;
++    int64_t diag_phase_total_ns;
++    int64_t diag_phase_min_ns;
++    int64_t diag_phase_max_ns;
++    int diag_phase_anchor_count;
++    // Bounds of the samples actually held, and the sum of sample times
++    // relative to the first, so the window can be reported as the span the
++    // samples really cover and the mean can be located at its time centroid.
++    int64_t diag_phase_first_ns;
++    int64_t diag_phase_last_ns;
++    int64_t diag_phase_time_total_ns;
++    int diag_phase_sample_count;
++    int64_t diag_phase_samples_ns[AVF_PHASE_SAMPLE_CAP];
++    uint64_t diag_phase_rng;
++    // Previous window's mean and the time centroid it sits at. The centroid,
++    // not the window boundary, is where a mean is located in time, so the
++    // phase walk between two windows must be divided by the centroid delta;
++    // dividing by one window's duration is only correct when both windows are
++    // the same length, which a pause or a stalled flip_page breaks. Only a
++    // window with zero anchors is stored here: an anchor zeroes the phase, so
++    // a mean drawn from an anchored window carries a sawtooth reset and would
++    // fabricate a walk.
++    int64_t diag_phase_prev_mean_ns;
++    int64_t diag_phase_prev_centroid_ns;
++    bool diag_phase_prev_valid;
++    // Lead measured in update_media_timebase_for_frame, i.e. BEFORE the OSD
++    // and video samples are enqueued. A frame that only becomes late during
++    // enqueue is not counted here; the log names these pre-enqueue for that
++    // reason.
++    int64_t diag_preenq_lead_min_ns;
++    int diag_preenq_late_count;
++
+     // Track if OSD callback was invoked this frame
+     bool osd_callback_invoked;
+ 
+@@ -372,6 +427,74 @@ static int64_t current_media_time_ns(struct priv *p)
+     return 0;
+ }
+ 
++static void reset_presentation_phase_window(struct priv *p)
++{
++    p->diag_phase_count = 0;
++    p->diag_phase_total_ns = 0;
++    p->diag_phase_min_ns = 0;
++    p->diag_phase_max_ns = 0;
++    p->diag_phase_anchor_count = 0;
++    p->diag_phase_first_ns = 0;
++    p->diag_phase_last_ns = 0;
++    p->diag_phase_time_total_ns = 0;
++    p->diag_phase_sample_count = 0;
++    p->diag_preenq_lead_min_ns = 0;
++    p->diag_preenq_late_count = 0;
++}
++
++// xorshift64*, used only to choose which samples the reservoir keeps. Local to
++// the VO so it needs no libc global state and no locking; "uniform enough" is
++// the entire requirement.
++static uint64_t diag_phase_random(struct priv *p)
++{
++    uint64_t x = p->diag_phase_rng;
++    x ^= x >> 12;
++    x ^= x << 25;
++    x ^= x >> 27;
++    p->diag_phase_rng = x;
++    return x * 0x2545F4914F6CDD1DULL;
++}
++
++// Accumulates one frame's intended-vs-actual presentation phase. Deliberately
++// aggregate-only: at 24-60fps a per-frame log line would swamp the log and
++// perturb the very timing it is measuring, so nothing is emitted here.
++static void record_presentation_phase(struct priv *p, int64_t now,
++                                      int64_t offset_ns, int64_t lead_ns)
++{
++    if (!p->diag_phase_count) {
++        p->diag_phase_min_ns = offset_ns;
++        p->diag_phase_max_ns = offset_ns;
++        p->diag_preenq_lead_min_ns = lead_ns;
++        p->diag_phase_first_ns = now;
++        if (!p->diag_phase_rng)
++            p->diag_phase_rng = (uint64_t)now | 1;
++    } else {
++        p->diag_phase_min_ns = MPMIN(p->diag_phase_min_ns, offset_ns);
++        p->diag_phase_max_ns = MPMAX(p->diag_phase_max_ns, offset_ns);
++        p->diag_preenq_lead_min_ns = MPMIN(p->diag_preenq_lead_min_ns, lead_ns);
++    }
++    p->diag_phase_last_ns = now;
++    p->diag_phase_time_total_ns += now - p->diag_phase_first_ns;
++    p->diag_phase_total_ns += offset_ns;
++    p->diag_phase_count++;
++    if (lead_ns < 0)
++        p->diag_preenq_late_count++;
++
++    if (p->diag_phase_sample_count < AVF_PHASE_SAMPLE_CAP) {
++        p->diag_phase_samples_ns[p->diag_phase_sample_count++] = offset_ns;
++    } else {
++        // Reservoir sampling (Algorithm R). diag_phase_count is already the
++        // 1-based index of this sample, so keeping it with probability
++        // CAP/count leaves every sample in the window equally likely to be
++        // retained -- necessary because a first-N buffer would describe only
++        // the start of the window, which is exactly wrong for a signal that
++        // walks.
++        uint64_t j = diag_phase_random(p) % (uint64_t)p->diag_phase_count;
++        if (j < (uint64_t)AVF_PHASE_SAMPLE_CAP)
++            p->diag_phase_samples_ns[j] = offset_ns;
++    }
++}
++
+ static void reset_media_timing(struct priv *p)
+ {
+     p->next_media_pts_ns = 0;
+@@ -384,6 +507,11 @@ static void reset_media_timing(struct priv *p)
+     p->playback_paused = false;
+     p->timebase_rate = 1.0;
+     p->nominal_timebase_rate = 1.0;
++    // A seek or reconfigure discontinues the phase series. Drop the samples,
++    // their window bounds and their anchor count together, and refuse to walk
++    // across the discontinuity.
++    reset_presentation_phase_window(p);
++    p->diag_phase_prev_valid = false;
+ }
+ 
+ static double infer_timebase_rate(struct priv *p, int64_t media_pts_ns,
+@@ -460,7 +588,11 @@ static void update_media_timebase_for_frame(struct vo *vo)
+         int64_t timebase_ns = cm_time_to_ns(CMTimebaseGetTime(p->timebase));
+         int64_t projected_ns = timebase_ns +
+             (int64_t)((double)(present_host_ns - now) * p->timebase_rate);
+-        should_anchor = llabs(projected_ns - media_pts_ns) > MP_TIME_MS_TO_NS(20);
++        int64_t offset_ns = projected_ns - media_pts_ns;
++        // Sampled before the threshold test, so the frame that trips the
++        // re-anchor is the last sample of the run rather than a missing one.
++        record_presentation_phase(p, now, offset_ns, present_host_ns - now);
++        should_anchor = llabs(offset_ns) > MP_TIME_MS_TO_NS(20);
+     }
+ 
+     if (should_anchor) {
+@@ -476,6 +608,7 @@ static void update_media_timebase_for_frame(struct vo *vo)
+         p->timebase_anchor_valid = true;
+         p->timebase_paused = p->playback_paused;
+         p->diag_anchor_count++;
++        p->diag_phase_anchor_count++;
+     }
+ 
+     p->last_media_pts_ns = media_pts_ns;
+@@ -917,6 +1050,78 @@ static bool wait_until_ready_for_more_media_data(struct vo *vo, int64_t present_
+     return true;
+ }
+ 
++static int compare_phase_sample(const void *a, const void *b)
++{
++    int64_t x = *(const int64_t *)a;
++    int64_t y = *(const int64_t *)b;
++    return x < y ? -1 : (x > y ? 1 : 0);
++}
++
++// Summarises the presentation-phase samples collected since the last window.
++// Sorts the reservoir in place -- it is about to be reset anyway -- and runs
++// once per window, never per frame.
++static void report_presentation_phase(struct vo *vo)
++{
++    struct priv *p = vo->priv;
++
++    // An anchor zeroes the phase, so nothing measured before it can be
++    // differenced against anything measured after it. Invalidate first, and
++    // unconditionally: a window that anchored on every frame reports no
++    // samples at all, and must still not leave stale history behind for the
++    // next window to walk against.
++    if (p->diag_phase_anchor_count)
++        p->diag_phase_prev_valid = false;
++
++    if (!p->diag_phase_count)
++        return;
++
++    int n = p->diag_phase_sample_count;
++    double mean_ms = p->diag_phase_total_ns / 1e6 / p->diag_phase_count;
++    qsort(p->diag_phase_samples_ns, n, sizeof(p->diag_phase_samples_ns[0]),
++          compare_phase_sample);
++    // Even counts average the two middle samples, in floating point so the
++    // addition cannot overflow the integer nanosecond range.
++    double median_ms = (n % 2)
++        ? p->diag_phase_samples_ns[n / 2] / 1e6
++        : (p->diag_phase_samples_ns[n / 2 - 1] / 1e6 +
++           p->diag_phase_samples_ns[n / 2] / 1e6) / 2.0;
++
++    // The mean sits at the samples' time centroid, so that -- not a window
++    // edge -- is what successive means must be differenced against.
++    int64_t centroid_ns = p->diag_phase_first_ns +
++        p->diag_phase_time_total_ns / p->diag_phase_count;
++    bool clean = p->diag_phase_anchor_count == 0;
++
++    char walk[32] = "n/a";
++    if (clean && p->diag_phase_prev_valid) {
++        int64_t dt_ns = centroid_ns - p->diag_phase_prev_centroid_ns;
++        if (dt_ns > 0) {
++            snprintf(walk, sizeof(walk), "%+.3f ms/s",
++                     (mean_ms - p->diag_phase_prev_mean_ns / 1e6) /
++                         (dt_ns / 1e9));
++        }
++    }
++
++    MP_VERBOSE(vo, "Presentation phase over %.2fs: n=%d (%d smp), "
++               "mean %.2f ms, median %.2f ms, min %.2f ms, max %.2f ms, "
++               "walk %s, min pre-enqueue lead %.2f ms, %d already late "
++               "before enqueue, %d anchors\n",
++               (p->diag_phase_last_ns - p->diag_phase_first_ns) / 1e9,
++               p->diag_phase_count, n, mean_ms, median_ms,
++               p->diag_phase_min_ns / 1e6, p->diag_phase_max_ns / 1e6,
++               walk, p->diag_preenq_lead_min_ns / 1e6,
++               p->diag_preenq_late_count, p->diag_phase_anchor_count);
++
++    // Only an anchor-free window becomes history: an anchor zeroes the phase,
++    // so carrying that mean forward would make the NEXT window's walk read a
++    // sawtooth reset as drift.
++    p->diag_phase_prev_valid = clean;
++    if (clean) {
++        p->diag_phase_prev_mean_ns = (int64_t)(mean_ms * 1e6);
++        p->diag_phase_prev_centroid_ns = centroid_ns;
++    }
++}
++
+ // Presentation-pacing telemetry, emitted about every 5s under -v. Kept
+ // permanently: ready-waits (pacing back-pressure), deadline drops and the
+ // timebase anchor rate are the primary signals for diagnosing judder.
+@@ -943,11 +1148,14 @@ static void report_presentation_diagnostics(struct vo *vo)
+                    p->diag_drop_count, p->diag_anchor_count);
+     }
+ 
++    report_presentation_phase(vo);
++
+     p->diag_window_start_ns = now;
+     p->diag_wait_count = 0;
+     p->diag_wait_total_ns = 0;
+     p->diag_drop_count = 0;
+     p->diag_anchor_count = 0;
++    reset_presentation_phase_window(p);
+ }
+ 
+ static void dispatch_main_sync_safe(dispatch_block_t block)

@@ -1,23 +1,20 @@
 diff --git a/video/out/vo_avfoundation.m b/video/out/vo_avfoundation.m
-index 7d48978..a959840 100644
+index 7d48978..050c4eb 100644
 --- a/video/out/vo_avfoundation.m
 +++ b/video/out/vo_avfoundation.m
-@@ -167,6 +167,25 @@
+@@ -167,6 +167,22 @@
      // rate tracks the authoritative playback speed instead of being inferred
      // from per-frame timing.
      struct m_config_cache *root_opts_cache;
-+    // Nominal (--speed) rate that the current segment was anchored at. The
-+    // effective anchored rate (timebase_rate) may be nudged off this by drift
-+    // adoption; "did the user change --speed?" is decided by comparing the
-+    // current nominal against THIS value, not against the drift-adjusted
-+    // effective rate, so a drift correction is not reverted on the next frame.
++    // Nominal (--speed) rate the current timebase segment was anchored at.
++    // The anchored rate is ALWAYS this value: the rate is never inferred from
++    // frame presentation timing. Presentation deadlines are bursty on tvOS
++    // (frame gaps from 34ms to 70ms at a constant 1x), so any inference reads
++    // those bursts as a speed change and hard re-anchors the timebase at a
++    // wrong rate -- a 0.65x timebase against --speed 1.0 was observed on
++    // device a few seconds after a resume. --speed is the sole authority
++    // (see 0005-avfoundation-timebase-rate-from-speed).
 +    double nominal_timebase_rate;
-+    // Anchor point of the current timebase segment. The actual media-to-host
-+    // rate is inferred over the whole span from here to the current frame
-+    // (accurate at high --speed, unlike a frame-to-frame estimate) and adopted
-+    // only to correct residual clock drift; --speed remains the base truth.
-+    int64_t anchor_media_pts_ns;
-+    int64_t anchor_present_host_ns;
 +
 +    // Periodic presentation-pacing diagnostics (logged every ~5s).
 +    int64_t diag_window_start_ns;
@@ -28,59 +25,35 @@ index 7d48978..a959840 100644
  
      // Track if OSD callback was invoked this frame
      bool osd_callback_invoked;
-@@ -367,6 +386,9 @@ static void reset_media_timing(struct priv *p)
+@@ -367,6 +383,7 @@ static void reset_media_timing(struct priv *p)
      p->timebase_paused = false;
      p->playback_paused = false;
      p->timebase_rate = 1.0;
 +    p->nominal_timebase_rate = 1.0;
-+    p->anchor_media_pts_ns = 0;
-+    p->anchor_present_host_ns = 0;
  }
  
  static double infer_timebase_rate(struct priv *p, int64_t media_pts_ns,
-@@ -419,18 +441,64 @@ static void update_media_timebase_for_frame(struct vo *vo)
+@@ -419,12 +436,25 @@ static void update_media_timebase_for_frame(struct vo *vo)
          ? p->next_present_host_ns
          : now;
      int64_t media_pts_ns = p->next_media_pts_ns;
 -    double rate = p->playback_paused
 +
-+    // Nominal rate is mpv's --speed (target_timebase_rate). Choosing the
-+    // primary rate by frame-to-frame inference wobbles with scheduling jitter
-+    // and re-anchors at a wrong rate (judder that worsens the further --speed
-+    // is from 1x); the span inference below is layered on top only to correct
-+    // residual clock drift, never to pick the nominal rate.
++    // Nominal rate is mpv's --speed (target_timebase_rate), and it is the ONLY
++    // source of the anchored rate. Inferring a rate from frame presentation
++    // timing -- frame to frame or over a span since the last anchor -- wobbles
++    // with scheduling jitter and with the bursty presentation deadlines tvOS
++    // produces, and every wobble past the change threshold hard re-anchors the
++    // timebase at a wrong rate. Drift is corrected by re-anchoring POSITION at
++    // the nominal rate (below), never by nudging the rate.
 +    double nominal = p->playback_paused
          ? 0.0
          : target_timebase_rate(vo, media_pts_ns, present_host_ns);
- 
-+    // Rate we will anchor at if we re-anchor this frame. Defaults to nominal
-+    // (the value used when the user changed --speed, on the first frame, or on
-+    // unpause); the drift branch below instead keeps or adopts the effective
-+    // rate so an accepted drift correction survives past a single frame.
 +    double rate = nominal;
-+
-+    // Infer the actual media-to-host rate over the whole span since the last
-+    // anchor. Present timestamps jitter by up to ~1ms frame to frame, so a
-+    // frame-to-frame estimate is too noisy at high rates (error scales with
-+    // rate / span); a span estimate is accurate enough to adopt for drift.
-+    bool inferred_valid = false;
-+    double inferred = nominal;
-+    int64_t span_host_ns = 0;
-+    if (p->timebase_anchor_valid && p->anchor_present_host_ns) {
-+        int64_t media_delta = media_pts_ns - p->anchor_media_pts_ns;
-+        span_host_ns = present_host_ns - p->anchor_present_host_ns;
-+        if (media_delta > 0 && span_host_ns >= MP_TIME_MS_TO_NS(5)) {
-+            double candidate = (double)media_delta / (double)span_host_ns;
-+            if (candidate >= 0.05 && candidate <= 8.0) {
-+                inferred = candidate;
-+                inferred_valid = true;
-+            }
-+        }
-+    }
-+
+ 
 +    // Re-anchor at the new nominal only when the user's --speed actually
-+    // changes -- compared against the LAST nominal, never against the
-+    // drift-adjusted effective rate -- plus on the first frame and on unpause.
++    // changes -- compared against the LAST nominal -- plus on the first frame
++    // and on unpause.
 +    bool nominal_changed = fabs(nominal - p->nominal_timebase_rate) > 0.01;
      bool should_anchor = !p->timebase_anchor_valid || p->timebase_paused ||
 -        p->playback_paused || fabs(rate - p->timebase_rate) > 0.01;
@@ -88,38 +61,18 @@ index 7d48978..a959840 100644
  
      if (!should_anchor) {
          int64_t timebase_ns = cm_time_to_ns(CMTimebaseGetTime(p->timebase));
-         int64_t projected_ns = timebase_ns +
-             (int64_t)((double)(present_host_ns - now) * p->timebase_rate);
--        should_anchor = llabs(projected_ns - media_pts_ns) > MP_TIME_MS_TO_NS(20);
-+        if (llabs(projected_ns - media_pts_ns) > MP_TIME_MS_TO_NS(20)) {
-+            should_anchor = true;
-+            // Position drifted past tolerance while --speed is unchanged.
-+            // Adopt the span-inferred rate (accurate over a long span) so the
-+            // same drift does not simply build up again; on a too-short span,
-+            // just re-anchor position at the current effective rate. Either
-+            // way the effective rate persists across frames (until a real
-+            // --speed change or a reset) rather than snapping back to nominal.
-+            rate = (inferred_valid && span_host_ns >= MP_TIME_MS_TO_NS(100))
-+                ? inferred
-+                : p->timebase_rate;
-+        }
-     }
- 
-     if (should_anchor) {
-@@ -442,8 +510,12 @@ static void update_media_timebase_for_frame(struct vo *vo)
+@@ -442,8 +472,10 @@ static void update_media_timebase_for_frame(struct vo *vo)
              MP_WARN(vo, "Failed to anchor AVFoundation media timebase: %d\n", (int)err);
          }
          p->timebase_rate = rate;
 +        p->nominal_timebase_rate = nominal;
          p->timebase_anchor_valid = true;
          p->timebase_paused = p->playback_paused;
-+        p->anchor_media_pts_ns = media_pts_ns;
-+        p->anchor_present_host_ns = present_host_ns;
 +        p->diag_anchor_count++;
      }
  
      p->last_media_pts_ns = media_pts_ns;
-@@ -821,6 +893,14 @@ static void update_avfoundation_options(struct vo *vo)
+@@ -821,6 +853,14 @@ static void update_avfoundation_options(struct vo *vo)
      sync_osd_layer_frame(vo);
  }
  
@@ -134,7 +87,7 @@ index 7d48978..a959840 100644
  static bool wait_until_ready_for_more_media_data(struct vo *vo, int64_t present_host_ns)
  {
      struct priv *p = vo->priv;
-@@ -833,33 +913,83 @@ static bool wait_until_ready_for_more_media_data(struct vo *vo, int64_t present_
+@@ -833,33 +873,83 @@ static bool wait_until_ready_for_more_media_data(struct vo *vo, int64_t present_
          return true;
      }
  
@@ -227,7 +180,7 @@ index 7d48978..a959840 100644
  static void dispatch_main_sync_safe(dispatch_block_t block)
  {
      if ([NSThread isMainThread]) {
-@@ -3096,6 +3226,8 @@ static void flip_page(struct vo *vo)
+@@ -3096,6 +3186,8 @@ static void flip_page(struct vo *vo)
      if (atomic_exchange(&p->pending_presentation_resync, false))
          recover_display_layer(vo, "presentation resume", true);
  
