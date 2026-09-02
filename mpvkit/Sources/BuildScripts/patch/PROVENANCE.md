@@ -1,5 +1,18 @@
 # Patch provenance
 
+> ## ⚠️ FROZEN — historical record for the mpv-era releases
+>
+> Pippin has moved to a native playback engine and no longer builds mpv. This
+> tree is the **corresponding source for `v1.0.14`–`v1.0.16`**, the releases that
+> shipped inside mpv-era versions of the app, and it stays published for exactly
+> that reason: those versions are out in the world and their users are entitled
+> to rebuild and relink the LGPL libraries inside them. Nothing new is built from
+> it, and its CI workflows are disabled.
+>
+> The **current** FFmpeg + libass build — the eight-patch Dolby Vision series,
+> its build scripts and its releases — lives at
+> [`lmor152/pippin-ffmpeg`](https://github.com/lmor152/pippin-ffmpeg).
+
 Every patch applied to the vendored libmpv / FFmpeg builds is listed here with
 its origin and license, so the build is auditable and each contribution is
 attributed. The LGPL libraries are statically linked; the patches and build
@@ -46,3 +59,4 @@ renamed `PLEZY_DV_CONVERSION_MODE` → `PIPPIN_DV_CONVERSION_MODE` (internal
 | `0012-moltenvk-gate-presentation-on-hidden-layer` | Re-authored port of edde746/MPVKit libmpv `0013` — gates presentation via `ra_ctx_params.check_visible` when the `CAMetalLayer` is hidden/asleep; forces `VO_EVENT_EXPOSE` redraw on re-show. Adapted to Pippin's minimal `context_moltenvk.m` | LGPLv2.1+ |
 | `0013-avfoundation-multichannel-pcm` | Pippin — multichannel LPCM output path (canonical CoreAudio MPEG 5.1/7.1 layout tags + matching channel order; tvOS/iOS route-capability negotiation with stereo-only → core downmix). Route-capability reasoning adapted from the pattern in edde746/MPVKit libmpv `0010` | LGPLv2.1+ |
 | `0014-avfoundation-bound-pcm-lookahead` | Ported from edde746/MPVKit libmpv `0015` — macOS-only bounded PCM lookahead (`--ao-avfoundation-max-lookahead`, default 0.5s) so software volume/gain applies promptly | LGPLv2.1+ |
+| `0015-avfoundation-presentation-phase-diagnostics` | Pippin-original — per-frame presentation-phase instrumentation for `vo_avfoundation`. tvOS has no vblank feedback under `--video-sync=audio`, so display-fps/vsync-ratio/mistimed/delayed all read unavailable and two bracketed on-device judder episodes produced no distinguishing signal. Accumulates the audio-vs-host phase error (timebase projected position at the frame's presentation host time, minus its PTS) that was previously discarded below the 20 ms re-anchor threshold, and summarises it per ~5s window | LGPLv2.1+ |

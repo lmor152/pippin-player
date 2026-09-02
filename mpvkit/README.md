@@ -1,4 +1,23 @@
-# MPVKit — Pippin player build source
+# MPVKit — Pippin player build source (FROZEN)
+
+> **This tree is a historical record, kept for licence compliance.**
+>
+> Pippin has replaced mpv with a native playback engine. What is here is the
+> corresponding source for the **mpv-era releases `v1.0.14`–`v1.0.16`** — the
+> libmpv and FFmpeg builds that shipped inside versions of the app people are
+> still running. The LGPL entitles those users to rebuild and relink those
+> libraries, and this is where they do it, which is why nothing has been deleted
+> or moved. The releases and their assets stay attached to this repository
+> indefinitely.
+>
+> Nothing new is built from it. Its CI workflows are disabled — see
+> `.github/workflows/README.md`; they had in fact never run, because GitHub does
+> not read workflows from a subdirectory.
+>
+> **The current build is elsewhere.** Patched FFmpeg and libass — the eight-patch
+> Dolby Vision series, the build scripts, working CI and the current releases —
+> live at [`lmor152/pippin-ffmpeg`](https://github.com/lmor152/pippin-ffmpeg).
+> The player's issue tracker stays here.
 
 This directory is the complete, buildable source for the patched **libmpv** +
 **FFmpeg** XCFrameworks that the Pippin player links. It is published here as the

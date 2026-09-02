@@ -86,8 +86,8 @@ let package = Package(
 
         .binaryTarget(
             name: "Libass",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libass.xcframework.zip",
-            checksum: "c786b29114cf0c2c3cdd5cb6529060438c148f591bbe35b55de9a809eff8744c"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libass.xcframework.zip",
+            checksum: "2ae09b4248df4836d58f0f87a01da947f6616a44d7424f98bfb7bfc9ad058787"
         ),
 
         .binaryTarget(
@@ -140,38 +140,38 @@ let package = Package(
 
         .binaryTarget(
             name: "Libavcodec",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libavcodec.xcframework.zip",
-            checksum: "4f18878a659728848cef9bd145857cf73100fe10db8a504f584dde9f21b0f1cb"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libavcodec.xcframework.zip",
+            checksum: "3d9813ef7c71583a88abc7b7e6474c18543997747c0373ca9944e53826b0e005"
         ),
         .binaryTarget(
             name: "Libavdevice",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libavdevice.xcframework.zip",
-            checksum: "4a7ea2109b19fb17fc1005f2842b783344a06b46a188ce986e77de8c04a2c534"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libavdevice.xcframework.zip",
+            checksum: "c388d937cff5ef254b168b5ed656131349139623e6bd21bc120b3a7fa270e557"
         ),
         .binaryTarget(
             name: "Libavformat",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libavformat.xcframework.zip",
-            checksum: "a64202011acd0ed737216f5b5310eb72dcb3a470e7e94a1ae6fae23a8573a40b"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libavformat.xcframework.zip",
+            checksum: "17556ab5b2aaf8366cc24a5a8dc86061b1cac24c86a4684a3c9e93cdc9f5ddea"
         ),
         .binaryTarget(
             name: "Libavfilter",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libavfilter.xcframework.zip",
-            checksum: "a52dd8a436cc357b534f48c23a30390d67758fb23c9ce36f8c3b74b17d53b0fd"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libavfilter.xcframework.zip",
+            checksum: "534aedee94f1a97037c1a36c359696bd65d0af2b62448ead4c07125963b1b96a"
         ),
         .binaryTarget(
             name: "Libavutil",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libavutil.xcframework.zip",
-            checksum: "3e453b9fd68bc4ace144372d25934b47dc204a811cd4cf11e054faaa6e3b39fd"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libavutil.xcframework.zip",
+            checksum: "b19699394fb5b563b57aebfde9a588991cc1bbf45cd57ff8f364d2a14f2abde0"
         ),
         .binaryTarget(
             name: "Libswresample",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libswresample.xcframework.zip",
-            checksum: "2856ba1b19643e2c09d75d3313e2aef7887048796fa64d84eb1638c930729528"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libswresample.xcframework.zip",
+            checksum: "3422b4fd73e0dddb8f4b753da1e95401b895d04ade32ed095d125362feed27ce"
         ),
         .binaryTarget(
             name: "Libswscale",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libswscale.xcframework.zip",
-            checksum: "bf5f39ffb06c982557f72c117880d902de2e074af564da99c7b173dc17a24b69"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libswscale.xcframework.zip",
+            checksum: "77aff0142c33a819d1f7fbe0a2e6bfad344dcc4fd1341713fc98abcc0c65f5e1"
         ),
 
         .binaryTarget(
@@ -188,8 +188,8 @@ let package = Package(
 
         .binaryTarget(
             name: "Libmpv",
-            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.14/Libmpv.xcframework.zip",
-            checksum: "ce6b171272f3181ea74cdb780c6fedac0c53bfd6d2dece24f922b9d6332de1f4"
+            url: "https://github.com/lmor152/pippin-player/releases/download/v1.0.16/Libmpv.xcframework.zip",
+            checksum: "ce2a552a95121ec0cd4fa986b2c154c40dcb1baa21f9d3490d9e5f8852fb56c5"
         ),
         //AUTO_GENERATE_TARGETS_END//
     ]
